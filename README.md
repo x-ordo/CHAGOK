@@ -81,7 +81,7 @@ PRD, 아키텍처, 설계 문서, 코드, 그리고 협업 규칙을 한 번에 
 
 ---
 
-## 4. 🚀 시작하기 (Getting Started)
+## 3. 🛠 기술 스택
 
 ### 4.1 사전 요구사항
 
@@ -167,6 +167,96 @@ npm run dev   # 기본: http://localhost:5173
 
 
 - `.env` 내 `VITE_API_BASE_URL`(또는 NEXT_PUBLIC_API_BASE_URL)이 FastAPI 주소와 일치해야 한다.
+| 영역 | 기술 | 설명 |
+| :--- | :--- | :--- |
+| Frontend | **React (Next/Vite), TypeScript, Tailwind** | 변호사/스태프용 대시보드 |
+| Backend | **FastAPI, Python** | 인증, 사건/증거/Draft API, Presigned URL, RAG |
+| RDB | **PostgreSQL (RDS)** | 사용자, 사건, 권한, 감사 로그 |
+| Evidence Storage | **AWS S3** | 원본 증거 저장소 |
+| Metadata | **AWS DynamoDB** | 증거 분석 결과 JSON, 타임라인 메타 |
+| RAG | **Amazon OpenSearch** | 사건별 임베딩 인덱스(`case_rag_{case_id}`) |
+| Queue | **S3 Event / (옵션 SQS)** | AI Worker 트리거 |
+| AI | **OpenAI (GPT-4o, Whisper, Vision, Embedding)** | OCR/STT/요약/라벨링/초안 생성 |
+| Observability | **CloudWatch, (옵션 Sentry)** | 로그·모니터링 |
+
+> Google Drive는 사용하지 않으며, 모든 데이터는 **단일 AWS 계정 내부**에서만 저장·처리된다.
+
+---
+
+## 4. 🚀 시작하기 (Getting Started)
+
+### 4.1 사전 요구사항
+
+- Python 3.11+
+- Node.js 20+
+- AWS 계정 + IAM (S3, DynamoDB, OpenSearch, RDS 등)
+- OpenAI API 키
+- PostgreSQL 인스턴스 (RDS 또는 로컬)
+
+### 4.2 레포 클론
+
+```bash
+git clone https://github.com/ORG/REPO.git
+cd REPO
+````
+
+### 4.3 환경 변수 설정
+
+1. 템플릿 복사
+
+```bash
+cp .env.example .env
+```
+
+2. 필수 값 설정 (예시)
+
+- `S3_EVIDENCE_BUCKET`
+- `DDB_EVIDENCE_TABLE`
+- `OPENSEARCH_HOST`
+- `DATABASE_URL` (또는 POSTGRES_* 세트)
+- `OPENAI_API_KEY`
+- 기타 AWS 자격 증명 또는 IAM Role 사용 방식
+
+`.env`는 절대 Git에 커밋하지 않는다.
+
+---
+
+### 4.4 백엔드 실행 (FastAPI)
+
+```bash
+cd backend
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# (선택) DB 마이그레이션
+# alembic upgrade head
+
+uvicorn backend.main:app --reload
+# 기본: http://localhost:8000
+```
+
+---
+
+### 4.5 AI 워커 실행 (AI Worker)
+
+```bash
+cd ai_worker  # 실제 디렉토리명에 맞춰 수정
+
+# 같은 venv를 사용한다고 가정
+python -m worker.main  # 또는
+python worker/main.py
+```
+
+- S3 Event / SQS 메시지를 받아:
+
+  - S3에서 파일 다운로드
+  - 타입별 파서 실행 (텍스트/이미지/오디오/영상/PDF)
+  - 요약/라벨링/임베딩 생성
+  - DynamoDB + OpenSearch에 결과 반영
 
 ---
 
@@ -215,6 +305,66 @@ bash
 ├── requirements.txt
 └── README.md                # 본 문서
 
+
+---
+
+### 4.6 프론트엔드 실행 (React)
+
+```bash
+cd frontend
+npm install
+npm run dev   # 기본: http://localhost:5173
+```
+
+- `.env` 내 `VITE_API_BASE_URL`(또는 NEXT_PUBLIC_API_BASE_URL)이 FastAPI 주소와 일치해야 한다.
+
+---
+
+## 5. 📁 레포 구조 (요약)
+
+```bash
+/
+├── backend/                 # FastAPI 백엔드 (H 리드)
+│   ├── main.py
+│   ├── api/                # cases, evidence, auth, draft, search 등
+│   ├── models/             # SQLAlchemy 모델
+│   ├── schemas/            # Pydantic 스키마
+│   ├── services/           # S3/DynamoDB/OpenSearch/Auth 등
+│   └── core/               # 설정, 로깅, 보안
+│
+├── ai_worker/               # AI 파이프라인 워커 (L 리드)
+│   ├── handler.py          # Lambda 엔트리포인트
+│   ├── processor/          # router, text_parser, ocr, stt, semantic, embed 등
+│   └── utils/              # s3, dynamo, opensearch 유틸
+│
+├── frontend/                # React/Next 대시보드 (P 리드)
+│   └── src/
+│       ├── pages/          # index, cases, cases/[id], settings
+│       ├── components/     # layout, evidence, cases, draft, common
+│       ├── hooks/          # useAuth, useCase, useEvidence, useDraft
+│       ├── api/            # client, cases, evidence, draft
+│       └── types/          # case, evidence, draft
+│
+├── infra/                   # IaC (CDK/Terraform) – 선택
+├── docs/                    # 설계 문서
+│   ├── PRD.md
+│   ├── ARCHITECTURE.md
+│   ├── BACKEND_DESIGN.md
+│   ├── AI_PIPELINE_DESIGN.md
+│   ├── FRONTEND_SPEC.md
+│   ├── API_SPEC.md
+│   └── SECURITY_COMPLIANCE.md
+│
+├── .github/
+│   ├── ISSUE_TEMPLATE/      # 버그/기능/태스크 템플릿
+│   ├── pull_request_template.md
+│   └── workflows/           # CI 설정
+│
+├── .env.example
+├── CONTRIBUTING.md          # GitHub 협업 규칙 (필독)
+├── requirements.txt
+└── README.md                # 본 문서
+```
 
 ---
 
