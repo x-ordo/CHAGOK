@@ -1,4 +1,3 @@
-# **FRONTEND_SPEC.md — Legal Evidence Hub (LEH)**
 
 ### *변호사용 웹 대시보드 프론트엔드 상세 설계서*
 
@@ -70,7 +69,6 @@
 
 문서 전체를 통일한 구조:
 
-```
 frontend/
 ├── src/
 │   ├── pages/                # Next.js page routing
@@ -90,7 +88,6 @@ frontend/
 │   ├── utils/
 │   └── styles/
 └── package.json
-```
 
 디렉토리 기능은 **백엔드 문서 구조와 동일한 논리 레이어링**을 따른다.
 
@@ -140,7 +137,6 @@ LEH의 핵심 UX.
 
 ### 화면 레이아웃
 
-```
 ┌───────────────────────────────────────────────┐
 │ CaseHeader: 사건 제목 / 상태 / 멤버 / 버튼들 │
 ├───────────────────────────────────────────────┤
@@ -150,7 +146,6 @@ LEH의 핵심 UX.
 ├───────────────────────────────────────────────┤
 │ DraftPreview (하단 고정 혹은 패널)            │
 └───────────────────────────────────────────────┘
-```
 
 ### CaseHeader 기능
 
@@ -260,34 +255,27 @@ DynamoDB Evidence JSON 리스트
 
 ### Presigned URL
 
-```
 GET /evidence/presigned-url?case_id=xxx&filename=xxx
-```
 
 ### 증거 리스트
 
-```
 GET /cases/{id}/evidence
-```
 
 ---
 
 ## 5.4 Draft 생성
 
-```
 POST /cases/{id}/draft-preview
-```
 
 응답:
 
-```json
+json
 {
   "draft_text": "...",
   "citations": [
     { "evidence_id": "ev_123", "quote": "..." }
   ]
 }
-```
 
 ---
 
@@ -295,7 +283,6 @@ POST /cases/{id}/draft-preview
 
 ## 6.1 증거 업로드 흐름
 
-```
 [1] 사용자가 파일 선택
 [2] FE → BE: Presigned URL 요청
 [3] FE → S3: 직접 업로드
@@ -303,19 +290,16 @@ POST /cases/{id}/draft-preview
 [5] Worker → DynamoDB 반영
 [6] FE → BE: /cases/{id}/evidence 재조회
 [7] 타임라인 실시간 갱신
-```
 
 ---
 
 ## 6.2 Draft 생성 흐름
 
-```
 [1] FE: DraftPreview에서 “Draft 생성”
 [2] FE → BE: draft-preview 요청
 [3] BE: 사건 증거 → RAG → GPT-4o → 초안 생성
 [4] BE → FE: draft_text + citations 반환
 [5] FE: Preview 표시
-```
 
 ---
 

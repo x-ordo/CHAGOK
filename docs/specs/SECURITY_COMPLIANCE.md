@@ -1,4 +1,4 @@
-# SECURITY_COMPLIANCE.md — Legal Evidence Hub (LEH)
+
 ### *보안 아키텍처 · 법적 준수 · 개인정보 보호 정책*
 
 **버전:** v2.0  
@@ -28,23 +28,28 @@ LEH는 **변호사가 사용하는 사건 관리 플랫폼**이므로,
 # 🧭 1. 보안 기본 원칙 (Security Principles)
 
 ### ✔ 1. 최소 권한 원칙(Least Privilege)
+
 - 모든 IAM Role/S3 Policy/DB 권한은 “필요한 최소 기능”만 허용한다.
 
 ### ✔ 2. Zero Trust 접근  
+
 - FE → BE 모든 요청: JWT 인증 필수  
 - 백엔드 → AWS 서비스: IAM 기반 Role Only  
 - 외부 네트워크에서 OpenSearch/DynamoDB 직접 접근 **불가**
 
 ### ✔ 3. 민감정보의 **저장 최소화**
+
 - 민감한 원문 데이터는 S3 원본 파일에만 존재  
 - FE/BE/로그/Analytics 어디에도 전문 저장 금지
 
 ### ✔ 4. 암호화(Encryption Everywhere)
+
 - 저장: KMS 기반 AES-256  
 - 전송: HTTPS(TLS 1.2 이상) 강제  
 - JWT: 강한 Secret + 24h TTL
 
 ### ✔ 5. AI는 법률사무를 **대체하지 않는다**
+
 - AI가 생성하는 Draft는 “표현 제안(초안)”이며 자동 제출 금지  
 - 변호사가 직접 편집 → 제출해야 법적 효력 발생
 
@@ -70,11 +75,13 @@ LEH는 AWS 환경에서 동작하며, 모든 구성 요소는 VPC 내부에서 �
 ## 2.2 IAM 정책
 
 ### Backend IAM Role
+
 - S3 `GetObject` (download-only for processed/)  
 - DynamoDB `Query`/`GetItem`  
 - OpenSearch HTTP request (index-level)
 
 ### AI Worker IAM Role
+
 - S3 `GetObject` / `PutObject`  
 - DynamoDB `PutItem` / `UpdateItem`  
 - OpenSearch `index/write`  
@@ -115,13 +122,9 @@ LEH는 AWS 환경에서 동작하며, 모든 구성 요소는 VPC 내부에서 �
 - Presigned URL 유효기간: **최대 5분**
 - 파일 경로 규칙:
 
-```
-
 s3://leh-evidence/
 cases/{case_id}/raw/{uuid_filename}
 cases/{case_id}/processed/{uuid}.json
-
-```
 
 ---
 
@@ -239,12 +242,8 @@ LEH는 **변호사법·전자문서법·민법·개인정보보호법(PIPA)** �
 - Draft에서 “추정/예측” 문구 제거  
 - LLM Prompt에 명시:
 
-```
-
 사실이 아닌 내용, 추정, 판단을 절대 생성하지 마라.
 증거에 근거하지 않은 문장은 생성 금지.
-
-```
 
 ## 6.2 Harmful Content 차단
 

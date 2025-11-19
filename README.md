@@ -93,18 +93,18 @@ PRD, 아키텍처, 설계 문서, 코드, 그리고 협업 규칙을 한 번에 
 
 ### 4.2 레포 클론
 
-```bash
+bash
 git clone https://github.com/ORG/REPO.git
 cd REPO
-````
+`
 
 ### 4.3 환경 변수 설정
 
 1. 템플릿 복사
 
-```bash
+bash
 cp .env.example .env
-```
+
 
 2. 필수 값 설정 (예시)
 
@@ -121,7 +121,7 @@ cp .env.example .env
 
 ### 4.4 백엔드 실행 (FastAPI)
 
-```bash
+bash
 cd backend
 
 python3 -m venv venv
@@ -135,19 +135,19 @@ pip install -r requirements.txt
 
 uvicorn backend.main:app --reload
 # 기본: http://localhost:8000
-```
+
 
 ---
 
 ### 4.5 AI 워커 실행 (AI Worker)
 
-```bash
+bash
 cd ai_worker  # 실제 디렉토리명에 맞춰 수정
 
 # 같은 venv를 사용한다고 가정
 python -m worker.main  # 또는
 python worker/main.py
-```
+
 
 - S3 Event / SQS 메시지를 받아:
 
@@ -160,11 +160,11 @@ python worker/main.py
 
 ### 4.6 프론트엔드 실행 (React)
 
-```bash
+bash
 cd frontend
 npm install
 npm run dev   # 기본: http://localhost:5173
-```
+
 
 - `.env` 내 `VITE_API_BASE_URL`(또는 NEXT_PUBLIC_API_BASE_URL)이 FastAPI 주소와 일치해야 한다.
 
@@ -172,7 +172,7 @@ npm run dev   # 기본: http://localhost:5173
 
 ## 5. 📁 레포 구조 (요약)
 
-```bash
+bash
 /
 ├── backend/                 # FastAPI 백엔드 (H 리드)
 │   ├── main.py
@@ -214,7 +214,7 @@ npm run dev   # 기본: http://localhost:5173
 ├── CONTRIBUTING.md          # GitHub 협업 규칙 (필독)
 ├── requirements.txt
 └── README.md                # 본 문서
-```
+
 
 ---
 
@@ -224,9 +224,9 @@ npm run dev   # 기본: http://localhost:5173
 
 ### 6.1 브랜치 전략
 
-```text
+text
 main  ←  dev  ←  feat/*
-```
+
 
 - **main**
 

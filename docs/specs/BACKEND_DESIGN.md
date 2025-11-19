@@ -1,4 +1,3 @@
-# **BACKEND_DESIGN.md — Legal Evidence Hub (LEH)**
 
 ### *FastAPI 기반 Backend 아키텍처 & 내부 구조 설계서*
 
@@ -37,7 +36,6 @@ LEH 백엔드는 **FastAPI 기반의 Stateless API 서버**로 구성되며, 주
 
 PDF 기반 초기 설계를 최신 구조로 재정리하였다.
 
-```
 backend/
 ├── app/
 │   ├── main.py                  # FastAPI 엔트리포인트
@@ -70,7 +68,6 @@ backend/
 │       ├── audit.py             # 감사 로그 기록기
 │       └── error_handler.py     # 공통 에러 핸들러
 └── requirements.txt
-```
 
 ---
 
@@ -78,14 +75,13 @@ backend/
 
 ## 3.1 JWT 구조
 
-```json
+json
 {
   "sub": "<user_id>",
   "role": "lawyer | staff | admin",
   "exp": "<만료시간>",
   "case_access": ["case_123", "case_456"]
 }
-```
 
 * Access Token TTL: 24h
 * Refresh Token TTL: 7 days
@@ -172,7 +168,7 @@ backend/
 
 ### Evidence JSON 예시
 
-```json
+json
 {
   "case_id": "case_123",
   "evidence_id": "ev_001",
@@ -186,7 +182,6 @@ backend/
   "s3_key": "cases/123/raw/img01.jpg",
   "opensearch_id": "case_123_ev_1"
 }
-```
 
 ---
 
@@ -194,13 +189,11 @@ backend/
 
 각 사건별 index 생성:
 
-```
 case_rag_{case_id}
-```
 
 문서 구조:
 
-```json
+json
 {
   "id": "case_123_ev_1",
   "content": "OCR/STT/텍스트 전문",
@@ -209,7 +202,6 @@ case_rag_{case_id}
   "speaker": "피고",
   "vector": [ ...embedding_vector ]
 }
-```
 
 ---
 
@@ -227,18 +219,15 @@ case_rag_{case_id}
 
 ## 7.2 Presigned URL API Spec
 
-```
 GET /evidence/presigned-url?case_id=xxx&filename=xxx
-```
 
 응답 예시:
 
-```json
+json
 {
   "upload_url": "https://s3...signed_url",
   "file_key": "cases/<case_id>/raw/<uuid>_<filename>"
 }
-```
 
 ---
 
@@ -248,9 +237,7 @@ GET /evidence/presigned-url?case_id=xxx&filename=xxx
 
 ## 8.1 Evidence List API
 
-```
 GET /cases/{id}/evidence
-```
 
 서버 동작:
 
@@ -266,21 +253,18 @@ PDF Paralegal 문서의 Draft 생성 기능을 **사건별 RAG 기반**으로 �
 
 ## 9.1 API
 
-```
 POST /cases/{id}/draft-preview
-```
 
 요청:
 
-```json
+json
 {
   "sections": ["청구취지", "청구원인"]
 }
-```
 
 응답:
 
-```json
+json
 {
   "draft_text": "...GPT가 생성한 초안...",
   "citations": [
@@ -290,7 +274,6 @@ POST /cases/{id}/draft-preview
     }
   ]
 }
-```
 
 ## 9.2 Draft 생성 Flow
 
@@ -371,7 +354,6 @@ POST /cases/{id}/draft-preview
 
 ## 12.1 환경 변수(.env)
 
-```
 DB_URL=postgres://...
 AWS_REGION=ap-northeast-2
 S3_BUCKET=leh-evidence
@@ -379,7 +361,6 @@ DYNAMODB_TABLE=evidence_table
 OPENSEARCH_ENDPOINT=...
 OPENAI_API_KEY=...
 JWT_SECRET=...
-```
 
 ## 12.2 런타임
 

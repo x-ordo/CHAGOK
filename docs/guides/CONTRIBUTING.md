@@ -1,4 +1,3 @@
-# CONTRIBUTING.md — Legal Evidence Hub (LEH)
 
 ### *GitHub 협업 규칙 (Team H · P · L)*
 
@@ -35,9 +34,9 @@
 
 단일 패턴만 기억하면 된다:
 
-```text
+text
 main  ←  dev  ←  feat/*
-````
+`
 
 ## 2.1 main
 
@@ -61,17 +60,18 @@ main  ←  dev  ←  feat/*
   - `feat/ai-routing-v2`
 - 흐름:
 
-  ```sh
+  sh
   git checkout dev
   git pull origin dev
   git checkout -b feat/parser-unify
+
   # 작업 후
+
   git checkout dev
   git merge feat/parser-unify
   git push origin dev
-  ```
-
-* **feat/* → dev** merge 시 PR 필수 아님 (dev는 실험장)
+  
+- **feat/* → dev** merge 시 PR 필수 아님 (dev는 실험장)
 
 ## 2.4 exp/* (선택)
 
@@ -89,23 +89,21 @@ AI 분석/리팩토링, 변경 추적을 위해 **반드시 영어**로 작성�
 
 ## 3.2 Prefix 규칙
 
-```text
+text
 feat:     기능 추가
 fix:      버그 수정
 refactor: 구조 변경 (기능 변화 없음)
 docs:     문서만 변경
 chore:    빌드/설정/로그 등 기타
-```
 
 ### 예시
 
-```text
+text
 feat: add unified text conversation parser
 fix: wrong timestamp formatting in evidence ingestion
 refactor: clean up ai worker pipeline structure
 docs: update backend design document
 chore: adjust logging level for lambda
-```
 
 ---
 
@@ -115,10 +113,9 @@ chore: adjust logging level for lambda
 
 1. **dev 최신화**
 
-```sh
+sh
 git checkout dev
 git pull origin dev
-```
 
 2. **작업 + 로컬 테스트**
 
@@ -127,11 +124,10 @@ git pull origin dev
 
 3. **dev로 push**
 
-```sh
+sh
 git add .
 git commit -m "feat: implement xxx"
 git push origin dev
-```
 
 4. **배포 준비 시 PR 생성 (dev → main)**
 
@@ -163,19 +159,22 @@ git push origin dev
 
 PR 설명에 아래 3가지만 적는다:
 
-```md
+md
+
 # Summary
+
 - 구현/수정한 내용 한 줄 요약
 
 # Changed Files
+
 - backend/app/...
 - ai_worker/...
 - frontend/src/...
 
 # Impact
+
 - FE 영향 있음/없음
 - 마이그레이션 필요 여부 (예: DB 스키마 변경 등)
-```
 
 ## 5.4 문서 전용 예외
 
@@ -195,14 +194,15 @@ PR 설명에 아래 3가지만 적는다:
 
 ### 6.2 기본 절차
 
-```sh
+sh
 git checkout dev
 git pull origin dev
+
 # conflict 표시된 파일 수정
+
 git add .
 git commit
 git push origin dev
-```
 
 ### 6.3 체크리스트
 
@@ -220,12 +220,11 @@ git push origin dev
 
 - main에 merge 되면 GitHub Actions가 동작:
 
-  ```text
+  text
   dev → main PR merge
     → CI (테스트)
     → CD (AWS 배포: BE/AI/FE)
-  ```
-
+  
 - main 상태 = “변호사에게 보이는 서비스 상태”
 
 ## 7.2 dev 환경
@@ -239,7 +238,7 @@ git push origin dev
 
 실제 레포 구조는 문서들에 맞춰 아래처럼 통일한다:
 
-```text
+text
 root/
 ├── backend/          # FastAPI 백엔드
 ├── frontend/         # React/Next 대시보드
@@ -255,7 +254,6 @@ root/
 │   └── SECURITY_COMPLIANCE.md
 ├── CONTRIBUTING.md   # 이 파일
 └── README.md
-```
 
 ---
 
@@ -263,29 +261,25 @@ root/
 
 ### 현재 브랜치 확인
 
-```sh
+sh
 git branch
-```
 
 ### dev로 이동
 
-```sh
+sh
 git checkout dev
-```
 
 ### dev 최신 코드 받기
 
-```sh
+sh
 git pull origin dev
-```
 
 ### 변경사항 커밋 & dev로 push
 
-```sh
+sh
 git add .
 git commit -m "feat: ..."
 git push origin dev
-```
 
 ### PR 생성
 

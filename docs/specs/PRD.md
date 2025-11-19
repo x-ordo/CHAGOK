@@ -1,4 +1,3 @@
-# ✅ **PRD.md — Legal Evidence Hub (LEH)**
 
 **문서 버전**: v2.1
 **최종 업데이트**: 2025-11-18
@@ -57,7 +56,6 @@ LEH는 기존 Paralegal 시스템(PDF 기반)보다 진화하여 다음을 핵�
 
 PDF에서 제시된 구조(React → FastAPI → S3/SQS Worker)  를 발전시켜 다음과 같이 재구성한다.
 
-```
 [ FE (React) ]
     ↓
 [ BE (FastAPI) ]
@@ -73,7 +71,6 @@ PDF에서 제시된 구조(React → FastAPI → S3/SQS Worker)  를 발전시�
 [ RDS/PostgreSQL (Users/Cases) ]
     ↓
 [ Draft API → GPT-4o with RAG ]
-```
 
 ### 개선 포인트
 
@@ -211,7 +208,7 @@ PDF의 Paralegal Draft 기능  을 최신 형태로 고도화한다.
 
 ## DynamoDB Evidence JSON (최종)
 
-```json
+json
 {
   "evidence_id": "uuid",
   "case_id": "case123",
@@ -224,7 +221,6 @@ PDF의 Paralegal Draft 기능  을 최신 형태로 고도화한다.
   "s3_key": "cases/123/evidence/abc.jpg",
   "opensearch_vector_id": "op_123"
 }
-```
 
 ## PostgreSQL (Users/Cases/Roles/Audit)
 
@@ -273,11 +269,9 @@ PDF의 Paralegal Draft 기능  을 최신 형태로 고도화한다.
 
 ## 브랜치 전략
 
-```
 main = 배포
 develop = 통합
 feature/* = 기능 단위
-```
 
 ## 규칙
 

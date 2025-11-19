@@ -1,4 +1,3 @@
-# API_SPEC.md — Legal Evidence Hub (LEH)
 
 ### *REST API 명세서 (MVP)*
 
@@ -33,9 +32,9 @@
 - 방식: **JWT (Bearer Token)**
 - 헤더:
 
-```http
+http
 Authorization: Bearer <JWT_TOKEN>
-````
+`
 
 - `/auth/login`, `/health` 일부를 제외하면 **모든 엔드포인트에 필수**
 
@@ -43,7 +42,7 @@ Authorization: Bearer <JWT_TOKEN>
 
 ### 성공 (예)
 
-```json
+json
 {
   "data": { ... },
   "meta": {
@@ -51,18 +50,16 @@ Authorization: Bearer <JWT_TOKEN>
     "timestamp": "2025-11-18T10:00:00Z"
   }
 }
-```
 
 ### 오류 (예)
 
-```json
+json
 {
   "error": {
     "code": "CASE_NOT_FOUND",
     "message": "존재하지 않거나 접근 권한이 없는 사건입니다."
   }
 }
-```
 
 - HTTP Status Code:
 
@@ -86,16 +83,15 @@ Authorization: Bearer <JWT_TOKEN>
 - 설명: 이메일/비밀번호로 로그인 후 JWT 발급
 - 요청 Body:
 
-```json
+json
 {
-  "email": "user@example.com",
+  "email": "<user@example.com>",
   "password": "string"
 }
-```
 
 - 응답 (200):
 
-```json
+json
 {
   "data": {
     "access_token": "jwt-token",
@@ -108,7 +104,6 @@ Authorization: Bearer <JWT_TOKEN>
     }
   }
 }
-```
 
 - 오류:
 
@@ -135,7 +130,7 @@ Authorization: Bearer <JWT_TOKEN>
   - `q` (optional): 사건명 검색
 - 응답 (200):
 
-```json
+json
 {
   "data": [
     {
@@ -148,7 +143,6 @@ Authorization: Bearer <JWT_TOKEN>
     }
   ]
 }
-```
 
 ---
 
@@ -159,16 +153,15 @@ Authorization: Bearer <JWT_TOKEN>
 - 설명: 새로운 사건 생성
 - 요청 Body:
 
-```json
+json
 {
   "title": "김○○ 이혼 사건",
   "description": "간략 설명 (선택)"
 }
-```
 
 - 응답 (201):
 
-```json
+json
 {
   "data": {
     "id": "case_123",
@@ -178,7 +171,6 @@ Authorization: Bearer <JWT_TOKEN>
     "created_at": "2025-11-18T01:00:00Z"
   }
 }
-```
 
 ---
 
@@ -189,7 +181,7 @@ Authorization: Bearer <JWT_TOKEN>
 - 설명: 사건 요약 정보 조회
 - 응답 (200):
 
-```json
+json
 {
   "data": {
     "id": "case_123",
@@ -201,7 +193,6 @@ Authorization: Bearer <JWT_TOKEN>
     "draft_status": "ready"
   }
 }
-```
 
 ---
 
@@ -212,12 +203,11 @@ Authorization: Bearer <JWT_TOKEN>
 - 설명: 사건 제목/설명 수정
 - 요청 Body:
 
-```json
+json
 {
   "title": "수정된 사건명",
   "description": "수정된 설명"
 }
-```
 
 - 응답 (200): 수정된 사건 객체
 
@@ -251,20 +241,19 @@ LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
 - 설명: 특정 사건에 대한 S3 업로드 URL 발급
 - 요청 Body:
 
-```json
+json
 {
   "case_id": "case_123",
   "filename": "kakao_export.txt",
   "content_type": "text/plain"
 }
-```
 
 - 응답 (200):
 
-```json
+json
 {
   "data": {
-    "upload_url": "https://s3....",
+    "upload_url": "<https://s3>....",
     "fields": {
       "key": "cases/case_123/raw/uuid_kakao_export.txt",
       "policy": "...",
@@ -276,7 +265,6 @@ LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
     "evidence_temp_id": "temp_abc123"
   }
 }
-```
 
 ---
 
@@ -290,18 +278,17 @@ LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
 
 - 요청 Body:
 
-```json
+json
 {
   "case_id": "case_123",
   "evidence_temp_id": "temp_abc123",
   "s3_key": "cases/case_123/raw/uuid_kakao_export.txt",
   "note": "2021년~2023년 카카오톡 내역"
 }
-```
 
 - 응답 (201):
 
-```json
+json
 {
   "data": {
     "id": "ev_001",
@@ -312,7 +299,6 @@ LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
     "uploaded_at": "2025-11-18T01:20:00Z"
   }
 }
-```
 
 ---
 
@@ -330,7 +316,7 @@ LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
 
 - 응답 (200):
 
-```json
+json
 {
   "data": [
     {
@@ -346,7 +332,6 @@ LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
     }
   ]
 }
-```
 
 ---
 
@@ -358,7 +343,7 @@ LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
 
 - 응답 (200):
 
-```json
+json
 {
   "data": {
     "id": "ev_001",
@@ -372,10 +357,9 @@ LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
     "content": "STT 전문 (필요 시 일부만)",
     "ocr_text": null,
     "transcript": "Whisper STT 결과...",
-    "download_url": "https://s3-presigned-url..."
+    "download_url": "<https://s3-presigned-url>..."
   }
 }
-```
 
 - `download_url`은 짧은 유효기간의 Presigned URL (이미지/PDF/오디오 뷰어에 사용)
 
@@ -398,17 +382,16 @@ LEH는 **“Preview 전용 Draft”**만 제공하며,
 
 - 요청 Body (옵션 필드):
 
-```json
+json
 {
   "sections": ["청구취지", "청구원인"],
   "language": "ko",
   "style": "법원 제출용_표준"
 }
-```
 
 - 응답 (200):
 
-```json
+json
 {
   "data": {
     "case_id": "case_123",
@@ -423,7 +406,6 @@ LEH는 **“Preview 전용 Draft”**만 제공하며,
     "generated_at": "2025-11-18T02:00:00Z"
   }
 }
-```
 
 - 오류:
 
@@ -473,7 +455,7 @@ LEH는 **“Preview 전용 Draft”**만 제공하며,
 
 - 응답 (200):
 
-```json
+json
 {
   "data": [
     {
@@ -484,7 +466,6 @@ LEH는 **“Preview 전용 Draft”**만 제공하며,
     }
   ]
 }
-```
 
 ---
 
@@ -497,11 +478,10 @@ LEH는 **“Preview 전용 Draft”**만 제공하며,
 - 설명: 단순 헬스 체크 (모니터링/로드밸런서용)
 - 응답 (200):
 
-```json
+json
 {
   "status": "ok"
 }
-```
 
 ---
 
