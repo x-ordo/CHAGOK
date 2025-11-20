@@ -161,4 +161,21 @@ describe('Plan 3.6 - Draft Tab requirements on the case detail page', () => {
             expect(screen.getByRole('option', { name: /기본 양식/i })).toBeInTheDocument();
         });
     });
+
+    describe('Calm upload feedback', () => {
+        test('증거 업로드 시 인라인 상태 메시지를 표시한다', () => {
+            renderCaseDetail();
+
+            const evidenceTab = screen.getByRole('tab', { name: /증거/i });
+            fireEvent.click(evidenceTab);
+
+            const fileInput = screen.getByLabelText(/파일을 끌어다 놓거나 클릭하여 업로드/i);
+            const file = new File(['hello'], 'test.txt', { type: 'text/plain' });
+
+            fireEvent.change(fileInput, { target: { files: [file] } });
+
+            const statusToast = screen.getByRole('status');
+            expect(statusToast).toHaveTextContent(/업로드 대기열/i);
+        });
+    });
 });
