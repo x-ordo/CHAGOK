@@ -8,19 +8,35 @@ const SignupPage: NextPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
-    
+
+    // 이름 유효성 검사
+    if (!name || name.trim().length === 0) {
+      newErrors.name = '이름을 입력해주세요.';
+    }
+
     // 더 엄격한 이메일 유효성 검사
     if (!email || !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email)) {
       newErrors.email = '유효한 이메일 주소를 입력해주세요.';
     }
 
+    // 비밀번호 길이 검사
+    if (!password || password.length < 8) {
+      newErrors.password = '비밀번호는 최소 8자 이상이어야 합니다.';
+    }
+
     // 비밀번호 일치 검사
     if (password !== passwordConfirm) {
       newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+    }
+
+    // 이용약관 동의 검사
+    if (!termsAccepted) {
+      newErrors.terms = '이용약관에 동의해주세요.';
     }
 
     return newErrors;
@@ -59,6 +75,7 @@ const SignupPage: NextPage = () => {
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -89,6 +106,7 @@ const SignupPage: NextPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
           <div className="mb-6">
             <label
@@ -107,11 +125,21 @@ const SignupPage: NextPage = () => {
             />
             {errors.passwordConfirm && <p className="text-red-500 text-xs mt-1">{errors.passwordConfirm}</p>}
           </div>
-          <div className="mb-6 flex items-center">
-            <input type="checkbox" id="terms" name="terms" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-            <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-              이용약관에 동의합니다.
-            </label>
+          <div className="mb-6 flex items-start">
+            <input
+              type="checkbox"
+              id="terms"
+              name="terms"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+            />
+            <div className="ml-2">
+              <label htmlFor="terms" className="block text-sm text-gray-900">
+                이용약관에 동의합니다.
+              </label>
+              {errors.terms && <p className="text-red-500 text-xs mt-1">{errors.terms}</p>}
+            </div>
           </div>
           <button
             type="submit"

@@ -70,4 +70,52 @@ describe('plan 3.8: 회원가입 페이지', () => {
     const errorMessage = await screen.findByText(/비밀번호가 일치하지 않습니다./i);
     expect(errorMessage).toBeInTheDocument();
   });
+
+  it('이름이 입력되지 않으면 오류 메시지를 표시해야 한다.', async () => {
+    const user = userEvent.setup();
+    render(<SignupPage />);
+
+    const emailInput = screen.getByLabelText(/이메일/i);
+    const signupButton = screen.getByRole('button', { name: /회원가입/i });
+
+    await user.type(emailInput, 'test@example.com');
+    await user.click(signupButton);
+
+    const errorMessage = await screen.findByText(/이름을 입력해주세요./i);
+    expect(errorMessage).toBeInTheDocument();
+  });
+
+  it('비밀번호가 8자 미만이면 오류 메시지를 표시해야 한다.', async () => {
+    const user = userEvent.setup();
+    render(<SignupPage />);
+
+    const passwordInput = screen.getByLabelText(/^비밀번호$/i);
+    const signupButton = screen.getByRole('button', { name: /회원가입/i });
+
+    await user.type(passwordInput, 'short');
+    await user.click(signupButton);
+
+    const errorMessage = await screen.findByText(/비밀번호는 최소 8자 이상이어야 합니다./i);
+    expect(errorMessage).toBeInTheDocument();
+  });
+
+  it('이용약관에 동의하지 않으면 오류 메시지를 표시해야 한다.', async () => {
+    const user = userEvent.setup();
+    render(<SignupPage />);
+
+    const nameInput = screen.getByLabelText(/이름/i);
+    const emailInput = screen.getByLabelText(/이메일/i);
+    const passwordInput = screen.getByLabelText(/^비밀번호$/i);
+    const passwordConfirmInput = screen.getByLabelText(/비밀번호 확인/i);
+    const signupButton = screen.getByRole('button', { name: /회원가입/i });
+
+    await user.type(nameInput, '홍길동');
+    await user.type(emailInput, 'test@example.com');
+    await user.type(passwordInput, 'password123');
+    await user.type(passwordConfirmInput, 'password123');
+    await user.click(signupButton);
+
+    const errorMessage = await screen.findByText(/이용약관에 동의해주세요./i);
+    expect(errorMessage).toBeInTheDocument();
+  });
 });
