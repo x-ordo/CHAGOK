@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CaseDetailPage from '@/pages/cases/[id]';
+import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 
 // Case detail page relies on the router query param to know which case is open.
 jest.mock('next/router', () => ({
@@ -87,6 +88,27 @@ describe('Plan 3.6 - Draft Tab requirements on the case detail page', () => {
 
             // execCommand 호출 확인
             expect(document.execCommand).toHaveBeenCalledWith('bold', false, undefined);
+        });
+    });
+
+    describe('Plan 3.12 - Download Functionality', () => {
+        test('DOCX 다운로드 버튼 클릭 시 onDownload 핸들러가 호출되어야 한다', () => {
+            const onDownload = jest.fn();
+            const { getByText } = render(
+                <DraftPreviewPanel
+                    draftText="Test Content"
+                    citations={[]}
+                    isGenerating={false}
+                    hasExistingDraft={true}
+                    onGenerate={() => { }}
+                    onDownload={onDownload}
+                />
+            );
+
+            const downloadBtn = getByText('DOCX');
+            fireEvent.click(downloadBtn);
+
+            expect(onDownload).toHaveBeenCalledTimes(1);
         });
     });
 });

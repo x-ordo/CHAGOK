@@ -7,6 +7,7 @@ interface DraftPreviewPanelProps {
     isGenerating: boolean;
     hasExistingDraft: boolean;
     onGenerate: () => void;
+    onDownload?: () => void;
 }
 
 export default function DraftPreviewPanel({
@@ -15,6 +16,7 @@ export default function DraftPreviewPanel({
     isGenerating,
     hasExistingDraft,
     onGenerate,
+    onDownload,
 }: DraftPreviewPanelProps) {
     const buttonLabel = hasExistingDraft ? '초안 재생성' : '초안 생성';
 
@@ -77,6 +79,7 @@ export default function DraftPreviewPanel({
                 </div>
                 <button
                     type="button"
+                    onClick={onDownload}
                     className="inline-flex items-center gap-1 text-xs font-medium text-deep-trust-blue hover:text-accent transition-colors"
                 >
                     <Download className="w-4 h-4" />
