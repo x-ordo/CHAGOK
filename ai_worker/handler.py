@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import urllib.parse
+import boto3
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -93,14 +94,19 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                 "file": object_key
             }
 
-        # TODO: S3에서 파일 다운로드
-        # import boto3
-        # s3_client = boto3.client('s3')
-        # local_path = f"/tmp/{file_path.name}"
-        # s3_client.download_file(bucket_name, object_key, local_path)
+        # S3에서 파일 다운로드
+        s3_client = boto3.client('s3')
+        local_path = f"/tmp/{file_path.name}"
 
-        # TODO: 파서 실행
-        # parsed_result = parser.parse(local_path)
+        # 임시 디렉토리가 없으면 생성
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+        s3_client.download_file(bucket_name, object_key, local_path)
+        logger.info(f"Downloaded {object_key} to {local_path}")
+
+        # 파서 실행
+        parsed_result = parser.parse(local_path)
+        logger.info(f"Parsed {object_key} with {parser.__class__.__name__}")
 
         # TODO: 메타데이터 저장
         # metadata_store = MetadataStore()
