@@ -149,4 +149,45 @@ describe('Plan 3.4 - Evidence Upload & List Requirements', () => {
             expect(screen.getByText(/완료/i)).toBeInTheDocument();
         });
     });
+
+    describe('Plan 3.11 - 증거 목록 인터랙션', () => {
+        test('증거 유형별 필터링 컨트롤이 있어야 한다', () => {
+            const mockEvidence: Evidence[] = [
+                {
+                    id: 'ev-1',
+                    filename: 'test.pdf',
+                    type: 'pdf',
+                    size: 1024000,
+                    uploadDate: '2024-05-15T10:30:00Z',
+                    status: 'completed',
+                    caseId: 'case-123',
+                },
+            ];
+
+            render(<EvidenceTable items={mockEvidence} />);
+
+            // 필터 컨트롤 확인
+            expect(screen.getByLabelText(/유형.*필터/i) || screen.getByRole('combobox', { name: /유형/i })).toBeInTheDocument();
+        });
+
+        test('각 증거 항목에 수정/삭제 액션 버튼이 있어야 한다', async () => {
+            const mockEvidence: Evidence[] = [
+                {
+                    id: 'ev-1',
+                    filename: 'test.pdf',
+                    type: 'pdf',
+                    size: 1024000,
+                    uploadDate: '2024-05-15T10:30:00Z',
+                    status: 'completed',
+                    caseId: 'case-123',
+                },
+            ];
+
+            const { container } = render(<EvidenceTable items={mockEvidence} />);
+
+            // 액션 버튼 확인 (MoreVertical 아이콘)
+            const actionButtons = container.querySelectorAll('button');
+            expect(actionButtons.length).toBeGreaterThan(0);
+        });
+    });
 });

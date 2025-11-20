@@ -132,7 +132,6 @@ docker-data/
 # 8. Database / Storage / Evidence Files
 ###################################
 # 법률 증거 파일 무조건 제외
-evidence/
 evidence_raw/
 uploads/
 storage/
