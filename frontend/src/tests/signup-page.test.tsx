@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import SignupPage from '@/pages/signup';
 
 // useRouter 모의(mock) 설정
@@ -26,7 +27,7 @@ describe('plan 3.8: 회원가입 페이지', () => {
     const passwordInput = screen.getByLabelText(/^비밀번호$/i);
     const passwordConfirmInput = screen.getByLabelText(/비밀번호 확인/i);
     const nameInput = screen.getByLabelText(/이름/i);
-    
+
     expect(emailInput).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
     expect(passwordConfirmInput).toBeInTheDocument();
@@ -38,5 +39,35 @@ describe('plan 3.8: 회원가입 페이지', () => {
 
     expect(termsCheckbox).toBeInTheDocument();
     expect(signupButton).toBeInTheDocument();
+  });
+
+  it('유효하지 않은 이메일을 입력하면 오류 메시지를 표시해야 한다.', async () => {
+    const user = userEvent.setup();
+    render(<SignupPage />);
+
+    const emailInput = screen.getByLabelText(/이메일/i);
+    const signupButton = screen.getByRole('button', { name: /회원가입/i });
+
+    await user.type(emailInput, 'invalid-email');
+    await user.click(signupButton);
+
+    const errorMessage = await screen.findByText(/유효한 이메일 주소를 입력해주세요./i);
+    expect(errorMessage).toBeInTheDocument();
+  });
+
+  it('비밀번호와 비밀번호 확인이 일치하지 않으면 오류 메시지를 표시해야 한다.', async () => {
+    const user = userEvent.setup();
+    render(<SignupPage />);
+
+    const passwordInput = screen.getByLabelText(/^비밀번호$/i);
+    const passwordConfirmInput = screen.getByLabelText(/비밀번호 확인/i);
+    const signupButton = screen.getByRole('button', { name: /회원가입/i });
+
+    await user.type(passwordInput, 'password123');
+    await user.type(passwordConfirmInput, 'password456');
+    await user.click(signupButton);
+
+    const errorMessage = await screen.findByText(/비밀번호가 일치하지 않습니다./i);
+    expect(errorMessage).toBeInTheDocument();
   });
 });
