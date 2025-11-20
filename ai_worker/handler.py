@@ -6,6 +6,7 @@ Triggered by S3 ObjectCreated events.
 import json
 import logging
 import os
+import urllib.parse
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -155,7 +156,8 @@ def handle(event, context):
             object_key = s3.get("object", {}).get("key")
 
             # URL Decoding (공백 등이 + 또는 %20으로 들어올 수 있음)
-            # object_key = urllib.parse.unquote_plus(object_key)
+            if object_key:
+                object_key = urllib.parse.unquote_plus(object_key)
 
             logger.info(f"Processing file: s3://{bucket_name}/{object_key}")
 
