@@ -163,9 +163,9 @@ async def health_check():
 from app.api import auth
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
-# TODO: 사건 라우터
-# from app.api import cases
-# app.include_router(cases.router, prefix="/cases", tags=["Cases"])
+# 사건 라우터
+from app.api import cases
+app.include_router(cases.router, prefix="/cases", tags=["Cases"])
 
 # TODO: 증거 라우터
 # from app.api import evidence
