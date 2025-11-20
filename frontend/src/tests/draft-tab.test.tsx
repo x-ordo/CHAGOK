@@ -10,6 +10,12 @@ jest.mock('next/router', () => ({
     }),
 }));
 
+jest.mock('@/services/documentService', () => ({
+    downloadDraftAsDocx: jest.fn(),
+}));
+
+import { downloadDraftAsDocx } from '@/services/documentService';
+
 describe('Plan 3.6 - Draft Tab requirements on the case detail page', () => {
     const renderCaseDetail = () => render(<CaseDetailPage />);
 
@@ -109,6 +115,17 @@ describe('Plan 3.6 - Draft Tab requirements on the case detail page', () => {
             fireEvent.click(downloadBtn);
 
             expect(onDownload).toHaveBeenCalledTimes(1);
+        });
+        describe('Plan 3.12 - Download Functionality Integration', () => {
+            test('CaseDetailPage에서 DOCX 다운로드 버튼 클릭 시 서비스 함수가 호출되어야 한다', async () => {
+                render(<CaseDetailPage />);
+
+                const downloadBtn = screen.getByText('DOCX');
+                fireEvent.click(downloadBtn);
+
+                // 서비스 함수 호출 확인
+                expect(downloadDraftAsDocx).toHaveBeenCalled();
+            });
         });
     });
 });

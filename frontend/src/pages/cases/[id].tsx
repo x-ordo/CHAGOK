@@ -9,6 +9,7 @@ import { Evidence } from '@/types/evidence';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import { DraftCitation } from '@/types/draft';
+import { downloadDraftAsDocx } from '@/services/documentService';
 
 // Mock Data
 const MOCK_EVIDENCE: Evidence[] = [
@@ -120,6 +121,11 @@ export default function CaseDetailPage() {
         }, GENERATION_DELAY_MS);
     };
 
+    const handleDownload = async () => {
+        if (!id || typeof id !== 'string') return;
+        await downloadDraftAsDocx(draftContent, id);
+    };
+
     return (
         <div className="min-h-screen bg-calm-grey">
             <Head>
@@ -179,6 +185,7 @@ export default function CaseDetailPage() {
                         isGenerating={isGeneratingDraft}
                         hasExistingDraft={hasGeneratedDraft}
                         onGenerate={openDraftModal}
+                        onDownload={handleDownload}
                     />
                 </section>
             </main>
