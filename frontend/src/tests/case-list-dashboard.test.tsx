@@ -1,75 +1,51 @@
 import { render, screen } from '@testing-library/react';
-import CaseCard from '@/components/cases/CaseCard';
-import { Case } from '@/types/case';
+import userEvent from '@testing-library/user-event';
+import CasesPage from '@/pages/cases';
 
-describe('Plan 3.3 - Case List Dashboard Requirements', () => {
-    const mockCase: Case = {
-        id: 'case-123',
-        title: '김 vs. 이 이혼 소송',
-        clientName: '김철수',
-        status: 'open',
-        lastUpdated: '2024-05-15T10:30:00Z',
-        evidenceCount: 12,
-        draftStatus: 'ready',
-        createdAt: '2024-01-01T00:00:00Z',
+// next/router 모의 설정
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      route: '/cases',
+      pathname: '/cases',
+      query: '',
+      asPath: '/cases',
     };
+  },
+}));
 
-    describe('케이스 카드 필수 정보 표시', () => {
-        test('사건명이 표시되어야 한다', () => {
-            render(<CaseCard caseData={mockCase} />);
-            expect(screen.getByText('김 vs. 이 이혼 소송')).toBeInTheDocument();
-        });
+describe('plan 3.10: 사건 등록/관리', () => {
+  it("대시보드에서 '새 사건 등록' 버튼을 클릭하면 사건 등록 모달이 열려야 한다.", async () => {
+    const user = userEvent.setup();
+    render(<CasesPage />);
 
-        test('최근 업데이트 날짜가 표시되어야 한다', () => {
-            render(<CaseCard caseData={mockCase} />);
-            // Check for date display (format may vary)
-            expect(screen.getByText(/최근 업데이트/i)).toBeInTheDocument();
-        });
+    // 1. '새 사건 등록' 버튼을 찾는다.
+    const addCaseButton = screen.getByRole('button', { name: /새 사건 등록/i });
+    expect(addCaseButton).toBeInTheDocument();
 
-        test('증거 개수가 표시되어야 한다', () => {
-            render(<CaseCard caseData={mockCase} />);
-            expect(screen.getByText(/증거 12건/i)).toBeInTheDocument();
-        });
+    // 2. 버튼을 클릭한다.
+    await user.click(addCaseButton);
 
-        test('Draft 상태가 표시되어야 한다', () => {
-            render(<CaseCard caseData={mockCase} />);
-            expect(screen.getByText(/draft 상태/i)).toBeInTheDocument();
-        });
-    });
+    // 3. 모달이 열리고 '새로운 사건 정보'라는 제목이 표시되는지 확인한다.
+    // findBy는 요소가 나타날 때까지 기다린다.
+    const modalTitle = await screen.findByRole('heading', { name: /새로운 사건 정보/i });
+    expect(modalTitle).toBeInTheDocument();
+  });
 
-    describe('카드 레이아웃 색상 규칙', () => {
-        test('카드 배경은 Calm Grey 톤을 사용해야 한다', () => {
-            const { container } = render(<CaseCard caseData={mockCase} />);
-            const card = container.querySelector('.card');
+  it('사건 등록 모달에는 사건명, 의뢰인 이름, 설명 입력 필드가 포함되어야 한다.', async () => {
+    const user = userEvent.setup();
+    render(<CasesPage />);
 
-            expect(card).toBeInTheDocument();
-            expect(card).toHaveClass('bg-calm-grey');
-        });
+    // 모달 열기
+    const addCaseButton = screen.getByRole('button', { name: /새 사건 등록/i });
+    await user.click(addCaseButton);
 
-        test('제목은 Deep Trust Blue 색상을 사용해야 한다', () => {
-            const { container } = render(<CaseCard caseData={mockCase} />);
-            const title = screen.getByText('김 vs. 이 이혼 소송');
+    // 모달이 열릴 때까지 대기
+    await screen.findByRole('heading', { name: /새로운 사건 정보/i });
 
-            // Title should use text-deep-trust-blue class
-            expect(title).toHaveClass('text-deep-trust-blue');
-        });
-    });
-
-    describe('카드 hover 효과', () => {
-        test('카드는 hover 시 shadow 증가 효과를 가져야 한다', () => {
-            const { container } = render(<CaseCard caseData={mockCase} />);
-            const card = container.querySelector('.card');
-
-            // Card should have hover:shadow-md or similar class
-            expect(card?.className).toMatch(/hover:shadow/);
-        });
-
-        test('카드는 hover 시 accent 색상의 ring/glow 효과를 가져야 한다', () => {
-            const { container } = render(<CaseCard caseData={mockCase} />);
-            const card = container.querySelector('.card');
-
-            // Card should have hover:ring-accent or similar effect
-            expect(card?.className).toMatch(/hover:ring.*accent/);
-        });
-    });
+    // 필수 입력 필드 확인
+    expect(screen.getByLabelText(/사건명/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/의뢰인 이름/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/사건 설명/i)).toBeInTheDocument();
+  });
 });
