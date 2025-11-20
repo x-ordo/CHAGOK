@@ -170,4 +170,7 @@ uploads/
 # Personal CLAUDE.md at root (docs/guides/claude.md is tracked)
 /CLAUDE.md
 
+# Personal Claude configuration directory
+.claude/
+
 .agent/
