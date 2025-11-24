@@ -575,7 +575,158 @@ frontend/e2e/
 
 ---
 
-## 7. 메타 규칙
+## 7. 버튼 접근성 및 사용자 경험 개선 (Phase 2)
+
+> **기준 문서:** [docs/BUTTON_AUDIT_REPORT.md](../BUTTON_AUDIT_REPORT.md)
+> **감사 완료일:** 2025-11-24
+> **전체 평가:** A+ (우수)
+> **개선 필요 항목:** 4건 (High: 2, Medium: 2)
+
+### 7.1 High Priority - 즉시 수정
+
+#### 7.1.1 DraftGenerationModal 닫기 버튼 접근성
+- [ ] **aria-label 추가**
+  - **파일:** `frontend/src/components/draft/DraftGenerationModal.tsx` Line 62
+  - **현재 상태:** X 아이콘만 있고 aria-label 없음
+  - **개선 내용:**
+    ```tsx
+    <button
+      onClick={onClose}
+      className="text-gray-400 hover:text-gray-600 transition-colors"
+      aria-label="Draft 생성 옵션 모달 닫기"
+    >
+      <X className="w-6 h-6" />
+    </button>
+    ```
+  - **영향도:** 높음 (스크린 리더 사용자)
+  - **예상 소요 시간:** 5분
+
+#### 7.1.2 List 버튼 onClick 핸들러 구현
+- [ ] **텍스트 서식 기능 완성**
+  - **파일:** `frontend/src/components/draft/DraftPreviewPanel.tsx` Line 82
+  - **현재 상태:** 버튼은 있으나 onClick 핸들러 없음
+  - **개선 내용:**
+    ```tsx
+    <button
+      type="button"
+      aria-label="Insert unordered list"
+      onClick={() => handleFormat('insertUnorderedList')}
+      className="p-1 hover:bg-gray-200 rounded transition-colors"
+    >
+      <List className="w-4 h-4 text-gray-700" />
+    </button>
+    ```
+  - **영향도:** 높음 (기능 미완성)
+  - **예상 소요 시간:** 10분
+
+### 7.2 Medium Priority - 다음 스프린트
+
+#### 7.2.1 EvidenceDataTable 추가 작업 버튼
+- [ ] **더보기 메뉴 구현**
+  - **파일:** `frontend/src/components/evidence/EvidenceDataTable.tsx` Line 187
+  - **현재 상태:** MoreVertical 아이콘만 있고 onClick 핸들러 없음
+  - **개선 내용:**
+    - Dropdown 메뉴 컴포넌트 생성 (다운로드, 삭제, 상세보기 옵션)
+    - onClick 핸들러로 메뉴 토글
+    - 외부 클릭 시 자동 닫기
+  - **예시 구현:**
+    ```tsx
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+    const handleMoreActions = (evidenceId: string) => {
+      setOpenMenuId(openMenuId === evidenceId ? null : evidenceId);
+    };
+
+    // 버튼 수정
+    <button
+      onClick={() => handleMoreActions(evidence.id)}
+      className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+      aria-label={`${evidence.filename} 추가 작업`}
+      aria-expanded={openMenuId === evidence.id}
+      aria-haspopup="true"
+    >
+      <MoreVertical className="w-5 h-5" />
+    </button>
+    ```
+  - **영향도:** 중간 (UX 개선)
+  - **예상 소요 시간:** 1-2시간
+
+#### 7.2.2 type="button" 명시
+- [ ] **폼 제출 방지를 위한 명시적 type 속성 추가**
+  - **영향 받는 파일 및 라인:**
+    - `frontend/src/pages/cases/index.tsx` Line 55 (로그아웃 버튼)
+    - `frontend/src/components/evidence/EvidenceDataTable.tsx` Line 103, 121 (정렬 버튼)
+    - 기타 8개 버튼
+  - **개선 내용:**
+    ```tsx
+    // Before
+    <button onClick={handleLogout}>로그아웃</button>
+
+    // After
+    <button type="button" onClick={handleLogout}>로그아웃</button>
+    ```
+  - **영향도:** 낮음 (예방 차원)
+  - **예상 소요 시간:** 30분 (일괄 수정)
+
+### 7.3 Low Priority - 향후 개선
+
+#### 7.3.1 정렬 버튼 접근성 향상
+- [ ] **aria-sort 속성 추가**
+  - **파일:** `frontend/src/components/evidence/EvidenceDataTable.tsx`
+  - **개선 내용:**
+    - TanStack Table의 정렬 상태를 aria-sort에 반영
+    - 정렬 방향 시각적 표시 (ArrowUp/ArrowDown 조건부 렌더링)
+  - **예시 구현:**
+    ```tsx
+    const getSortDirection = (columnId: string) => {
+      const sortingState = table.getState().sorting.find(s => s.id === columnId);
+      if (!sortingState) return 'none';
+      return sortingState.desc ? 'descending' : 'ascending';
+    };
+
+    <th scope="col">
+      <button
+        onClick={() => table.getColumn('filename')?.toggleSorting()}
+        aria-sort={getSortDirection('filename')}
+        className="flex items-center space-x-1 hover:text-deep-trust-blue transition-colors"
+      >
+        <span>파일명</span>
+        {getSortDirection('filename') === 'ascending' ? (
+          <ArrowUp className="w-4 h-4" />
+        ) : getSortDirection('filename') === 'descending' ? (
+          <ArrowDown className="w-4 h-4" />
+        ) : (
+          <ArrowUpDown className="w-4 h-4" />
+        )}
+      </button>
+    </th>
+    ```
+  - **영향도:** 낮음 (접근성 향상)
+  - **예상 소요 시간:** 1시간
+
+### 7.4 버튼 감사 후속 작업
+
+#### 7.4.1 정기 감사 프로세스
+- [ ] **월 1회 버튼 접근성 자동 체크**
+  - Axe DevTools 또는 Pa11y CI 통합
+  - GitHub Actions에서 자동 실행
+  - 접근성 위반 시 PR 블록
+
+#### 7.4.2 Button 컴포넌트 표준화
+- [ ] **재사용 가능한 Button 컴포넌트 생성**
+  - 모든 접근성 속성 기본 포함 (aria-label, type 등)
+  - Variants: primary, secondary, danger, ghost
+  - Loading state 자동 처리
+  - 기존 버튼들을 점진적으로 마이그레이션
+
+**참고 문서:**
+- [BUTTON_AUDIT_REPORT.md](../BUTTON_AUDIT_REPORT.md) - 상세 감사 결과
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
+
+---
+
+## 8. 메타 규칙
 
 - 이 문서의 테스트 항목 외에는 **AI가 임의로 테스트를 추가하지 않는다.**
 - `"go"` 입력 시:
