@@ -433,6 +433,10 @@
   - Navigation 메뉴 클릭 → 해당 섹션으로 스크롤
   - FAQ Accordion 펼침/접힘 동작
 
+- [x] **네비게이션 개선**
+  - Navigation 메뉴바의 LEH 로고 클릭 → 홈(/) 페이지로 이동
+  - Footer의 회사명/로고 클릭 → 홈(/) 페이지로 이동
+
 - [ ] **반응형 테스트**
   - Mobile (375px): 모든 섹션 1-Column
   - Tablet (768px): 일부 섹션 2-Column

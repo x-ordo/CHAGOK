@@ -47,7 +47,11 @@ export default function LandingFooter() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           {/* Company Information Column */}
           <div className="space-y-4">
-            <h3 className="text-white text-lg font-bold">{companyInfo.name}</h3>
+            <Link href="/">
+              <h3 className="text-white text-lg font-bold hover:text-accent transition-colors cursor-pointer">
+                {companyInfo.name}
+              </h3>
+            </Link>
             <p className="text-sm">{companyInfo.address}</p>
             <p className="text-sm">{companyInfo.email}</p>
             <p className="text-sm">{companyInfo.phone}</p>

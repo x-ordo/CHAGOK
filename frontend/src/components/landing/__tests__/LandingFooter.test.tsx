@@ -171,6 +171,18 @@ describe('LandingFooter Component', () => {
       expect(heading).toBeInTheDocument();
     });
 
+    it('should link company name to home page', () => {
+      const { container } = render(<LandingFooter />);
+
+      // Find the link that contains the company heading
+      const companyLink = container.querySelector('a[href="/"]');
+      expect(companyLink).toBeInTheDocument();
+
+      // Check that the heading is inside the link
+      const heading = screen.getByRole('heading', { name: /Legal Evidence Hub/i });
+      expect(companyLink).toContainElement(heading);
+    });
+
     it('should have header for links section', () => {
       render(<LandingFooter />);
 
