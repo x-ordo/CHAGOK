@@ -296,7 +296,7 @@
   - 로고 슬라이더 (유명 로펌 로고, 실제 데이터 없을 경우 "leading law firms")
   - 평균 평점 표시 (5.0/5.0)
 
-- [ ] **4. Problem Statement**
+- [x] **4. Problem Statement**
   - 제목: "이런 고민 있으셨나요?"
   - 3-4개 Pain Points (아이콘 + 텍스트):
     - 📂 "수백 개 카톡 대화, 일일이 읽기 힘드시죠?"
