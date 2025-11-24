@@ -374,7 +374,7 @@
 
 #### 3.19.2 기술 요구사항
 
-- [ ] **라우팅 구조 변경**
+- [x] **라우팅 구조 변경**
   - `/` → Landing Page (신규)
   - `/login` → Login Page (기존 `/`에서 이동)
   - Navigation Guard: 로그인 상태면 `/cases`로 자동 리디렉션
