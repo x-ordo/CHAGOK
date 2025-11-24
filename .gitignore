@@ -38,6 +38,37 @@ env/
 ENV/
 .python-version
 
+# 로그 및 임시 파일
+*.log
+logs/
+tmp/
+temp/
+
+###################################
+# 2. AI Worker / LLM 파이프라인
+###################################
+# Storage 데이터 파일만 제외 (Python 코드는 포함)
+ai_worker/**/storage/*.db
+ai_worker/**/storage/*.sqlite3
+ai_worker/**/storage/data/
+
+# 기타 AI Worker 제외 폴더
+ai_worker/.cache/
+ai_worker/workflows/local_debug/
+
+# 임시 파일 (확장자 기반)
+*.tmp
+*.api_key
+*.token
+
+
+###################################
+# 3. 환경 변수 파일 – 민감 정보 보호
+###################################
+# 템플릿은 허용(.env.example)
+.env
+.env.*
+!.env.example
 # Distribution / Packaging
 build/
 dist/
@@ -142,4 +173,18 @@ docker-data/
 # For now, keeping global ignore for heavy binaries to prevent accidental commit,
 # but using ! to allow specific documentation paths if needed.
 
+
+###################################
+# 11. Personal Local Files
+###################################
+# Personal CLAUDE.md (prevent accidental commits)
+/CLAUDE.md
+/claude.md
+docs/guides/CLAUDE.md
+docs/guides/claude.md
+
+# Personal Claude configuration directory
+.claude/
+
+.agent/
 *.pdf
