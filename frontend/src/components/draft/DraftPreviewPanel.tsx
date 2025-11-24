@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Loader2, FileText, Download, Sparkles, Bold, Italic, Underline, List } from 'lucide-react';
 import { DraftCitation } from '@/types/draft';
 import { DraftDownloadFormat } from '@/services/documentService';
+import EvidenceTraceabilityPanel from './EvidenceTraceabilityPanel';
 
 interface DraftPreviewPanelProps {
     draftText: string;
@@ -20,6 +22,8 @@ export default function DraftPreviewPanel({
     onDownload,
 }: DraftPreviewPanelProps) {
     const buttonLabel = hasExistingDraft ? '초안 재생성' : '초안 생성';
+    const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
+    const [isTraceabilityPanelOpen, setIsTraceabilityPanelOpen] = useState(false);
 
     const handleFormat = (command: string) => {
         document.execCommand(command, false, undefined);
@@ -28,6 +32,21 @@ export default function DraftPreviewPanel({
     const handleDownload = (format: DraftDownloadFormat) => {
         if (!onDownload) return;
         onDownload(format);
+    };
+
+    const handleEditorClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        const evidenceId = target.getAttribute('data-evidence-id');
+
+        if (evidenceId) {
+            setSelectedEvidenceId(evidenceId);
+            setIsTraceabilityPanelOpen(true);
+        }
+    };
+
+    const handleCloseTraceability = () => {
+        setIsTraceabilityPanelOpen(false);
+        setSelectedEvidenceId(null);
     };
 
     return (
@@ -113,7 +132,8 @@ export default function DraftPreviewPanel({
                     contentEditable
                     suppressContentEditableWarning
                     aria-label="Draft content"
-                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 leading-relaxed focus:outline-none resize-none placeholder:text-gray-400 overflow-auto"
+                    onClick={handleEditorClick}
+                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 leading-relaxed focus:outline-none resize-none placeholder:text-gray-400 overflow-auto cursor-pointer [&_.evidence-ref]:underline [&_.evidence-ref]:text-deep-trust-blue [&_.evidence-ref]:cursor-pointer [&_.evidence-ref:hover]:text-accent [&_.evidence-ref]:decoration-dotted"
                     dangerouslySetInnerHTML={{ __html: draftText }}
                 />
                 <div className="absolute top-4 right-6 text-xs text-gray-400">자동 저장 준비 중</div>
@@ -154,6 +174,13 @@ export default function DraftPreviewPanel({
                     )}
                 </div>
             </div>
+
+            {/* Traceability Panel */}
+            <EvidenceTraceabilityPanel
+                isOpen={isTraceabilityPanelOpen}
+                evidenceId={selectedEvidenceId}
+                onClose={handleCloseTraceability}
+            />
         </section>
     );
 }
