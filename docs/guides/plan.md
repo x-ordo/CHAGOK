@@ -272,6 +272,187 @@
 - [x] 팀 활동 히트맵/리스트:
   - 팀원별 시스템 활용도 및 기여도 시각화.
 
+### 3.19 랜딩 페이지 (Landing Page)
+
+> **목적:** Self-Serve 온보딩, 신뢰 구축, SEO 효과
+> **위치:** `/` (루트 경로, 현재 로그인 화면을 `/login`으로 이동)
+> **디자인 원칙:** UI_UX_DESIGN.md 기준 적용 (Calm Control, Deep Trust Blue, Clarity Teal)
+
+#### 3.19.1 페이지 구조 (12개 섹션)
+
+- [x] **1. Navigation Bar (고정 헤더)**
+  - 로고(좌측), 메뉴(우측): 기능/가격/고객사례/로그인/무료체험
+  - 스크롤 시 배경 블러 효과 (backdrop-blur)
+  - Sticky position, shadow on scroll
+
+- [ ] **2. Hero Section**
+  - 헤드라인: "증거 정리 시간 90% 단축" (큰 폰트, Deep Trust Blue)
+  - 서브헤드라인: "AI가 이혼 소송 증거를 자동 분석하고 초안을 작성합니다"
+  - CTA 버튼: "무료로 시작하기" (Primary, 눈에 띄는 위치)
+  - Hero 이미지/스크린샷: 실제 제품 UI 미리보기
+
+- [ ] **3. Social Proof**
+  - "50개 로펌 사용 중" (신뢰 배지)
+  - 로고 슬라이더 (유명 로펌 로고, 실제 데이터 없을 경우 "leading law firms")
+  - 평균 평점 표시 (5.0/5.0)
+
+- [ ] **4. Problem Statement**
+  - 제목: "이런 고민 있으셨나요?"
+  - 3-4개 Pain Points (아이콘 + 텍스트):
+    - 📂 "수백 개 카톡 대화, 일일이 읽기 힘드시죠?"
+    - ⏰ "증거 정리에만 며칠씩 걸리시나요?"
+    - 📝 "초안 작성할 때마다 반복 작업에 지치셨나요?"
+    - 🔍 "중요한 증거를 놓칠까 불안하신가요?"
+
+- [ ] **5. Solution (3가지 핵심 기능)**
+  - 제목: "Legal Evidence Hub가 해결합니다"
+  - 3-Column 레이아웃:
+    - **자동 증거 분석**: 이미지/음성/PDF를 AI가 자동 분류 및 요약
+    - **스마트 타임라인**: 시간순 증거 정리, 유책사유 자동 태깅
+    - **초안 자동 생성**: RAG 기반 사실 인용, 답변서 초안 1분 생성
+  - 각 기능마다 아이콘, 짧은 설명, 스크린샷
+
+- [ ] **6. How It Works (4단계 프로세스)**
+  - 제목: "4단계로 완성되는 초안"
+  - Step-by-step 플로우차트:
+    - 1️⃣ 증거 업로드 (드래그 앤 드롭)
+    - 2️⃣ AI 자동 분석 (OCR, STT, 감정 분석)
+    - 3️⃣ 타임라인 검토 (증거 확인)
+    - 4️⃣ 초안 다운로드 (HWP/DOCX)
+  - 각 단계마다 작은 애니메이션 또는 아이콘
+
+- [ ] **7. AI Transparency & Security**
+  - 제목: "법률 컴플라이언스 준수"
+  - 2-Column 레이아웃:
+    - 좌측: AI 투명성
+      - "모든 AI 결과는 근거 증거 표시"
+      - "최종 결정은 변호사님께"
+    - 우측: 보안 및 규정 준수
+      - AES-256 암호화
+      - PIPA(개인정보보호법) 준수
+      - ISO 27001 인증 (준비 중)
+  - 신뢰 배지 아이콘 (자물쇠, 방패)
+
+- [ ] **8. Pricing (명확한 가격 정책)**
+  - 제목: "투명한 가격, 숨은 비용 없음"
+  - 3-Tier 가격표:
+    - **Basic**: ₩49,000/월 (개인 변호사)
+    - **Professional**: ₩99,000/월 (소형 로펌, 가장 인기)
+    - **Enterprise**: ₩199,000/월 (대형 로펌, 맞춤 기능)
+  - 각 플랜마다 포함 기능 리스트 (체크마크)
+  - "14일 무료 체험" 강조
+
+- [ ] **9. Testimonials (실제 후기)**
+  - 제목: "이미 사용 중인 변호사님들의 평가"
+  - 3개 후기 카드:
+    - 프로필 사진(또는 이니셜), 이름, 소속, 평점
+    - 짧은 후기 텍스트 (예: "증거 정리 시간이 1/10로 줄었습니다")
+  - (데이터 없을 경우 placeholder 텍스트)
+
+- [ ] **10. FAQ (우려 해소)**
+  - 제목: "자주 묻는 질문"
+  - Accordion 형식 (클릭 시 펼침):
+    - "AI가 생성한 초안은 법적 효력이 있나요?"
+    - "개인정보는 안전하게 보호되나요?"
+    - "기존 시스템과 연동 가능한가요?"
+    - "환불 정책은 어떻게 되나요?"
+    - "어떤 파일 형식을 지원하나요?"
+  - 답변은 간결하고 명확하게 (2-3문장)
+
+- [ ] **11. Final CTA (전환 유도)**
+  - 제목: "지금 바로 시작하세요"
+  - 서브텍스트: "14일 무료 체험, 신용카드 필요 없음"
+  - 큰 CTA 버튼: "무료로 시작하기" (Primary, 센터 정렬)
+  - 보조 버튼: "영업팀과 상담하기" (Secondary)
+
+- [ ] **12. Footer**
+  - 3-Column 레이아웃:
+    - 좌측: 회사 정보 (로고, 주소, 연락처)
+    - 중앙: 링크 (제품/가격/블로그/고객사례/채용)
+    - 우측: 법적 고지 (이용약관/개인정보처리방침/쿠키정책)
+  - 하단: Copyright 및 소셜 미디어 아이콘
+
+#### 3.19.2 기술 요구사항
+
+- [ ] **라우팅 구조 변경**
+  - `/` → Landing Page (신규)
+  - `/login` → Login Page (기존 `/`에서 이동)
+  - Navigation Guard: 로그인 상태면 `/cases`로 자동 리디렉션
+
+- [ ] **성능 최적화**
+  - Hero 이미지: WebP 포맷, lazy loading
+  - 스크린샷: Blur placeholder (next/image)
+  - 스크롤 애니메이션: Intersection Observer API 사용
+
+- [ ] **반응형 디자인**
+  - 모바일: 1-Column 레이아웃
+  - 태블릿: 2-Column 레이아웃
+  - 데스크톱: 3-Column 레이아웃 (섹션별 적용)
+
+- [ ] **접근성**
+  - Semantic HTML (section, article, nav)
+  - ARIA labels for CTA buttons
+  - Focus visible for keyboard navigation
+  - Color contrast ratio ≥ 4.5:1 (WCAG AA)
+
+- [ ] **SEO 최적화**
+  - `<title>`: "Legal Evidence Hub - AI 이혼 소송 증거 분석 솔루션"
+  - `<meta description>`: 160자 이내, 핵심 키워드 포함
+  - `<meta keywords>`: "이혼소송, 증거분석, AI법률, 답변서"
+  - Open Graph 태그 (소셜 공유용)
+  - Structured Data (JSON-LD): Organization, Product
+
+#### 3.19.3 디자인 원칙 적용
+
+- **Calm Control 철학:**
+  - 빼기의 디자인 (과도한 애니메이션 자제)
+  - 인지 부하 최소화 (섹션당 1개 핵심 메시지)
+  - 여백 충분히 활용 (8pt grid system)
+
+- **색상 팔레트:**
+  - Primary: Deep Trust Blue (#2C3E50)
+  - Accent: Clarity Teal (#1ABC9C)
+  - Background: Calm Grey (#F8F9FA)
+  - Text: 진한 회색 (#2D3748)
+
+- **타이포그래피:**
+  - Font: Pretendard
+  - Heading: 32px-48px (Hero), 24px-32px (Section)
+  - Body: 16px (기본), 14px (설명)
+  - Line height: 1.6-1.8
+
+- **인터랙션:**
+  - Button hover: 색상 변경 + subtle scale
+  - Scroll animation: Fade-in-up (duration: 0.6s)
+  - Smooth scroll to section (anchor links)
+
+#### 3.19.4 테스트 항목
+
+- [ ] **기능 테스트**
+  - CTA 버튼 클릭 → `/signup` 페이지로 이동
+  - Navigation 메뉴 클릭 → 해당 섹션으로 스크롤
+  - FAQ Accordion 펼침/접힘 동작
+
+- [ ] **반응형 테스트**
+  - Mobile (375px): 모든 섹션 1-Column
+  - Tablet (768px): 일부 섹션 2-Column
+  - Desktop (1440px): 3-Column 레이아웃
+
+- [ ] **성능 테스트**
+  - Lighthouse Score: Performance ≥ 90
+  - First Contentful Paint ≤ 1.5s
+  - Largest Contentful Paint ≤ 2.5s
+
+- [ ] **SEO 테스트**
+  - Google Search Console 등록
+  - Sitemap.xml 생성 및 제출
+  - Robots.txt 설정
+
+**참고 문서:**
+- [UI_UX_DESIGN.md](../UI_UX_DESIGN.md) - 디자인 시스템
+- [FRONTEND_CLEAN_CODE.md](../FRONTEND_CLEAN_CODE.md) - 코드 컨벤션
+- [랜딩 페이지 베스트 프랙티스](https://www.nngroup.com/articles/landing-page-guidelines/)
+
 ---
 
 ## 4. 보안 관련 테스트 (전 계층 공통)
