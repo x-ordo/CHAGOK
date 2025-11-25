@@ -66,6 +66,81 @@
   - **Hallucination 금지 규칙**,
   - **"최종 결정은 변호사가 한다"** 류의 책임 한계 문구가 포함되어야 한다 (문자열 포함 여부 테스트).
 
+### 1.6 사용자 관리 (Admin)
+
+- [ ] `POST /admin/users/invite` 호출 시:
+  - 이메일, 역할 정보를 받아 초대 토큰을 생성하고 DB에 저장해야 한다.
+  - 응답에 `invite_token` 과 `invite_url` 을 포함해야 한다.
+  - Admin 권한을 가진 사용자만 호출 가능해야 한다 (RBAC 검증).
+- [ ] `GET /admin/users` 호출 시:
+  - 로펌 내 모든 사용자 목록을 반환해야 한다.
+  - 검색 쿼리 파라미터 (`email`, `name`)를 지원해야 한다.
+  - 역할 및 상태 필터링 (`role`, `status`)을 지원해야 한다.
+  - Admin 권한 필요.
+- [ ] `DELETE /admin/users/{user_id}` 호출 시:
+  - 사용자를 soft delete (status를 `inactive`로 변경)해야 한다.
+  - 삭제하려는 사용자가 자기 자신이면 400을 반환해야 한다.
+  - Admin 권한 필요.
+
+### 1.7 권한 관리 (RBAC)
+
+- [ ] Role 기반 접근 제어 미들웨어 구현:
+  - `require_admin(current_user: User)` dependency가 Admin이 아닌 사용자에 대해 403을 반환해야 한다.
+  - `require_lawyer_or_admin(current_user: User)` dependency가 Staff 사용자에 대해 403을 반환해야 한다.
+- [ ] `GET /admin/roles` 호출 시:
+  - 모든 역할(ADMIN, LAWYER, STAFF)별 권한 매트릭스를 반환해야 한다.
+  - 각 역할의 리소스(cases, evidence, admin, billing)별 액션(view, edit, delete) 권한을 포함해야 한다.
+  - Admin 권한 필요.
+- [ ] `PUT /admin/roles/{role}/permissions` 호출 시:
+  - 특정 역할의 권한을 업데이트해야 한다.
+  - 업데이트 내용을 `permissions` 테이블에 저장해야 한다.
+  - Admin 권한 필요.
+
+### 1.8 회원가입 (Signup)
+
+- [ ] `POST /auth/signup` 호출 시:
+  - 이메일 중복 검사를 수행하고, 중복이면 409를 반환해야 한다.
+  - 비밀번호를 bcrypt로 해싱하여 저장해야 한다.
+  - 기본 역할은 `LAWYER`로 설정해야 한다.
+  - 신규 사용자 생성 후 JWT 토큰을 발급해야 한다.
+- [ ] Signup 요청 시 이용약관 동의(`accept_terms`)가 `true`가 아니면 400을 반환해야 한다.
+
+### 1.9 Article 840 태그 연동
+
+- [ ] `GET /evidence/{evidence_id}` 응답에 Article 840 태그 정보 포함:
+  - DynamoDB에서 `article_840_tags` 필드를 조회해야 한다.
+  - 응답 스키마에 `article_840_tags` 필드를 추가해야 한다 (categories, confidence, matched_keywords).
+  - `labels` 필드에 `categories` 배열을 매핑해야 한다.
+- [ ] `GET /cases/{case_id}/evidence` 호출 시:
+  - 각 증거 항목에 Article 840 태그 정보가 포함되어야 한다.
+  - 유책사유별 필터링 쿼리 파라미터(`categories`)를 지원해야 한다.
+
+### 1.10 케이스 공유
+
+- [ ] `POST /cases/{case_id}/members` 호출 시:
+  - 여러 팀원을 동시에 추가할 수 있어야 한다 (`members: List[CaseMemberAdd]`).
+  - 각 멤버의 권한 레벨(`permission`: read / read_write)을 설정해야 한다.
+  - 케이스 소유자 또는 Admin만 호출 가능해야 한다.
+  - `case_members` 테이블에 추가된 멤버를 저장해야 한다.
+- [ ] `GET /cases/{case_id}/members` 호출 시:
+  - 해당 케이스의 모든 멤버 목록을 반환해야 한다.
+  - 각 멤버의 이름, 이메일, 권한 레벨을 포함해야 한다.
+
+### 1.11 감사 로그 (Audit Log)
+
+- [ ] Audit Log 자동 기록 미들웨어 구현:
+  - 모든 API 요청에 대해 사용자 ID, 액션(HTTP 메서드 + 경로), 타임스탬프를 `audit_logs` 테이블에 저장해야 한다.
+  - 민감한 엔드포인트(로그인, 증거 조회, 삭제 등)만 선택적으로 기록해야 한다.
+- [ ] `GET /admin/audit` 호출 시:
+  - 날짜 범위 필터링(`start_date`, `end_date`)을 지원해야 한다.
+  - 사용자별 필터링(`user_id`)을 지원해야 한다.
+  - 액션 타입 필터링(`actions`: LOGIN, VIEW, CREATE, UPDATE, DELETE)을 지원해야 한다.
+  - 페이지네이션을 지원해야 한다.
+  - Admin 권한 필요.
+- [ ] `GET /admin/audit/export` 호출 시:
+  - CSV 형식으로 감사 로그를 다운로드할 수 있어야 한다.
+  - 필터링 조건을 동일하게 적용해야 한다.
+
 ---
 
 ## 2. AI Worker (L, S3 Event → DynamoDB / OpenSearch) ✅ **완료**
