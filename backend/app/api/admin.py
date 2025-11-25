@@ -10,8 +10,16 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.dependencies import require_admin
 from app.db.models import User, UserRole, UserStatus
-from app.db.schemas import UserInviteRequest, InviteResponse, UserListResponse
+from app.db.schemas import (
+    UserInviteRequest,
+    InviteResponse,
+    UserListResponse,
+    RolePermissionsResponse,
+    UpdateRolePermissionsRequest,
+    RolePermissions
+)
 from app.services.user_management_service import UserManagementService
+from app.services.role_management_service import RoleManagementService
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -128,3 +136,72 @@ def delete_user(
     service.delete_user(user_id, current_user.id)
 
     return {"message": "사용자가 삭제되었습니다.", "user_id": user_id}
+
+
+@router.get(
+    "/roles",
+    response_model=RolePermissionsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="역할별 권한 조회",
+    description="모든 역할(ADMIN, LAWYER, STAFF)의 권한 매트릭스를 조회합니다."
+)
+def get_roles(
+    current_user: User = Depends(require_admin)
+):
+    """
+    역할별 권한 매트릭스 조회 API
+
+    Args:
+        current_user: 현재 인증된 Admin 사용자
+
+    Returns:
+        RolePermissionsResponse: 모든 역할의 권한 정보
+
+    Raises:
+        PermissionError: Admin이 아닌 경우
+    """
+    service = RoleManagementService()
+    roles = service.get_all_roles()
+
+    return RolePermissionsResponse(roles=roles)
+
+
+@router.put(
+    "/roles/{role}/permissions",
+    response_model=RolePermissions,
+    status_code=status.HTTP_200_OK,
+    summary="역할 권한 업데이트",
+    description="특정 역할의 권한을 업데이트합니다."
+)
+def update_role_permissions(
+    role: UserRole,
+    request: UpdateRolePermissionsRequest,
+    current_user: User = Depends(require_admin)
+):
+    """
+    역할 권한 업데이트 API
+
+    Note: MVP 버전에서는 in-memory 업데이트만 지원합니다.
+    실제 프로덕션에서는 permissions 테이블에 저장되어야 합니다.
+
+    Args:
+        role: 업데이트할 역할 (ADMIN, LAWYER, STAFF)
+        request: 새로운 권한 설정
+        current_user: 현재 인증된 Admin 사용자
+
+    Returns:
+        RolePermissions: 업데이트된 권한 정보
+
+    Raises:
+        PermissionError: Admin이 아닌 경우
+    """
+    service = RoleManagementService()
+    updated_permissions = service.update_role_permissions(
+        role=role,
+        cases=request.cases,
+        evidence=request.evidence,
+        admin=request.admin,
+        billing=request.billing
+    )
+
+    return updated_permissions

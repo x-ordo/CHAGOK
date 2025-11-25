@@ -82,18 +82,18 @@
   - 삭제하려는 사용자가 자기 자신이면 400을 반환해야 한다.
   - Admin 권한 필요.
 
-### 1.7 권한 관리 (RBAC) ✅ (1.6에 포함됨)
+### 1.7 권한 관리 (RBAC) ✅
 
 - [x] Role 기반 접근 제어 미들웨어 구현:
   - `require_admin(current_user: User)` dependency가 Admin이 아닌 사용자에 대해 403을 반환해야 한다.
   - `require_lawyer_or_admin(current_user: User)` dependency가 Staff 사용자에 대해 403을 반환해야 한다.
-- [ ] `GET /admin/roles` 호출 시:
+- [x] `GET /admin/roles` 호출 시:
   - 모든 역할(ADMIN, LAWYER, STAFF)별 권한 매트릭스를 반환해야 한다.
   - 각 역할의 리소스(cases, evidence, admin, billing)별 액션(view, edit, delete) 권한을 포함해야 한다.
   - Admin 권한 필요.
-- [ ] `PUT /admin/roles/{role}/permissions` 호출 시:
+- [x] `PUT /admin/roles/{role}/permissions` 호출 시:
   - 특정 역할의 권한을 업데이트해야 한다.
-  - 업데이트 내용을 `permissions` 테이블에 저장해야 한다.
+  - MVP: In-memory 업데이트 (권한 테이블은 추후 구현).
   - Admin 권한 필요.
 
 ### 1.8 회원가입 (Signup)

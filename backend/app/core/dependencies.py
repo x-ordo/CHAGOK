@@ -90,3 +90,22 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
         raise PermissionError("Admin 권한이 필요합니다.")
 
     return current_user
+
+
+def require_lawyer_or_admin(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Require lawyer or admin role for access
+
+    Args:
+        current_user: Current authenticated user
+
+    Returns:
+        User object if user is lawyer or admin
+
+    Raises:
+        PermissionError: User is staff (insufficient permissions)
+    """
+    if current_user.role not in [UserRole.LAWYER, UserRole.ADMIN]:
+        raise PermissionError("Lawyer 또는 Admin 권한이 필요합니다.")
+
+    return current_user

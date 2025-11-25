@@ -64,6 +64,38 @@ class UserListResponse(BaseModel):
 
 
 # ============================================
+# RBAC / Permission Schemas
+# ============================================
+class ResourcePermission(BaseModel):
+    """Permission for a specific resource"""
+    view: bool = False
+    edit: bool = False
+    delete: bool = False
+
+
+class RolePermissions(BaseModel):
+    """Complete permission set for a role"""
+    role: UserRole
+    cases: ResourcePermission
+    evidence: ResourcePermission
+    admin: ResourcePermission
+    billing: ResourcePermission
+
+
+class RolePermissionsResponse(BaseModel):
+    """Response schema for GET /admin/roles"""
+    roles: list[RolePermissions]
+
+
+class UpdateRolePermissionsRequest(BaseModel):
+    """Request schema for PUT /admin/roles/{role}/permissions"""
+    cases: ResourcePermission
+    evidence: ResourcePermission
+    admin: ResourcePermission
+    billing: ResourcePermission
+
+
+# ============================================
 # Case Schemas
 # ============================================
 class CaseCreate(BaseModel):
