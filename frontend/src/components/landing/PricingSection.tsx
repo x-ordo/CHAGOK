@@ -82,8 +82,8 @@ export default function PricingSection() {
             </p>
           </div>
 
-          {/* Pricing Cards Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Pricing Cards Grid - Responsive: 1-col mobile, 2-col tablet, 3-col desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {plans.map((plan) => (
               <div
                 key={plan.id}
