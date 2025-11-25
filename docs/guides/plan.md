@@ -993,7 +993,115 @@ frontend/e2e/
 
 ---
 
-## 8. 메타 규칙
+## 8. Mock 인증 구현 (개발/QA용)
+
+> **구현일:** 2025-11-25
+> **목적:** 백엔드 미실행 상태에서 프론트엔드 QA 진행 가능하도록 임시 Mock 구현
+> **상태:** 🟡 임시 구현 (TODO: 백엔드 연동 시 제거)
+
+### 8.1 QA에서 발견된 문제
+
+| 항목 | 문제 | 원인 | 해결 상태 |
+|------|------|------|----------|
+| 로그인 버튼 | 클릭 시 무반응 | 백엔드(localhost:8000) 미실행 | ✅ Mock 구현 |
+| 회원가입 버튼 | 클릭 시 무반응 | onSubmit 핸들러 미구현 | ✅ Mock 구현 |
+| /cases 접근 | 비인증 상태에서 접근 가능 | Navigation Guard 미구현 | ✅ Guard 추가 |
+
+### 8.2 구현된 Mock 로직
+
+#### 8.2.1 로그인 Mock (`LoginForm.tsx`)
+```tsx
+// 파일: frontend/src/components/auth/LoginForm.tsx
+// Mock 모드: NEXT_PUBLIC_USE_MOCK_AUTH !== 'false' 일 때 활성화
+
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_AUTH !== 'false';
+
+if (USE_MOCK) {
+  // 500ms 딜레이 후 mock 토큰 발급
+  const mockToken = `mock-jwt-token-${Date.now()}`;
+  localStorage.setItem('authToken', mockToken);
+  router.push('/cases');
+}
+```
+
+**동작:**
+- 이메일/비밀번호 입력 → 로그인 버튼 클릭
+- 500ms 로딩 후 `authToken` 저장 → `/cases`로 리디렉션
+
+#### 8.2.2 회원가입 Mock (`signup/page.tsx`)
+```tsx
+// 파일: frontend/src/app/signup/page.tsx
+// useState로 폼 상태 관리 추가
+// onSubmit 핸들러에서 mock 로직 실행
+
+const handleSubmit = async (e: React.FormEvent) => {
+  // 비밀번호 8자 이상 검증
+  if (password.length < 8) {
+    setError('비밀번호는 8자 이상이어야 합니다.');
+    return;
+  }
+  // Mock 토큰 발급 + 사용자 정보 저장
+  localStorage.setItem('authToken', mockToken);
+  localStorage.setItem('mockUser', JSON.stringify({ name, email, lawFirm }));
+  router.push('/cases');
+};
+```
+
+**동작:**
+- 이름, 이메일, 소속, 비밀번호 입력 → 무료 체험 시작 클릭
+- 비밀번호 8자 미만 시 에러 메시지 표시
+- 성공 시 `authToken` + `mockUser` 저장 → `/cases`로 리디렉션
+
+#### 8.2.3 /cases Navigation Guard (`cases/index.tsx`)
+```tsx
+// 파일: frontend/src/pages/cases/index.tsx
+// useEffect에서 authToken 확인
+
+useEffect(() => {
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    router.replace('/login');
+  } else {
+    setIsAuthChecking(false);
+  }
+}, [router]);
+```
+
+**동작:**
+- 페이지 로드 시 `authToken` 확인
+- 토큰 없으면 `/login`으로 리디렉션
+- 토큰 있으면 페이지 렌더링
+
+### 8.3 QA 테스트 방법
+
+```bash
+# 1. 프론트엔드 개발 서버 실행
+cd frontend && npm run dev
+
+# 2. 브라우저에서 테스트
+# - http://localhost:3000/login → 아무 이메일/비밀번호로 로그인
+# - http://localhost:3000/signup → 폼 입력 후 회원가입
+# - http://localhost:3000/cases → 비로그인 시 /login으로 리디렉션
+```
+
+### 8.4 백엔드 연동 시 TODO
+
+- [ ] `LoginForm.tsx`: `USE_MOCK` 조건 제거, 실제 API 호출만 사용
+- [ ] `signup/page.tsx`: 실제 회원가입 API 연동 (`POST /auth/register`)
+- [ ] `cases/index.tsx`: JWT 토큰 유효성 검증 로직 추가 (만료 체크)
+- [ ] 환경변수 `NEXT_PUBLIC_USE_MOCK_AUTH=false` 설정하여 Mock 비활성화
+
+### 8.5 관련 파일
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `frontend/src/components/auth/LoginForm.tsx` | Mock 로그인 로직 추가 |
+| `frontend/src/app/signup/page.tsx` | onSubmit 핸들러 + Mock 회원가입 구현 |
+| `frontend/src/pages/cases/index.tsx` | Navigation Guard (useEffect) 추가 |
+
+---
+
+## 9. 메타 규칙
 
 - 이 문서의 테스트 항목 외에는 **AI가 임의로 테스트를 추가하지 않는다.**
 - `"go"` 입력 시:
