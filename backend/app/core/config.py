@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # CORS Settings
     # ============================================
     CORS_ALLOW_ORIGINS: str = Field(
-        default="http://localhost:3000,http://localhost:5173",
+        default="http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,http://localhost:3005,http://localhost:5173",
         env="CORS_ALLOW_ORIGINS"
     )
     FRONTEND_URL: str = Field(default="http://localhost:3000", env="FRONTEND_URL")
