@@ -80,6 +80,13 @@ dist/
 .coverage
 htmlcov/
 coverage.xml
+coverage/
+
+# Linter / Type Checker Cache
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
 
 # Jupyter Notebook
 .ipynb_checkpoints/
@@ -95,6 +102,11 @@ node_modules/
 # Next.js Build Output
 .next/
 out/
+
+# Playwright Test Output
+playwright-report/
+test-results/
+playwright/.cache/
 
 # Production Build
 build/
