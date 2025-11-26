@@ -1,64 +1,128 @@
 """
 DynamoDB utilities for evidence metadata
 
-Mock implementation for local development.
-TODO: Replace with boto3 when AWS DynamoDB is configured.
+Real boto3 implementation for AWS DynamoDB.
 
-Migration Guide:
-1. Uncomment boto3 imports and client initialization
-2. Replace mock storage with real DynamoDB operations
-3. No changes needed in service or API layers
+Table Schema:
+- Table: leh_evidence
+- PK: evidence_id (HASH)
+- GSI: case_id-index (case_id as HASH, ProjectionType: ALL)
 """
 
+import logging
 from typing import List, Dict, Optional
 from datetime import datetime, timezone
+
+import boto3
+from botocore.exceptions import ClientError
+
 from app.core.config import settings
 
-# TODO: Uncomment when AWS is configured
-# import boto3
-# from botocore.exceptions import ClientError
+logger = logging.getLogger(__name__)
 
-# Mock in-memory storage for local development
-# TODO: Remove this when switching to real DynamoDB
-_mock_evidence_store: Dict[str, Dict] = {}
+# Initialize DynamoDB client
+_dynamodb_client = None
+
+
+def _get_dynamodb_client():
+    """Get or create DynamoDB client (singleton pattern)"""
+    global _dynamodb_client
+    if _dynamodb_client is None:
+        _dynamodb_client = boto3.client(
+            'dynamodb',
+            region_name=settings.AWS_REGION
+        )
+    return _dynamodb_client
+
+
+def _serialize_value(value) -> Dict:
+    """Convert Python value to DynamoDB type"""
+    if value is None:
+        return {'NULL': True}
+    elif isinstance(value, bool):
+        return {'BOOL': value}
+    elif isinstance(value, str):
+        return {'S': value}
+    elif isinstance(value, (int, float)):
+        return {'N': str(value)}
+    elif isinstance(value, list):
+        if not value:
+            return {'L': []}
+        return {'L': [_serialize_value(v) for v in value]}
+    elif isinstance(value, dict):
+        return {'M': {k: _serialize_value(v) for k, v in value.items()}}
+    else:
+        return {'S': str(value)}
+
+
+def _deserialize_value(dynamodb_value: Dict):
+    """Convert DynamoDB type to Python value"""
+    if 'NULL' in dynamodb_value:
+        return None
+    elif 'BOOL' in dynamodb_value:
+        return dynamodb_value['BOOL']
+    elif 'S' in dynamodb_value:
+        return dynamodb_value['S']
+    elif 'N' in dynamodb_value:
+        num_str = dynamodb_value['N']
+        return float(num_str) if '.' in num_str else int(num_str)
+    elif 'L' in dynamodb_value:
+        return [_deserialize_value(v) for v in dynamodb_value['L']]
+    elif 'M' in dynamodb_value:
+        return {k: _deserialize_value(v) for k, v in dynamodb_value['M'].items()}
+    elif 'SS' in dynamodb_value:
+        return list(dynamodb_value['SS'])
+    elif 'NS' in dynamodb_value:
+        return [float(n) if '.' in n else int(n) for n in dynamodb_value['NS']]
+    else:
+        return None
+
+
+def _serialize_to_dynamodb(data: Dict) -> Dict:
+    """Convert Python dict to DynamoDB item format"""
+    return {k: _serialize_value(v) for k, v in data.items()}
+
+
+def _deserialize_dynamodb_item(item: Dict) -> Dict:
+    """Convert DynamoDB item to Python dict"""
+    return {k: _deserialize_value(v) for k, v in item.items()}
 
 
 def get_evidence_by_case(case_id: str) -> List[Dict]:
     """
     Get all evidence metadata for a case from DynamoDB
 
+    Uses GSI: case_id-index for efficient query
+
     Args:
-        case_id: Case ID (DynamoDB partition key)
+        case_id: Case ID (GSI partition key)
 
     Returns:
         List of evidence metadata dictionaries
     """
-    # TODO: Replace with boto3 when AWS is configured
-    # dynamodb = boto3.client('dynamodb', region_name=settings.AWS_REGION)
-    # try:
-    #     response = dynamodb.query(
-    #         TableName=settings.DDB_EVIDENCE_TABLE,
-    #         KeyConditionExpression='case_id = :case_id',
-    #         ExpressionAttributeValues={
-    #             ':case_id': {'S': case_id}
-    #         }
-    #     )
-    #     items = response.get('Items', [])
-    #     return [_deserialize_dynamodb_item(item) for item in items]
-    # except ClientError as e:
-    #     logger.error(f"DynamoDB query error: {e}")
-    #     raise
+    dynamodb = _get_dynamodb_client()
 
-    # Mock implementation
-    evidence_list = [
-        evidence for evidence in _mock_evidence_store.values()
-        if evidence.get('case_id') == case_id
-    ]
+    try:
+        response = dynamodb.query(
+            TableName=settings.DDB_EVIDENCE_TABLE,
+            IndexName='case_id-index',
+            KeyConditionExpression='case_id = :case_id',
+            ExpressionAttributeValues={
+                ':case_id': {'S': case_id}
+            }
+        )
 
-    # Sort by created_at descending (newest first)
-    evidence_list.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        items = response.get('Items', [])
+        evidence_list = [_deserialize_dynamodb_item(item) for item in items]
 
-    return evidence_list
+        # Sort by created_at descending (newest first)
+        evidence_list.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+
+        return evidence_list
+
+    except ClientError as e:
+        logger.error(f"DynamoDB query error for case {case_id}: {e}")
+        raise
 
 
 def get_evidence_by_id(evidence_id: str) -> Optional[Dict]:
@@ -66,33 +130,30 @@ def get_evidence_by_id(evidence_id: str) -> Optional[Dict]:
     Get evidence metadata by evidence ID from DynamoDB
 
     Args:
-        evidence_id: Evidence ID (DynamoDB sort key)
+        evidence_id: Evidence ID (DynamoDB primary key)
 
     Returns:
         Evidence metadata dictionary or None if not found
     """
-    # TODO: Replace with boto3 when AWS is configured
-    # dynamodb = boto3.client('dynamodb', region_name=settings.AWS_REGION)
-    # try:
-    #     # Note: In real implementation, we need to scan or maintain a GSI
-    #     # since evidence_id is not the partition key
-    #     response = dynamodb.scan(
-    #         TableName=settings.DDB_EVIDENCE_TABLE,
-    #         FilterExpression='evidence_id = :evidence_id',
-    #         ExpressionAttributeValues={
-    #             ':evidence_id': {'S': evidence_id}
-    #         }
-    #     )
-    #     items = response.get('Items', [])
-    #     if not items:
-    #         return None
-    #     return _deserialize_dynamodb_item(items[0])
-    # except ClientError as e:
-    #     logger.error(f"DynamoDB scan error: {e}")
-    #     raise
+    dynamodb = _get_dynamodb_client()
 
-    # Mock implementation
-    return _mock_evidence_store.get(evidence_id)
+    try:
+        response = dynamodb.get_item(
+            TableName=settings.DDB_EVIDENCE_TABLE,
+            Key={
+                'evidence_id': {'S': evidence_id}
+            }
+        )
+
+        item = response.get('Item')
+        if not item:
+            return None
+
+        return _deserialize_dynamodb_item(item)
+
+    except ClientError as e:
+        logger.error(f"DynamoDB get_item error for evidence {evidence_id}: {e}")
+        raise
 
 
 def put_evidence_metadata(evidence_data: Dict) -> Dict:
@@ -104,67 +165,67 @@ def put_evidence_metadata(evidence_data: Dict) -> Dict:
 
     Args:
         evidence_data: Evidence metadata dictionary
+            Required fields:
+            - id or evidence_id: Evidence ID (will be stored as evidence_id)
+            - case_id: Case ID
 
     Returns:
         Stored evidence metadata
     """
-    # TODO: Replace with boto3 when AWS is configured
-    # dynamodb = boto3.client('dynamodb', region_name=settings.AWS_REGION)
-    # try:
-    #     item = _serialize_to_dynamodb(evidence_data)
-    #     dynamodb.put_item(
-    #         TableName=settings.DDB_EVIDENCE_TABLE,
-    #         Item=item
-    #     )
-    #     return evidence_data
-    # except ClientError as e:
-    #     logger.error(f"DynamoDB put_item error: {e}")
-    #     raise
+    dynamodb = _get_dynamodb_client()
 
-    # Mock implementation
-    evidence_id = evidence_data.get('id')
+    # Normalize evidence_id field
+    evidence_id = evidence_data.get('evidence_id') or evidence_data.get('id')
     if not evidence_id:
-        raise ValueError("Evidence data must have 'id' field")
+        raise ValueError("Evidence data must have 'id' or 'evidence_id' field")
+
+    # Prepare item data
+    item_data = evidence_data.copy()
+    item_data['evidence_id'] = evidence_id
+    if 'id' in item_data and 'evidence_id' != 'id':
+        item_data['id'] = evidence_id  # Keep id field for backward compatibility
 
     # Add timestamp if not present
-    if 'created_at' not in evidence_data:
-        evidence_data['created_at'] = datetime.now(timezone.utc).isoformat()
+    if 'created_at' not in item_data:
+        item_data['created_at'] = datetime.now(timezone.utc).isoformat()
 
-    _mock_evidence_store[evidence_id] = evidence_data
-    return evidence_data
+    try:
+        dynamodb.put_item(
+            TableName=settings.DDB_EVIDENCE_TABLE,
+            Item=_serialize_to_dynamodb(item_data)
+        )
+        return item_data
+
+    except ClientError as e:
+        logger.error(f"DynamoDB put_item error for evidence {evidence_id}: {e}")
+        raise
 
 
-def delete_evidence_metadata(evidence_id: str, case_id: str) -> bool:
+def delete_evidence_metadata(evidence_id: str, case_id: str = None) -> bool:
     """
     Delete evidence metadata from DynamoDB
 
     Args:
-        evidence_id: Evidence ID (sort key)
-        case_id: Case ID (partition key)
+        evidence_id: Evidence ID (primary key)
+        case_id: Case ID (not needed for delete since PK is evidence_id)
 
     Returns:
-        True if deleted, False if not found
+        True if deleted successfully
     """
-    # TODO: Replace with boto3 when AWS is configured
-    # dynamodb = boto3.client('dynamodb', region_name=settings.AWS_REGION)
-    # try:
-    #     dynamodb.delete_item(
-    #         TableName=settings.DDB_EVIDENCE_TABLE,
-    #         Key={
-    #             'case_id': {'S': case_id},
-    #             'evidence_id': {'S': evidence_id}
-    #         }
-    #     )
-    #     return True
-    # except ClientError as e:
-    #     logger.error(f"DynamoDB delete_item error: {e}")
-    #     return False
+    dynamodb = _get_dynamodb_client()
 
-    # Mock implementation
-    if evidence_id in _mock_evidence_store:
-        del _mock_evidence_store[evidence_id]
+    try:
+        dynamodb.delete_item(
+            TableName=settings.DDB_EVIDENCE_TABLE,
+            Key={
+                'evidence_id': {'S': evidence_id}
+            }
+        )
         return True
-    return False
+
+    except ClientError as e:
+        logger.error(f"DynamoDB delete_item error for evidence {evidence_id}: {e}")
+        return False
 
 
 def clear_case_evidence(case_id: str) -> int:
@@ -177,49 +238,39 @@ def clear_case_evidence(case_id: str) -> int:
     Returns:
         Number of evidence items deleted
     """
-    # TODO: Replace with boto3 when AWS is configured
-    # dynamodb = boto3.client('dynamodb', region_name=settings.AWS_REGION)
-    # try:
-    #     response = dynamodb.query(
-    #         TableName=settings.DDB_EVIDENCE_TABLE,
-    #         KeyConditionExpression='case_id = :case_id',
-    #         ExpressionAttributeValues={':case_id': {'S': case_id}}
-    #     )
-    #     items = response.get('Items', [])
-    #     for item in items:
-    #         dynamodb.delete_item(
-    #             TableName=settings.DDB_EVIDENCE_TABLE,
-    #             Key={
-    #                 'case_id': {'S': case_id},
-    #                 'evidence_id': item['evidence_id']
-    #             }
-    #         )
-    #     return len(items)
-    # except ClientError as e:
-    #     logger.error(f"DynamoDB clear_case_evidence error: {e}")
-    #     raise
+    dynamodb = _get_dynamodb_client()
 
-    # Mock implementation
-    evidence_to_delete = [
-        eid for eid, evidence in _mock_evidence_store.items()
-        if evidence.get('case_id') == case_id
-    ]
+    try:
+        # First, query all evidence for this case using GSI
+        response = dynamodb.query(
+            TableName=settings.DDB_EVIDENCE_TABLE,
+            IndexName='case_id-index',
+            KeyConditionExpression='case_id = :case_id',
+            ExpressionAttributeValues={
+                ':case_id': {'S': case_id}
+            },
+            ProjectionExpression='evidence_id'  # Only need the key
+        )
 
-    for eid in evidence_to_delete:
-        del _mock_evidence_store[eid]
+        items = response.get('Items', [])
+        deleted_count = 0
 
-    return len(evidence_to_delete)
+        # Delete each evidence item
+        for item in items:
+            evidence_id = item['evidence_id']['S']
+            try:
+                dynamodb.delete_item(
+                    TableName=settings.DDB_EVIDENCE_TABLE,
+                    Key={
+                        'evidence_id': {'S': evidence_id}
+                    }
+                )
+                deleted_count += 1
+            except ClientError as e:
+                logger.warning(f"Failed to delete evidence {evidence_id}: {e}")
 
+        return deleted_count
 
-# TODO: Uncomment when AWS is configured
-# def _serialize_to_dynamodb(data: Dict) -> Dict:
-#     """Convert Python dict to DynamoDB item format"""
-#     # Convert each value to DynamoDB type
-#     # Example: {'id': 'ev_123'} -> {'id': {'S': 'ev_123'}}
-#     pass
-#
-# def _deserialize_dynamodb_item(item: Dict) -> Dict:
-#     """Convert DynamoDB item to Python dict"""
-#     # Convert DynamoDB types to Python types
-#     # Example: {'id': {'S': 'ev_123'}} -> {'id': 'ev_123'}
-#     pass
+    except ClientError as e:
+        logger.error(f"DynamoDB clear_case_evidence error for case {case_id}: {e}")
+        raise

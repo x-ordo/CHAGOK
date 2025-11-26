@@ -85,8 +85,8 @@ class Settings(BaseSettings):
     # ============================================
     # DynamoDB Settings
     # ============================================
-    DDB_EVIDENCE_TABLE: str = Field(default="leh_evidence_dev", env="DDB_EVIDENCE_TABLE")
-    DDB_CASE_SUMMARY_TABLE: str = Field(default="leh_case_summary_dev", env="DDB_CASE_SUMMARY_TABLE")
+    DDB_EVIDENCE_TABLE: str = Field(default="leh_evidence", env="DDB_EVIDENCE_TABLE")
+    DDB_CASE_SUMMARY_TABLE: str = Field(default="leh_case_summary", env="DDB_CASE_SUMMARY_TABLE")
 
     # ============================================
     # OpenSearch Settings

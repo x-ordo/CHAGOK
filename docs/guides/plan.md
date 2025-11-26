@@ -23,7 +23,7 @@
 
 ---
 
-## 1. Backend (FastAPI, RDS, S3, DynamoDB, OpenSearch)
+## 1. Backend (FastAPI, RDS, S3, DynamoDB, Qdrant)
 
 ### 1.1 인증 / 권한
 
@@ -41,7 +41,7 @@
   - 존재하지 않는 케이스에 대해 404를 반환해야 한다.
 - [x] `DELETE /cases/{case_id}` 호출 시:
   - 사건 상태가 `closed` 로 변경되어야 하고,
-  - 해당 사건의 OpenSearch 인덱스(`case_rag_{case_id}`) 삭제 요청이 서비스 레이어에서 호출되어야 한다 (통합 테스트에서는 mock으로 검증).
+  - 해당 사건의 Qdrant 컬렉션에서 관련 벡터 삭제 요청이 서비스 레이어에서 호출되어야 한다 (통합 테스트에서는 mock으로 검증).
 
 ### 1.3 Evidence Upload (Presigned URL, S3)
 
@@ -157,7 +157,7 @@
 
 ---
 
-## 2. AI Worker (L, S3 Event → DynamoDB / OpenSearch) ✅ **완료**
+## 2. AI Worker (L, S3 Event → DynamoDB / Qdrant) ✅ **완료**
 
 ### 2.1 Event 파싱 ✅
 
@@ -206,13 +206,13 @@
 - [x] 라벨 값은 사전에 정의된 유효 값 목록(예: `"부정행위"`, `"학대"`) 중 하나여야 한다.
   - ✅ **구현 완료**: ADULTERY, DESERTION, MISTREATMENT_BY_INLAWS, HARM_TO_OWN_PARENTS, UNKNOWN_WHEREABOUTS, SERIOUS_GROUNDS, OTHER
 
-### 2.6 Embedding + OpenSearch index ✅
+### 2.6 Embedding + Qdrant Vector Store ✅
 
 - [x] Embedding 생성 모듈은:
   - 일정 길이 이상의 벡터(예: 1536 길이)를 반환해야 한다 (길이만 테스트).
   - ✅ **구현 완료**: VectorStore with OpenAI text-embedding-3-small (1536 dim) + Qdrant
 - [x] 동일 `evidence_id` 재처리 시:
-  - OpenSearch 문서는 **덮어쓰기** 되어야 하고,
+  - Qdrant 벡터는 **upsert(덮어쓰기)** 되어야 하고,
   - DynamoDB의 해당 항목도 최신 값으로 업데이트돼야 한다.
   - ✅ **구현 완료**: MetadataStore (SQLite/DynamoDB) + VectorStore upsert 로직
 
@@ -220,6 +220,84 @@
 - ✅ handler 테스트: 16 passing (Phase 1-6 통합)
 - ✅ E2E 통합 테스트: 5 passing (Phase 7)
 - ✅ 전체 파이프라인: S3 Event → 파싱 → 메타데이터 저장 → 벡터 저장 → Article 840 태깅
+
+### 2.7 AWS 서비스 연동 (Issue #10: Mock → Real 전환)
+
+> **담당 분담:**
+> - **H (Backend)**: DynamoDB 연동, OpenAI API 연동
+> - **L (AI Worker)**: Qdrant 연동, S3 연동, Lambda 배포
+
+#### 2.7.1 DynamoDB 연동 ✅ (H 담당 - 완료)
+
+- [x] `backend/app/utils/dynamo.py` Mock 구현을 실제 boto3로 교체
+  - ✅ **구현 완료**: boto3 client 사용, `leh_evidence` 테이블 연동
+- [x] 테이블 스키마 확인 및 적용:
+  - PK: `evidence_id` (HASH)
+  - GSI: `case_id-index` (case_id로 조회)
+- [x] 모든 CRUD 함수 테스트 완료:
+  - `get_evidence_by_case()`: GSI 쿼리
+  - `get_evidence_by_id()`: GetItem
+  - `put_evidence_metadata()`: PutItem
+  - `delete_evidence_metadata()`: DeleteItem
+  - `clear_case_evidence()`: GSI 쿼리 + BatchDelete
+
+#### 2.7.2 Qdrant 연동 (L 담당)
+
+> **OpenSearch 완전 대체**: Qdrant Cloud 또는 Self-hosted Qdrant 사용
+
+- [ ] Qdrant 클라이언트 설정:
+  - **Qdrant Cloud**: `QDRANT_URL`, `QDRANT_API_KEY` 환경변수 사용
+  - **Self-hosted**: Docker로 로컬 실행 (`docker run -p 6333:6333 qdrant/qdrant`)
+- [ ] 컬렉션 설정:
+  - 컬렉션 이름: `leh_evidence` (또는 case별 `case_{case_id}`)
+  - 벡터 차원: 1536 (OpenAI text-embedding-3-small)
+  - Distance metric: Cosine
+- [ ] VectorStore 구현체 수정 (`ai_worker/src/stores/vector_store.py`):
+  - `upsert_vector(evidence_id, embedding, metadata)`: 벡터 저장/업데이트
+  - `search_similar(query_embedding, case_id, top_k)`: 유사 벡터 검색
+  - `delete_by_case(case_id)`: 케이스 삭제 시 관련 벡터 일괄 삭제
+- [ ] Backend RAG 검색 함수 수정 (`backend/app/utils/opensearch.py` → `qdrant.py`):
+  - `search_evidence_by_semantic(case_id, query, top_k)`: Qdrant 검색으로 교체
+- [ ] 테스트 항목:
+  - 벡터 저장 후 검색 시 동일 문서가 최상위에 나오는지 확인
+  - case_id 필터링이 정상 동작하는지 확인
+  - 삭제 후 검색되지 않는지 확인
+
+**Qdrant 설정 예시 (config.py에 추가):**
+```python
+# Qdrant Settings
+QDRANT_URL: str = Field(default="http://localhost:6333", env="QDRANT_URL")
+QDRANT_API_KEY: str = Field(default="", env="QDRANT_API_KEY")  # Cloud 사용 시
+QDRANT_COLLECTION: str = Field(default="leh_evidence", env="QDRANT_COLLECTION")
+```
+
+#### 2.7.3 OpenAI API 연동 (H 담당)
+
+- [ ] `backend/app/utils/openai_client.py` Mock 구현을 실제 API로 교체
+- [ ] 환경변수 설정: `OPENAI_API_KEY`
+- [ ] 사용 함수:
+  - `generate_chat_completion()`: Draft 생성 (GPT-4o)
+  - `generate_embedding()`: RAG 검색용 임베딩 (text-embedding-3-small)
+- [ ] 테스트 항목:
+  - API 키 유효성 확인
+  - Rate limit 처리 (429 에러 시 재시도)
+  - 타임아웃 설정 (60초)
+
+#### 2.7.4 S3 연동 (L 담당)
+
+- [ ] AI Worker에서 S3 파일 다운로드 구현
+- [ ] 환경변수: `S3_EVIDENCE_BUCKET`, `AWS_REGION`
+- [ ] 파일 경로 규칙: `cases/{case_id}/raw/{evidence_id}_{filename}`
+
+#### 2.7.5 Lambda 배포 (L 담당)
+
+- [ ] AI Worker를 AWS Lambda로 배포
+- [ ] S3 Event Trigger 설정 (ObjectCreated)
+- [ ] IAM Role 설정:
+  - S3 읽기 권한
+  - DynamoDB 읽기/쓰기 권한
+  - Qdrant 접근 (VPC 또는 Public)
+- [ ] 환경변수 설정 (Lambda Console 또는 SAM/CDK)
 
 ---
 
