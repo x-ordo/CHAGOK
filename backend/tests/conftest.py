@@ -6,6 +6,19 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 import os
+from pathlib import Path
+
+
+def pytest_configure(config):
+    """
+    Load .env file for integration tests
+    """
+    # Load .env from backend directory for integration tests
+    from dotenv import load_dotenv
+    backend_dir = Path(__file__).parent.parent
+    env_path = backend_dir / ".env"
+    if env_path.exists():
+        load_dotenv(env_path, override=True)
 
 
 @pytest.fixture(scope="session")
