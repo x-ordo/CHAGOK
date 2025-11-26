@@ -10,6 +10,8 @@ import uuid
 from app.db.schemas import (
     PresignedUrlRequest,
     PresignedUrlResponse,
+    UploadCompleteRequest,
+    UploadCompleteResponse,
     EvidenceSummary,
     EvidenceDetail,
     Article840Tags,
@@ -18,7 +20,7 @@ from app.db.schemas import (
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
 from app.utils.s3 import generate_presigned_upload_url
-from app.utils.dynamo import get_evidence_by_case, get_evidence_by_id
+from app.utils.dynamo import get_evidence_by_case, get_evidence_by_id, put_evidence_metadata as save_evidence_metadata
 from app.core.config import settings
 from app.middleware import NotFoundError, PermissionError
 from typing import Optional
@@ -117,6 +119,103 @@ class EvidenceService:
             fields=presigned_data["fields"],
             evidence_temp_id=evidence_temp_id
         )
+
+    def handle_upload_complete(
+        self,
+        request: UploadCompleteRequest,
+        user_id: str
+    ) -> UploadCompleteResponse:
+        """
+        Handle evidence upload completion notification
+
+        Args:
+            request: Upload complete request with s3_key and metadata
+            user_id: ID of user who uploaded the evidence
+
+        Returns:
+            UploadCompleteResponse with created evidence info
+
+        Raises:
+            NotFoundError: Case not found
+            PermissionError: User does not have access to case
+
+        Process:
+            1. Validate user has access to case
+            2. Create evidence metadata record in DynamoDB
+            3. Trigger AI Worker processing (via SNS or direct invocation)
+        """
+        # Check if case exists
+        case = self.case_repo.get_by_id(request.case_id)
+        if not case:
+            raise NotFoundError("Case")
+
+        # Check if user has access to case
+        if not self.member_repo.has_access(request.case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
+        # Extract filename from s3_key
+        filename = request.s3_key.split("/")[-1]
+        # Remove temp_id prefix if present (format: ev_xxxx_filename.ext)
+        if filename.startswith("ev_") and "_" in filename[3:]:
+            filename = filename.split("_", 2)[-1]
+
+        # Determine file type from extension
+        extension = filename.split(".")[-1].lower() if "." in filename else ""
+        type_mapping = {
+            "jpg": "image", "jpeg": "image", "png": "image", "gif": "image",
+            "mp3": "audio", "wav": "audio", "m4a": "audio",
+            "mp4": "video", "avi": "video", "mov": "video",
+            "pdf": "pdf",
+            "txt": "text", "csv": "text", "json": "text"
+        }
+        evidence_type = type_mapping.get(extension, "document")
+
+        # Generate evidence ID
+        evidence_id = f"ev_{uuid.uuid4().hex[:12]}"
+        created_at = datetime.utcnow()
+
+        # Create evidence metadata for DynamoDB
+        evidence_metadata = {
+            "id": evidence_id,
+            "case_id": request.case_id,
+            "type": evidence_type,
+            "filename": filename,
+            "s3_key": request.s3_key,
+            "content_type": self._get_content_type(extension),
+            "status": "pending",  # Waiting for AI Worker processing
+            "created_at": created_at.isoformat(),
+            "created_by": user_id,
+            "note": request.note,
+            "deleted": False
+        }
+
+        # Save to DynamoDB
+        save_evidence_metadata(evidence_metadata)
+
+        # TODO: Trigger AI Worker via SNS or direct Lambda invocation
+        # This will be implemented when AWS Lambda is fully set up
+        # For now, evidence will stay in "pending" status until AI Worker picks it up
+
+        return UploadCompleteResponse(
+            evidence_id=evidence_id,
+            case_id=request.case_id,
+            filename=filename,
+            s3_key=request.s3_key,
+            status="pending",
+            created_at=created_at
+        )
+
+    @staticmethod
+    def _get_content_type(extension: str) -> str:
+        """Get MIME content type from file extension"""
+        content_types = {
+            "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "gif": "image/gif",
+            "mp3": "audio/mpeg", "wav": "audio/wav", "m4a": "audio/mp4",
+            "mp4": "video/mp4", "avi": "video/x-msvideo", "mov": "video/quicktime",
+            "pdf": "application/pdf",
+            "txt": "text/plain", "csv": "text/csv", "json": "application/json"
+        }
+        return content_types.get(extension, "application/octet-stream")
 
     def get_evidence_list(
         self,

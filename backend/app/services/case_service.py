@@ -8,6 +8,7 @@ from typing import List
 from app.db.models import Case, CaseMemberRole, User
 from app.db.schemas import (
     CaseCreate,
+    CaseUpdate,
     CaseOut,
     CaseMemberAdd,
     CaseMemberOut,
@@ -113,6 +114,46 @@ class CaseService:
         # Check if user has access
         if not self.member_repo.has_access(case_id, user_id):
             raise PermissionError("You do not have access to this case")
+
+        return CaseOut.model_validate(case)
+
+    def update_case(self, case_id: str, update_data: CaseUpdate, user_id: str) -> CaseOut:
+        """
+        Update case title and/or description
+
+        Args:
+            case_id: Case ID
+            update_data: Update data (title, description)
+            user_id: User ID requesting update
+
+        Returns:
+            Updated case data
+
+        Raises:
+            NotFoundError: Case not found
+            PermissionError: User does not have write access
+        """
+        case = self.case_repo.get_by_id(case_id)
+        if not case:
+            raise NotFoundError("Case")
+
+        # Check if user has write access (owner or member with read_write)
+        member = self.member_repo.get_member(case_id, user_id)
+        if not member:
+            raise PermissionError("You do not have access to this case")
+
+        # Only owner and member (not viewer) can update
+        if member.role not in [CaseMemberRole.OWNER, CaseMemberRole.MEMBER]:
+            raise PermissionError("You do not have permission to update this case")
+
+        # Update case fields
+        if update_data.title is not None:
+            case.title = update_data.title
+        if update_data.description is not None:
+            case.description = update_data.description
+
+        self.db.commit()
+        self.db.refresh(case)
 
         return CaseOut.model_validate(case)
 

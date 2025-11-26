@@ -3,23 +3,27 @@ Cases API endpoints
 POST /cases - Create new case
 GET /cases - List cases for current user
 GET /cases/{id} - Get case detail
+PATCH /cases/{id} - Update case
+DELETE /cases/{id} - Soft delete case
 GET /cases/{id}/evidence - List evidence for a case
 POST /cases/{id}/draft-preview - Generate draft preview
-PUT /cases/{id} - Update case
-DELETE /cases/{id} - Soft delete case
+GET /cases/{id}/draft-export - Export draft as DOCX/PDF
 """
 
 from fastapi import APIRouter, Depends, status, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.db.session import get_db
 from app.db.schemas import (
     CaseCreate,
+    CaseUpdate,
     CaseOut,
     EvidenceSummary,
     DraftPreviewRequest,
     DraftPreviewResponse,
+    DraftExportFormat,
     Article840Category,
     AddCaseMembersRequest,
     CaseMembersListResponse
@@ -100,6 +104,36 @@ def get_case(
     """
     case_service = CaseService(db)
     return case_service.get_case_by_id(case_id, user_id)
+
+
+@router.patch("/{case_id}", response_model=CaseOut)
+def update_case(
+    case_id: str,
+    update_data: CaseUpdate,
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Update case title and/or description
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Request Body:**
+    - title: New case title (optional)
+    - description: New case description (optional)
+
+    **Response:**
+    - 200: Updated case data
+    - 403: User does not have write permission
+    - 404: Case not found
+
+    **Authentication:**
+    - Requires valid JWT token
+    - User must be case owner or member with read_write permission
+    """
+    case_service = CaseService(db)
+    return case_service.update_case(case_id, update_data, user_id)
 
 
 @router.get("/{case_id}/evidence", response_model=List[EvidenceSummary])
@@ -196,6 +230,68 @@ def generate_draft_preview(
     """
     draft_service = DraftService(db)
     return draft_service.generate_draft_preview(case_id, request, user_id)
+
+
+@router.get("/{case_id}/draft-export")
+def export_draft(
+    case_id: str,
+    format: DraftExportFormat = Query(DraftExportFormat.DOCX, description="Export format (docx or pdf)"),
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Export draft as DOCX or PDF file
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Query Parameters:**
+    - format: Export format - "docx" (default) or "pdf"
+
+    **Response:**
+    - 200: File download (StreamingResponse)
+    - Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document (DOCX)
+                   or application/pdf (PDF)
+    - Content-Disposition: attachment; filename="draft_*.docx"
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User does not have access to case
+    - 404: Case not found
+    - 422: Missing dependencies (python-docx or reportlab)
+
+    **Authentication:**
+    - Requires valid JWT token
+    - User must be a member of the case
+
+    **Process:**
+    1. Generate draft preview using RAG + GPT-4o
+    2. Convert to requested format (DOCX or PDF)
+    3. Return as downloadable file
+
+    **Dependencies:**
+    - DOCX export requires: pip install python-docx
+    - PDF export requires: pip install reportlab
+
+    **Important:**
+    - This generates a fresh draft at export time
+    - For consistent exports, use the same case evidence
+    - Large cases may take longer to generate
+    """
+    draft_service = DraftService(db)
+    file_buffer, filename, content_type = draft_service.export_draft(
+        case_id=case_id,
+        user_id=user_id,
+        export_format=format
+    )
+
+    return StreamingResponse(
+        file_buffer,
+        media_type=content_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
 
 
 @router.delete("/{case_id}", status_code=status.HTTP_204_NO_CONTENT)

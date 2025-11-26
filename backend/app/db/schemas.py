@@ -113,6 +113,12 @@ class CaseCreate(BaseModel):
     description: Optional[str] = None
 
 
+class CaseUpdate(BaseModel):
+    """Case update request schema"""
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = None
+
+
 class CaseOut(BaseModel):
     """Case output schema"""
     id: str
@@ -213,6 +219,24 @@ class PresignedUrlResponse(BaseModel):
     evidence_temp_id: str
 
 
+class UploadCompleteRequest(BaseModel):
+    """Upload complete request schema"""
+    case_id: str
+    evidence_temp_id: str
+    s3_key: str
+    note: Optional[str] = None
+
+
+class UploadCompleteResponse(BaseModel):
+    """Upload complete response schema"""
+    evidence_id: str
+    case_id: str
+    filename: str
+    s3_key: str
+    status: str  # pending (waiting for AI processing)
+    created_at: datetime
+
+
 class EvidenceSummary(BaseModel):
     """Evidence summary schema (for list view)"""
     id: str
@@ -269,6 +293,12 @@ class DraftPreviewResponse(BaseModel):
     draft_text: str
     citations: list[DraftCitation]
     generated_at: datetime
+
+
+class DraftExportFormat(str, Enum):
+    """Draft export format options"""
+    DOCX = "docx"
+    PDF = "pdf"
 
 
 # ============================================

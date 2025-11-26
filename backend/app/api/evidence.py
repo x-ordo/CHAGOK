@@ -1,6 +1,7 @@
 """
 Evidence API endpoints
 POST /evidence/presigned-url - Generate S3 presigned upload URL
+POST /evidence/upload-complete - Notify upload completion and create evidence record
 GET /evidence/{evidence_id} - Get evidence detail with AI analysis
 
 Note: GET /cases/{case_id}/evidence is in cases.py (follows REST resource nesting)
@@ -13,6 +14,8 @@ from app.db.session import get_db
 from app.db.schemas import (
     PresignedUrlRequest,
     PresignedUrlResponse,
+    UploadCompleteRequest,
+    UploadCompleteResponse,
     EvidenceDetail
 )
 from app.services.evidence_service import EvidenceService
@@ -58,6 +61,47 @@ def generate_presigned_upload_url(
     """
     evidence_service = EvidenceService(db)
     return evidence_service.generate_upload_presigned_url(request, user_id)
+
+
+@router.post("/upload-complete", response_model=UploadCompleteResponse, status_code=status.HTTP_201_CREATED)
+def handle_upload_complete(
+    request: UploadCompleteRequest,
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Notify backend that S3 upload is complete and create evidence record
+
+    **Request Body:**
+    - case_id: Case ID (required)
+    - evidence_temp_id: Temporary evidence ID from presigned-url response (required)
+    - s3_key: S3 object key where file was uploaded (required)
+    - note: Optional note about the evidence
+
+    **Response:**
+    - evidence_id: Created evidence ID
+    - case_id: Case ID
+    - filename: Extracted filename
+    - s3_key: S3 object key
+    - status: "pending" (waiting for AI processing)
+    - created_at: Creation timestamp
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User does not have access to case
+    - 404: Case not found
+
+    **Process:**
+    1. Validates user has access to the case
+    2. Creates evidence metadata record in DynamoDB
+    3. AI Worker will automatically process when triggered by S3 event
+
+    **Security:**
+    - Requires valid JWT token
+    - User must be a member of the case
+    """
+    evidence_service = EvidenceService(db)
+    return evidence_service.handle_upload_complete(request, user_id)
 
 
 @router.get("/{evidence_id}", response_model=EvidenceDetail, status_code=status.HTTP_200_OK)

@@ -35,6 +35,10 @@
 
 - [x] `POST /cases` 호출 시 사건이 RDS `cases` 테이블에 저장되고, 응답 JSON의 `id`, `title`, `status` 가 DB 값과 일치해야 한다.
 - [x] `GET /cases` 는 현재 사용자에게 접근 권한이 있는 사건만 반환해야 한다 (`case_members` 기반).
+- [x] `PATCH /cases/{case_id}` 호출 시:
+  - 사건 제목, 설명을 수정할 수 있어야 한다.
+  - 케이스 소유자 또는 read_write 권한을 가진 멤버만 수정 가능해야 한다.
+  - 존재하지 않는 케이스에 대해 404를 반환해야 한다.
 - [x] `DELETE /cases/{case_id}` 호출 시:
   - 사건 상태가 `closed` 로 변경되어야 하고,
   - 해당 사건의 OpenSearch 인덱스(`case_rag_{case_id}`) 삭제 요청이 서비스 레이어에서 호출되어야 한다 (통합 테스트에서는 mock으로 검증).
@@ -46,6 +50,11 @@
   - `fields.key` 는 `cases/{case_id}/raw/` 접두어로 시작해야 한다.
 - [x] 존재하지 않거나 권한 없는 `case_id` 로 Presigned URL을 요청하면 404를 반환해야 한다.
 - [x] Presigned URL의 만료 시간이 **5분 이내**인지 확인하는 유닛 테스트가 있어야 한다 (실제 AWS 호출 대신 서명 파라미터 검사).
+- [x] `POST /evidence/upload-complete` 호출 시:
+  - `case_id`, `evidence_temp_id`, `s3_key`를 받아 Evidence 레코드를 생성해야 한다.
+  - AI Worker 트리거를 위한 이벤트를 발행해야 한다 (SNS 또는 직접 호출).
+  - 권한 없는 케이스에 대해 403을 반환해야 한다.
+  - 성공 시 생성된 Evidence 정보를 반환해야 한다.
 
 ### 1.4 Evidence 메타 조회 (DynamoDB)
 
@@ -65,6 +74,11 @@
   - **RAG 기반 사실 인용 지시**,
   - **Hallucination 금지 규칙**,
   - **"최종 결정은 변호사가 한다"** 류의 책임 한계 문구가 포함되어야 한다 (문자열 포함 여부 테스트).
+- [x] `GET /cases/{case_id}/draft-export` 호출 시:
+  - 초안을 DOCX 또는 PDF 형식으로 다운로드할 수 있어야 한다.
+  - `format` 쿼리 파라미터로 형식을 지정할 수 있어야 한다 (기본값: docx).
+  - 케이스 멤버만 다운로드 가능해야 한다.
+  - `Content-Disposition` 헤더에 파일명이 포함되어야 한다.
 
 ### 1.6 사용자 관리 (Admin) ✅
 
