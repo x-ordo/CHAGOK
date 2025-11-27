@@ -6,15 +6,13 @@ TDD approach: Test configuration loading, validation, and computed properties
 
 import pytest
 import os
-from app.core.config import Settings
-
-
 @pytest.mark.unit
 class TestSettings:
     """Test Settings class configuration"""
 
     def test_settings_loads_from_env(self, test_env):
         """Test that Settings correctly loads from environment variables"""
+        from app.core.config import Settings
         settings = Settings()
 
         assert settings.APP_ENV == "local"
@@ -31,6 +29,7 @@ class TestSettings:
                 os.environ.pop(key, None)
 
         try:
+            from app.core.config import Settings
             settings = Settings()
 
             assert settings.APP_NAME == "legal-evidence-hub"
@@ -48,6 +47,7 @@ class TestSettings:
 
     def test_cors_origins_list_property(self, test_env):
         """Test that cors_origins_list property correctly splits string"""
+        from app.core.config import Settings
         settings = Settings(
             CORS_ALLOW_ORIGINS="http://localhost:3000,http://localhost:5173,https://example.com"
         )
@@ -62,6 +62,7 @@ class TestSettings:
 
     def test_cors_origins_list_strips_whitespace(self, test_env):
         """Test that cors_origins_list strips whitespace from origins"""
+        from app.core.config import Settings
         settings = Settings(
             CORS_ALLOW_ORIGINS="http://localhost:3000 , http://localhost:5173 ,  https://example.com"
         )
@@ -73,19 +74,22 @@ class TestSettings:
 
     def test_database_url_computed_property_uses_explicit_url(self, test_env):
         """Test that database_url_computed uses explicit DATABASE_URL if provided"""
+        from app.core.config import Settings
         explicit_url = "postgresql://custom:password@custom-host:5432/custom_db"
         settings = Settings(DATABASE_URL=explicit_url)
 
         assert settings.database_url_computed == explicit_url
 
-    def test_database_url_computed_property_constructs_from_parts(self, test_env):
-        """Test that database_url_computed constructs URL from individual components"""
+    def test_database_url_computed_property(self, test_env):
+        """Test that database_url_computed property works correctly"""
+        from app.core.config import Settings
+        # Case: DATABASE_URL not set, should construct from POSTGRES_* vars
         settings = Settings(
-            DATABASE_URL="",
-            POSTGRES_HOST="testhost",
-            POSTGRES_PORT=5432,
+            DATABASE_URL="",  # Explicitly empty to trigger computed property
             POSTGRES_USER="testuser",
             POSTGRES_PASSWORD="testpass",
+            POSTGRES_HOST="testhost",
+            POSTGRES_PORT=5432,
             POSTGRES_DB="testdb"
         )
 
@@ -94,6 +98,7 @@ class TestSettings:
 
     def test_s3_presigned_url_max_expire_seconds(self, test_env):
         """Test that S3 presigned URL expiry has a maximum limit (security requirement)"""
+        from app.core.config import Settings
         settings = Settings()
 
         # Default should be 300 seconds (5 minutes) per SECURITY_COMPLIANCE.md
@@ -101,6 +106,7 @@ class TestSettings:
 
     def test_feature_flags_default_values(self, test_env):
         """Test that feature flags have correct default values"""
+        from app.core.config import Settings
         settings = Settings()
 
         # Per PRD.md, these must be True in production
@@ -110,12 +116,14 @@ class TestSettings:
 
     def test_aws_region_default(self, test_env):
         """Test that AWS region defaults to ap-northeast-2 (Seoul)"""
+        from app.core.config import Settings
         settings = Settings()
 
         assert settings.AWS_REGION == "ap-northeast-2"
 
     def test_openai_model_defaults(self, test_env):
         """Test that OpenAI model names have sensible defaults"""
+        from app.core.config import Settings
         settings = Settings()
 
         assert settings.OPENAI_MODEL_CHAT == "gpt-4o-mini"
@@ -123,6 +131,7 @@ class TestSettings:
 
     def test_log_level_default(self, test_env):
         """Test that log level defaults to INFO"""
+        from app.core.config import Settings
         settings = Settings()
 
         assert settings.LOG_LEVEL == "INFO"
@@ -131,6 +140,7 @@ class TestSettings:
         """Test that JWT_SECRET should not be empty in production (future validation)"""
         # This test documents expected behavior for future validation
         # TODO: Add pydantic validator to enforce strong JWT_SECRET in prod
+        from app.core.config import Settings
 
         settings = Settings(
             APP_ENV="prod",
@@ -143,12 +153,14 @@ class TestSettings:
 
     def test_opensearch_case_index_prefix(self, test_env):
         """Test that OpenSearch case index prefix is correct"""
+        from app.core.config import Settings
         settings = Settings()
 
         assert settings.OPENSEARCH_CASE_INDEX_PREFIX == "case_rag_"
 
     def test_opensearch_default_top_k(self, test_env):
         """Test that OpenSearch default top-k is 5"""
+        from app.core.config import Settings
         settings = Settings()
 
         assert settings.OPENSEARCH_DEFAULT_TOP_K == 5
