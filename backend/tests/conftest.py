@@ -11,11 +11,36 @@ from pathlib import Path
 
 def pytest_configure(config):
     """
-    Load .env file for local integration tests (not in CI)
+    Configure environment for pytest.
+
+    In CI environment (TESTING=true):
+      - Set test-specific environment variables if not already set
+      - These must be set BEFORE any app modules are imported
+
+    In local environment:
+      - Load .env file for integration tests
     """
-    # Skip loading .env in CI environment (CI sets its own env vars)
-    # Also skip if DATABASE_URL is already set (indicates CI or pre-configured env)
-    if os.environ.get("TESTING") == "true" or os.environ.get("DATABASE_URL"):
+    # CI environment: set test defaults if not already set
+    if os.environ.get("TESTING") == "true":
+        # These defaults are used in CI when env vars are not explicitly set
+        # DATABASE_URL should be set by CI workflow, but provide fallback
+        defaults = {
+            "APP_ENV": "local",
+            "APP_DEBUG": "true",
+            "JWT_SECRET": "test-secret-key-for-ci-pipeline-32chars",
+            "S3_EVIDENCE_BUCKET": "test-bucket",
+            "DDB_EVIDENCE_TABLE": "test-evidence-table",
+            "QDRANT_HOST": "",  # Empty = in-memory mode for tests
+            "OPENAI_API_KEY": "test-openai-key",
+        }
+        for key, value in defaults.items():
+            if not os.environ.get(key):
+                os.environ[key] = value
+        return
+
+    # Local environment: load .env file
+    # Skip if DATABASE_URL is already set (indicates pre-configured env)
+    if os.environ.get("DATABASE_URL"):
         return
 
     # Load .env from backend directory for local integration tests
