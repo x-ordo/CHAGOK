@@ -3,6 +3,7 @@ Database session management for SQLAlchemy
 Connection pooling and session lifecycle
 """
 
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
@@ -31,8 +32,9 @@ def init_db():
     global engine, SessionLocal
 
     try:
-        # Use PostgreSQL from environment settings
-        database_url = settings.database_url_computed
+        # Priority: environment variable DATABASE_URL > settings.database_url_computed
+        # This ensures CI/testing environments can override the URL at runtime
+        database_url = os.environ.get("DATABASE_URL") or settings.database_url_computed
 
         logger.info(f"Initializing database with URL: {database_url.split('@')[0]}@...")
 
