@@ -3,6 +3,7 @@ Legal Evidence Hub (LEH) - Configuration
 Environment variables and application settings using Pydantic Settings
 """
 
+import os
 from typing import List
 from pydantic_settings import BaseSettings
 from pydantic import Field
@@ -141,8 +142,6 @@ class Settings(BaseSettings):
 # ============================================
 # Global settings instance
 # ============================================
-import os
-
 # In CI/testing environment, don't load .env file (use env vars directly)
 if os.environ.get("TESTING") == "true":
     settings = Settings(_env_file=None)
