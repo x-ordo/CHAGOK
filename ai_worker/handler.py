@@ -1,15 +1,22 @@
 """
 AWS Lambda Handler for LEH AI Worker.
 Triggered by S3 ObjectCreated events.
+
+Storage Architecture (Lambda Compatible):
+- MetadataStore → DynamoDB (leh_evidence table)
+- VectorStore → Qdrant Cloud
 """
 
 import json
 import logging
 import os
 import urllib.parse
+import uuid
+from datetime import datetime, timezone
+
 import boto3
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 # Import AI Pipeline modules
 from src.parsers import (
@@ -21,8 +28,11 @@ from src.parsers import (
 from src.parsers.text import TextParser
 from src.storage.metadata_store import MetadataStore
 from src.storage.vector_store import VectorStore
+from src.storage.schemas import EvidenceFile
+from src.analysis.summarizer import EvidenceSummarizer
 from src.analysis.article_840_tagger import Article840Tagger
 from src.utils.logging_filter import SensitiveDataFilter
+from src.utils.embeddings import get_embedding  # Embedding utility
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -77,6 +87,13 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
 
     Returns:
         처리 결과 딕셔너리
+
+    Storage Flow:
+        1. Parse file → Get messages/chunks
+        2. Save file metadata → DynamoDB (MetadataStore)
+        3. Generate embeddings → OpenAI
+        4. Store vectors + metadata → Qdrant (VectorStore)
+        5. Run analysis → Article 840 Tagger
     """
     try:
         # 파일 확장자 추출
@@ -108,40 +125,64 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         parsed_result = parser.parse(local_path)
         logger.info(f"Parsed {object_key} with {parser.__class__.__name__}")
 
+        # case_id 추출 (object_key에서 첫 번째 디렉토리 또는 bucket_name)
+        # 예: evidence/{case_id}/file.txt → case_id 추출
+        case_id = _extract_case_id(object_key, bucket_name)
+
+        # 파일 메타데이터 생성
+        file_id = f"file_{uuid.uuid4().hex[:12]}"
+        source_type = parsed_result[0].metadata.get("source_type", "unknown") if parsed_result else "unknown"
+
         # 메타데이터 저장 (DynamoDB)
         metadata_store = MetadataStore()
-        file_metadata = metadata_store.save_evidence_file(
-            case_id=bucket_name,  # S3 bucket을 case_id로 사용
-            file_path=object_key,
-            file_type=file_extension,
-            source_type=parsed_result[0].metadata.get("source_type", "unknown") if parsed_result else "unknown"
+        evidence_file = EvidenceFile(
+            file_id=file_id,
+            filename=file_path.name,
+            file_type=source_type,
+            parsed_at=datetime.now(timezone.utc),
+            total_messages=len(parsed_result),
+            case_id=case_id,
+            filepath=object_key
         )
-        logger.info(f"Saved metadata for {object_key}: file_id={file_metadata['file_id']}")
+        metadata_store.save_file(evidence_file)
+        logger.info(f"Saved metadata to DynamoDB: file_id={file_id}")
 
         # 벡터 임베딩 및 저장 (Qdrant)
         vector_store = VectorStore()
         chunk_ids = []
+
         for idx, message in enumerate(parsed_result):
-            chunk_id = vector_store.add_evidence(
-                case_id=bucket_name,
-                file_id=file_metadata['file_id'],
-                content=message.content,
-                metadata={
-                    "sender": message.sender,
-                    "timestamp": message.timestamp.isoformat() if message.timestamp else None,
-                    "chunk_index": idx,
-                    **message.metadata
-                }
+            chunk_id = f"chunk_{uuid.uuid4().hex[:12]}"
+            content = message.content
+            timestamp = message.timestamp.isoformat() if message.timestamp else datetime.now(timezone.utc).isoformat()
+
+            # Embedding 생성
+            try:
+                embedding = get_embedding(content)
+            except Exception as e:
+                logger.warning(f"Embedding generation failed for chunk {idx}: {e}")
+                continue
+
+            # Qdrant에 벡터 + 메타데이터 저장
+            vector_store.add_chunk_with_metadata(
+                chunk_id=chunk_id,
+                file_id=file_id,
+                case_id=case_id,
+                content=content,
+                embedding=embedding,
+                timestamp=timestamp,
+                sender=message.sender,
+                score=None
             )
             chunk_ids.append(chunk_id)
-        logger.info(f"Indexed {len(chunk_ids)} chunks to vector store")
+
+        logger.info(f"Indexed {len(chunk_ids)} chunks to Qdrant")
 
         # 분석 엔진 실행 (Article 840 Tagger)
         tagger = Article840Tagger()
 
         tags_list = []
         for message in parsed_result:
-            # Article 840 태깅
             tagging_result = tagger.tag(message)
             tags_list.append({
                 "categories": [cat.value for cat in tagging_result.categories],
@@ -154,7 +195,8 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
             "file": object_key,
             "parser_type": parser.__class__.__name__,
             "bucket": bucket_name,
-            "file_id": file_metadata['file_id'],
+            "case_id": case_id,
+            "file_id": file_id,
             "chunks_indexed": len(chunk_ids),
             "tags": tags_list
         }
@@ -166,6 +208,36 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
             "file": object_key,
             "error": str(e)
         }
+
+
+def _extract_case_id(object_key: str, fallback: str) -> str:
+    """
+    S3 object key에서 case_id 추출
+
+    Expected formats:
+    - evidence/{case_id}/filename.ext → case_id
+    - {case_id}/filename.ext → case_id
+    - filename.ext → fallback (bucket name)
+
+    Args:
+        object_key: S3 object key
+        fallback: Fallback value (bucket name)
+
+    Returns:
+        Extracted case_id
+    """
+    parts = object_key.split('/')
+
+    # evidence/{case_id}/file.ext 패턴
+    if len(parts) >= 3 and parts[0] == 'evidence':
+        return parts[1]
+
+    # {case_id}/file.ext 패턴
+    if len(parts) >= 2:
+        return parts[0]
+
+    # 파일만 있는 경우 fallback
+    return fallback
 
 
 def handle(event, context):
