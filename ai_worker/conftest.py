@@ -46,6 +46,7 @@ def pytest_collection_modifyitems(config, items):
                 "test_case_isolation",
                 "test_storage_manager",
                 "test_search_engine",
+                "test_handler",  # Handler tests mock storage and require specific setup
             ]
 
             for pattern in integration_patterns:
