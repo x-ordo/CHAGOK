@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { Plus } from 'lucide-react';
+import { Plus, LogOut } from 'lucide-react';
 import CaseCard from '@/components/cases/CaseCard';
-import AddCaseModal from '@/components/cases/AddCaseModal'; // 모달 컴포넌트 임포트
+import AddCaseModal from '@/components/cases/AddCaseModal';
 import { Case } from '@/types/case';
+import { useAuth } from '@/hooks/useAuth';
 
 // Mock Data for MVP
 const MOCK_CASES: Case[] = [
@@ -39,22 +40,19 @@ const MOCK_CASES: Case[] = [
 
 export default function CasesPage() {
     const router = useRouter();
+    const { isAuthenticated, isLoading, logout } = useAuth();
     const [cases] = useState<Case[]>(MOCK_CASES);
-    const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 추가
-    const [isAuthChecking, setIsAuthChecking] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Navigation Guard: Check if user is authenticated
+    // Redirect to login if not authenticated
     useEffect(() => {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
+        if (!isLoading && !isAuthenticated) {
             router.replace('/login');
-        } else {
-            setIsAuthChecking(false);
         }
-    }, [router]);
+    }, [isLoading, isAuthenticated, router]);
 
-    // Show nothing while checking auth to prevent content flash
-    if (isAuthChecking) {
+    // Show loading while checking auth
+    if (isLoading || !isAuthenticated) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-neutral-50">
                 <div className="text-gray-500">로딩 중...</div>
@@ -74,7 +72,13 @@ export default function CasesPage() {
                     <h1 className="text-2xl font-bold text-secondary">LEH</h1>
                     <div className="flex items-center space-x-4">
                         <span className="text-sm text-neutral-600">변호사님, 환영합니다.</span>
-                        <button className="text-sm text-gray-500 hover:text-gray-800">로그아웃</button>
+                        <button
+                            onClick={logout}
+                            className="flex items-center gap-1 text-sm text-gray-500 hover:text-error transition-colors"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            로그아웃
+                        </button>
                     </div>
                 </div>
             </nav>
