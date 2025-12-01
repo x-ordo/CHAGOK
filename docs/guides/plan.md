@@ -189,6 +189,55 @@
 
 ---
 
+### 1.13 Lambda 환경변수 설정 ✅ **완료 (2025-12-01)**
+
+> **담당: H (Backend)**
+> **목표**: Lambda 함수에 환경변수를 설정하여 RDS, S3, OpenAI 등 외부 서비스 연동
+
+- [x] Lambda 환경변수 설정 (`aws lambda update-function-configuration`):
+  - **Database (PostgreSQL RDS)**:
+    - `POSTGRES_HOST`: leh-postgres.c7q0268amx43.ap-northeast-2.rds.amazonaws.com
+    - `POSTGRES_PORT`: 5432
+    - `POSTGRES_USER`: leh_admin
+    - `POSTGRES_DB`: leh_db
+    - `DATABASE_URL`: postgresql+psycopg2://...
+  - **Authentication (JWT)**:
+    - `JWT_SECRET`: 프로덕션용 시크릿 키
+    - `JWT_ALGORITHM`: HS256
+    - `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`: 60
+  - **AWS Services**:
+    - `S3_EVIDENCE_BUCKET`: leh-evidence-prod
+    - `S3_EVIDENCE_PREFIX`: cases/
+    - `DDB_EVIDENCE_TABLE`: leh_evidence
+    - `DDB_CASE_SUMMARY_TABLE`: leh_case_summary
+  - **OpenAI / LLM**:
+    - `OPENAI_API_KEY`: sk-proj-...
+    - `OPENAI_MODEL_CHAT`: gpt-4o-mini
+    - `OPENAI_MODEL_EMBEDDING`: text-embedding-3-small
+  - **Qdrant (Vector DB)**:
+    - `QDRANT_HOST`: Qdrant Cloud endpoint
+    - `QDRANT_API_KEY`: Qdrant API key
+  - **Application**:
+    - `APP_ENV`: production
+    - `CORS_ALLOW_ORIGINS`: CloudFront URL
+
+- [x] RDS 보안그룹 확인:
+  - Security Group: `sg-0d4d1a74a9e4576e2`
+  - Inbound Rule: 0.0.0.0/0 → Port 5432 (Public Access)
+  - RDS `PubliclyAccessible`: true
+
+- [x] Lambda-RDS 연결 테스트:
+  - ✅ 회원가입 성공: `POST /auth/signup` → 201 Created
+  - ✅ 로그인 성공: `POST /auth/login` → 200 OK, JWT 토큰 발급
+  - ✅ 사용자 데이터 RDS에 저장 확인
+
+**보안 참고사항:**
+- 현재 RDS가 Public Access로 설정되어 있음 (개발/데모 용도)
+- 프로덕션 환경에서는 Lambda를 VPC에 배치하고 RDS Private 접근 권장
+- Secrets Manager 사용 권장 (환경변수 대신)
+
+---
+
 ## 2. AI Worker (L, S3 Event → DynamoDB / Qdrant) ✅ **완료**
 
 ### 2.1 Event 파싱 ✅
