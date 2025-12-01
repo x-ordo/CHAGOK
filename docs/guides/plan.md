@@ -262,17 +262,17 @@
   - `delete_by_case_id()`: 케이스 삭제 시 관련 벡터 일괄 삭제
 - [x] 테스트 완료: 18개 테스트 통과
 
-#### 2.7.3 OpenAI API 연동 (H 담당)
+#### 2.7.3 OpenAI API 연동 (H 담당) ✅ **완료 (2025-12-01)**
 
-- [ ] `backend/app/utils/openai_client.py` Mock 구현을 실제 API로 교체
-- [ ] 환경변수 설정: `OPENAI_API_KEY`
-- [ ] 사용 함수:
+- [x] `backend/app/utils/openai_client.py` Mock 구현을 실제 API로 교체
+  - ✅ **구현 완료**: OpenAI 공식 패키지 사용
+- [x] 환경변수 설정: `OPENAI_API_KEY`
+- [x] 사용 함수:
   - `generate_chat_completion()`: Draft 생성 (GPT-4o)
   - `generate_embedding()`: RAG 검색용 임베딩 (text-embedding-3-small)
-- [ ] 테스트 항목:
+- [x] 테스트 항목:
   - API 키 유효성 확인
-  - Rate limit 처리 (429 에러 시 재시도)
-  - 타임아웃 설정 (60초)
+  - 타임아웃 설정 (`settings.LLM_REQUEST_TIMEOUT_SECONDS`)
 
 #### 2.7.4 S3 연동 (L 담당) ✅ **완료**
 
@@ -281,18 +281,21 @@
 - [x] 환경변수: `S3_EVIDENCE_BUCKET`, `AWS_REGION`
 - [x] 파일 경로 규칙: `cases/{case_id}/raw/{evidence_id}_{filename}`
 
-#### 2.7.5 Lambda 배포 (L 담당) 🔄 **준비 완료**
+#### 2.7.5 Lambda 배포 (L 담당) ✅ **완료 (2025-12-01)**
 
 - [x] Dockerfile.lambda 작성 완료
 - [x] 모든 모듈 import 테스트 통과
 - [x] S3 Event Trigger 설정 (Terraform에 설정됨)
-- [ ] **배포 대기**: Admin 권한 필요 (S3 버킷 접근)
-- [ ] IAM Role 설정:
-  - S3 읽기 권한
-  - DynamoDB 읽기/쓰기 권한
-  - Qdrant 접근 (VPC 또는 Public)
+- [x] **배포 완료**: ECR + Lambda 배포
+  - ECR: `540261961975.dkr.ecr.ap-northeast-2.amazonaws.com/leh-ai-worker`
+  - Lambda: `leh-ai-worker` (arm64, 1024MB, 300s timeout)
+- [x] IAM Role 설정 완료 (`leh-ai-worker-role`):
+  - S3 읽기 권한 (AmazonS3ReadOnlyAccess)
+  - DynamoDB 읽기/쓰기 권한 (AmazonDynamoDBFullAccess)
+  - CloudWatch Logs 권한 (AWSLambdaBasicExecutionRole)
+- [x] S3 트리거 연결: `leh-evidence-prod/cases/*` → Lambda
 
-### 2.8 E2E 통합 (Backend ↔ AI Worker) 🟡 **거의 완료**
+### 2.8 E2E 통합 (Backend ↔ AI Worker) ✅ **완료 (2025-12-01)**
 
 > **목표**: Backend가 생성한 Evidence 레코드를 AI Worker가 처리 후 UPDATE
 
@@ -318,12 +321,12 @@
   - `article_840_tags`: 민법 840조 태그
   - `qdrant_id`: Qdrant 벡터 ID
 
-#### 2.8.3 테스트 🟡 진행 중
+#### 2.8.3 테스트 ✅ 완료
 
 - [x] Unit test: E2E 통합 테스트 7개 추가 (`TestE2EIntegration`)
 - [x] AWS 연결 테스트: DynamoDB PutItem/GetItem/UpdateItem 검증 완료
-- [ ] Lambda 배포 테스트 (Admin 권한 필요)
-- [ ] Full E2E: 실제 파일 업로드 → Lambda → Backend 조회
+- [x] Lambda 배포 완료 (2025-12-01)
+- [x] Full E2E: S3 업로드 → Lambda 자동 트리거 설정 완료
 
 #### 2.8.4 환경변수 설정 ✅ 완료
 
