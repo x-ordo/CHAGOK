@@ -186,6 +186,15 @@ app.include_router(evidence.router, prefix="/evidence", tags=["Evidence"])
 
 
 # ============================================
+# AWS Lambda Handler (Mangum)
+# ============================================
+from mangum import Mangum
+
+# Lambda handler for API Gateway
+handler = Mangum(app, lifespan="off")
+
+
+# ============================================
 # Development Server (직접 실행 시에만)
 # ============================================
 if __name__ == "__main__":

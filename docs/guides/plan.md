@@ -155,6 +155,38 @@
   - CSV 형식으로 감사 로그를 다운로드할 수 있어야 한다.
   - 필터링 조건을 동일하게 적용해야 한다.
 
+### 1.12 Backend Lambda 배포 ✅ **완료 (2025-12-01)**
+
+> **담당: H (Backend)**
+> **목표**: FastAPI 백엔드를 AWS Lambda + API Gateway로 배포
+
+- [x] Mangum 어댑터 추가:
+  - `requirements.txt`에 `mangum>=0.17.0` 추가
+  - `app/main.py`에 Lambda handler 추가: `handler = Mangum(app, lifespan="off")`
+- [x] `Dockerfile.lambda` 생성:
+  - Base image: `public.ecr.aws/lambda/python:3.12`
+  - Handler: `app.main.handler`
+- [x] ECR 레포지토리 생성 및 이미지 push:
+  - ECR: `540261961975.dkr.ecr.ap-northeast-2.amazonaws.com/leh-backend`
+  - Architecture: arm64
+- [x] Lambda 함수 생성 (`leh-backend`):
+  - Memory: 512MB
+  - Timeout: 30s
+  - Architecture: arm64
+- [x] IAM Role 설정 (`leh-backend-role`):
+  - AWSLambdaBasicExecutionRole
+  - AmazonS3FullAccess
+  - AmazonDynamoDBFullAccess
+  - AmazonRDSDataFullAccess
+- [x] API Gateway HTTP API 생성 및 연결:
+  - API ID: `zhfiuntwj0`
+  - Endpoint: `https://zhfiuntwj0.execute-api.ap-northeast-2.amazonaws.com`
+  - Integration: AWS_PROXY (Lambda)
+  - Auto-deploy 활성화
+
+**테스트 결과:**
+- ✅ Health check 성공: `GET /health` → `{"status":"ok","service":"Legal Evidence Hub API","version":"0.2.0"}`
+
 ---
 
 ## 2. AI Worker (L, S3 Event → DynamoDB / Qdrant) ✅ **완료**
