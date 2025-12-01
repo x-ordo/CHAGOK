@@ -47,8 +47,17 @@ backend/
 │   ├── test_services/
 │   └── conftest.py
 ├── alembic/                  # DB 마이그레이션
+├── Dockerfile.lambda         # Lambda 배포용 Dockerfile
 └── requirements.txt
 ```
+
+### 배포 구성 (Lambda + API Gateway)
+| 항목 | 값 |
+|------|-----|
+| Lambda 함수 | `leh-backend` |
+| API Endpoint | `https://zhfiuntwj0.execute-api.ap-northeast-2.amazonaws.com` |
+| ECR 이미지 | `540261961975.dkr.ecr.ap-northeast-2.amazonaws.com/leh-backend` |
+| Architecture | arm64, 512MB, 30s timeout |
 
 ### 레이어 책임
 
@@ -92,8 +101,17 @@ ai_worker/
 ├── tests/
 │   ├── test_parsers/
 │   └── conftest.py
+├── Dockerfile.lambda         # Lambda 배포용 Dockerfile
 └── requirements.txt
 ```
+
+### 배포 구성 (Lambda + S3 Trigger)
+| 항목 | 값 |
+|------|-----|
+| Lambda 함수 | `leh-ai-worker` |
+| ECR 이미지 | `540261961975.dkr.ecr.ap-northeast-2.amazonaws.com/leh-ai-worker` |
+| S3 트리거 | `leh-evidence-prod/cases/*` |
+| Architecture | arm64, 1024MB, 300s timeout |
 
 ### 레이어 책임
 
@@ -131,17 +149,27 @@ frontend/
 │   └── styles/              # 글로벌 스타일
 ├── public/                  # 정적 파일
 ├── tests/
+├── next.config.js           # Next.js 설정 (static export)
+├── .env.production          # 프로덕션 환경변수
 └── package.json
 ```
+
+### 배포 구성 (S3 + CloudFront)
+| 항목 | 값 |
+|------|-----|
+| S3 버킷 | `leh-frontend-kbp9r` |
+| CloudFront URL | `https://dpbf86zqulqfy.cloudfront.net` |
+| 빌드 방식 | `next export` (정적 빌드) |
+| API 연동 | `NEXT_PUBLIC_API_BASE_URL` 환경변수 |
 
 ### 레이어 책임
 
 | 레이어 | 책임 | 규칙 |
 |--------|------|------|
-| `app/` | 페이지 라우팅 | Next.js App Router |
+| `app/` (또는 `pages/`) | 페이지 라우팅 | Next.js Pages Router |
 | `components/` | UI 렌더링 | 작고 독립적, 재사용 가능 |
 | `hooks/` | 상태 로직 | React Query 활용 |
-| `lib/api/` | API 호출 | Backend 연동 |
+| `lib/api/` | API 호출 | Backend 연동 (JWT 자동 첨부) |
 
 ---
 
