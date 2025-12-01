@@ -270,6 +270,7 @@ class TestSearchEngineV2SearchMethods(unittest.TestCase):
         Then: SearchResult 반환"""
         mock_embedding.return_value = [0.1] * 1536
         self.mock_vector_store.search.return_value = []
+        self.mock_vector_store.hybrid_search.return_value = []
 
         result = self.engine.search(
             query="외도 증거",
@@ -287,6 +288,7 @@ class TestSearchEngineV2SearchMethods(unittest.TestCase):
         Then: 필터가 filters_applied에 포함"""
         mock_embedding.return_value = [0.1] * 1536
         self.mock_vector_store.search.return_value = []
+        self.mock_vector_store.hybrid_search.return_value = []
 
         result = self.engine.search(
             query="증거",

@@ -118,29 +118,52 @@ class SearchEngineV2:
                 summary=f"임베딩 생성 실패: {e}"
             )
 
-        # 벡터 검색 (필터링 위해 여유분 확보)
-        raw_results = self.vector_store.search(
-            query_embedding=query_embedding,
-            n_results=top_k * 3,
-            where={"case_id": case_id}
-        )
+        # 하이브리드 검색 사용 (네이티브 필터링)
+        category_values = [c.value for c in categories] if categories else None
+        file_type_values = [ft.value for ft in file_types] if file_types else None
+
+        # hybrid_search가 있으면 사용, 없으면 기존 search 사용
+        if hasattr(self.vector_store, 'hybrid_search'):
+            raw_results = self.vector_store.hybrid_search(
+                query_embedding=query_embedding,
+                n_results=top_k * 2,  # 날짜 필터용 여유분
+                case_id=case_id,
+                categories=category_values,
+                min_confidence=min_confidence,
+                sender=sender,
+                file_types=file_type_values
+            )
+        else:
+            # 폴백: 기존 search
+            raw_results = self.vector_store.search(
+                query_embedding=query_embedding,
+                n_results=top_k * 3,
+                where={"case_id": case_id}
+            )
 
         # SearchResultItem으로 변환
         items: List[SearchResultItem] = []
         for result in raw_results:
             item = self._convert_to_search_item(result, case_id, query)
 
-            # 필터링 적용
-            if not self._passes_filters(
-                item,
-                file_types=file_types,
-                categories=categories,
-                min_confidence=min_confidence,
-                sender=sender,
-                start_date=start_date,
-                end_date=end_date
-            ):
+            # 날짜 필터만 후처리 (벡터 DB에서 지원 어려움)
+            if start_date and item.timestamp and item.timestamp < start_date:
                 continue
+            if end_date and item.timestamp and item.timestamp > end_date:
+                continue
+
+            # hybrid_search 미사용 시 추가 필터
+            if not hasattr(self.vector_store, 'hybrid_search'):
+                if not self._passes_filters(
+                    item,
+                    file_types=file_types,
+                    categories=categories,
+                    min_confidence=min_confidence,
+                    sender=sender,
+                    start_date=start_date,
+                    end_date=end_date
+                ):
+                    continue
 
             items.append(item)
 
