@@ -210,16 +210,18 @@
 
 - [x] Embedding 생성 모듈은:
   - 일정 길이 이상의 벡터(예: 1536 길이)를 반환해야 한다 (길이만 테스트).
-  - ✅ **구현 완료**: VectorStore with OpenAI text-embedding-3-small (1536 dim) + Qdrant
+  - ✅ **구현 완료**: VectorStore with OpenAI text-embedding-ada-002 (1536 dim) + Qdrant Cloud
 - [x] 동일 `evidence_id` 재처리 시:
   - Qdrant 벡터는 **upsert(덮어쓰기)** 되어야 하고,
   - DynamoDB의 해당 항목도 최신 값으로 업데이트돼야 한다.
-  - ✅ **구현 완료**: MetadataStore (SQLite/DynamoDB) + VectorStore upsert 로직
+  - ✅ **구현 완료**: MetadataStore (DynamoDB) + VectorStore upsert 로직
+  - ✅ **2025-11-28 업데이트**: SQLite → DynamoDB 마이그레이션 완료
 
 **테스트 현황**:
 - ✅ handler 테스트: 16 passing (Phase 1-6 통합)
 - ✅ E2E 통합 테스트: 5 passing (Phase 7)
 - ✅ 전체 파이프라인: S3 Event → 파싱 → 메타데이터 저장 → 벡터 저장 → Article 840 태깅
+- ✅ **Storage 모듈 테스트 (2025-11-28)**: 34 passing (MetadataStore 18 + VectorStore 16)
 
 ### 2.7 AWS 서비스 연동 (Issue #10: Mock → Real 전환)
 
@@ -227,8 +229,9 @@
 > - **H (Backend)**: DynamoDB 연동, OpenAI API 연동
 > - **L (AI Worker)**: Qdrant 연동, S3 연동, Lambda 배포
 
-#### 2.7.1 DynamoDB 연동 ✅ (H 담당 - 완료)
+#### 2.7.1 DynamoDB 연동 ✅ (완료)
 
+**Backend (H 담당)**:
 - [x] `backend/app/utils/dynamo.py` Mock 구현을 실제 boto3로 교체
   - ✅ **구현 완료**: boto3 client 사용, `leh_evidence` 테이블 연동
 - [x] 테이블 스키마 확인 및 적용:
