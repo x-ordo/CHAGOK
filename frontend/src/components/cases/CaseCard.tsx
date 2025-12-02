@@ -209,11 +209,11 @@ export default function CaseCard({ caseData, onStatusChange, onDelete }: CaseCar
               type="button"
               onClick={handleDeleteClick}
               disabled={isDeleting}
-              className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors
+              className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors
                 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               aria-label="사건 삭제"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-5 h-5" />
             </button>
           </div>
         </div>
