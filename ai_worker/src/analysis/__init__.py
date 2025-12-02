@@ -18,6 +18,12 @@ from src.analysis.context_matcher import (
     check_negation,
     get_effective_keywords,
 )
+from src.analysis.timeline_generator import (
+    TimelineGenerator,
+    TimelineEvent,
+    TimelineResult,
+    TimelineEventType,
+)
 
 __all__ = [
     # Evidence Scorer
@@ -51,4 +57,10 @@ __all__ = [
     "ContextAnalysisResult",
     "check_negation",
     "get_effective_keywords",
+
+    # Timeline Generator
+    "TimelineGenerator",
+    "TimelineEvent",
+    "TimelineResult",
+    "TimelineEventType",
 ]
