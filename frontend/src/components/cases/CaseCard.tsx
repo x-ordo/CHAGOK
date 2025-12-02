@@ -3,16 +3,20 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { Case } from '@/types/case';
-import { FileText, Clock, AlertCircle, CheckCircle2, ChevronDown } from 'lucide-react';
+import { FileText, Clock, AlertCircle, CheckCircle2, ChevronDown, Trash2 } from 'lucide-react';
+import { deleteCase } from '@/lib/api/cases';
 
 interface CaseCardProps {
   caseData: Case;
   onStatusChange?: (caseId: string, newStatus: 'open' | 'closed') => void;
+  onDelete?: () => void;
 }
 
-export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
+export default function CaseCard({ caseData, onStatusChange, onDelete }: CaseCardProps) {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,7 +55,40 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       setIsStatusDropdownOpen(false);
+      setShowDeleteConfirm(false);
     }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDeleting(true);
+
+    try {
+      const response = await deleteCase(caseData.id);
+      if (response.error) {
+        alert(`삭제 실패: ${response.error}`);
+        return;
+      }
+      onDelete?.();
+    } catch {
+      alert('삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleDeleteCancel = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowDeleteConfirm(false);
   };
 
   return (
@@ -145,7 +182,7 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
             </div>
           </div>
 
-          {/* Draft Status */}
+          {/* Draft Status and Delete Button */}
           <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-neutral-500">Draft 상태:</span>
@@ -166,8 +203,51 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
                 </div>
               )}
             </div>
+
+            {/* Delete Button */}
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              disabled={isDeleting}
+              className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors
+                focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              aria-label="사건 삭제"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
           </div>
         </div>
+
+        {/* Delete Confirmation Overlay */}
+        {showDeleteConfirm && (
+          <div
+            className="absolute inset-0 z-20 bg-white/95 rounded-lg flex flex-col items-center justify-center p-6"
+            onClick={(e) => e.preventDefault()}
+          >
+            <p className="text-lg font-semibold text-neutral-800 mb-2">사건을 삭제하시겠습니까?</p>
+            <p className="text-sm text-neutral-500 mb-6 text-center">
+              &quot;{caseData.title}&quot; 사건이 삭제됩니다.<br />
+              이 작업은 되돌릴 수 없습니다.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleDeleteCancel}
+                className="px-4 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? '삭제 중...' : '삭제'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </Link>
   );

@@ -151,7 +151,7 @@ export default function CasesPage() {
                 {/* Case Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {cases.map((caseItem) => (
-                        <CaseCard key={caseItem.id} caseData={caseItem} />
+                        <CaseCard key={caseItem.id} caseData={caseItem} onDelete={fetchCases} />
                     ))}
                 </div>
 
