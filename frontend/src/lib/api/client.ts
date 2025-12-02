@@ -47,15 +47,10 @@ export async function apiRequest<T>(
       // Handle both error formats: { error: { message: "..." } } and { detail: "..." }
       const errorMessage = data?.error?.message || data?.detail || 'An error occurred';
 
-      // Handle 401 Unauthorized - redirect to login
-      if (response.status === 401 && typeof window !== 'undefined') {
-        // Don't redirect if already on login/signup/forgot-password pages
-        const currentPath = window.location.pathname;
-        const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
-        if (!authPaths.some(path => currentPath.startsWith(path))) {
-          window.location.href = '/login';
-        }
-      }
+      // Handle 401 Unauthorized
+      // Note: Don't auto-redirect here - let the calling code handle auth redirects
+      // Auto-redirect via window.location.href causes infinite loops with cookie-based auth
+      // The useAuth hook and page components should handle redirects appropriately
 
       return {
         error: errorMessage,
