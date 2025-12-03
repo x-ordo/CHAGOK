@@ -217,16 +217,29 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         }
 
         # 메타데이터 저장/업데이트 (DynamoDB)
+        # 파일명에서 원본 파일명 추출 (ev_xxx_filename.ext → filename.ext)
+        original_filename = file_path.name
+        if original_filename.startswith('ev_') and '_' in original_filename[3:]:
+            # ev_abc123_photo.jpg → photo.jpg
+            parts = original_filename.split('_', 2)
+            if len(parts) >= 3:
+                original_filename = parts[2]
+
         if backend_evidence_id:
-            # Backend가 생성한 레코드 업데이트
+            # Backend가 생성한 레코드 업데이트 (또는 먼저 실행된 경우 생성)
+            # case_id, filename 등 필수 필드도 함께 저장하여 조회 가능하게 함
             metadata_store.update_evidence_status(
                 evidence_id=backend_evidence_id,
                 status="processed",
                 ai_summary=ai_summary,
                 article_840_tags=article_840_tags,
-                qdrant_id=chunk_ids[0] if chunk_ids else None
+                qdrant_id=chunk_ids[0] if chunk_ids else None,
+                case_id=case_id,
+                filename=original_filename,
+                s3_key=object_key,
+                file_type=source_type
             )
-            logger.info(f"Updated Backend evidence: {backend_evidence_id} → processed")
+            logger.info(f"Updated Backend evidence: {backend_evidence_id} → processed (case_id={case_id})")
         else:
             # Fallback: 새 레코드 생성 (기존 방식)
             evidence_file = EvidenceFile(
