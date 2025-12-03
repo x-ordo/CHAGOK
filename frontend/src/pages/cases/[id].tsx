@@ -99,7 +99,6 @@ export default function CaseDetailPage() {
     const [isLoadingCase, setIsLoadingCase] = useState(true);
     const [evidenceList, setEvidenceList] = useState<Evidence[]>([]);
     const [isLoadingEvidence, setIsLoadingEvidence] = useState(false);
-    const [evidenceError, setEvidenceError] = useState<string | null>(null);
     const [draftContent, setDraftContent] = useState(INITIAL_DRAFT_CONTENT);
     const [draftCitations, setDraftCitations] = useState<DraftCitation[]>(INITIAL_CITATIONS);
     const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
@@ -138,19 +137,17 @@ export default function CaseDetailPage() {
         if (!caseId) return;
 
         setIsLoadingEvidence(true);
-        setEvidenceError(null);
 
         try {
             const result = await getEvidence(caseId);
-            if (result.error) {
-                setEvidenceError(result.error);
-            } else if (result.data) {
+            if (result.data) {
                 const mapped = result.data.evidence.map(e => mapApiEvidenceToEvidence(e, caseId));
                 setEvidenceList(mapped);
             }
+            // On error, just show empty list (no evidence yet)
         } catch (err) {
-            setEvidenceError('증거 목록을 불러오는데 실패했습니다.');
             console.error('Failed to fetch evidence:', err);
+            // On error, keep empty list - user sees "no evidence" instead of error
         } finally {
             setIsLoadingEvidence(false);
         }
@@ -461,16 +458,6 @@ export default function CaseDetailPage() {
                                 <div className="flex items-center justify-center py-8">
                                     <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
                                     <span className="ml-2 text-gray-500">증거 목록을 불러오는 중...</span>
-                                </div>
-                            ) : evidenceError ? (
-                                <div className="text-center py-8 text-red-500">
-                                    <p>{evidenceError}</p>
-                                    <button
-                                        onClick={fetchEvidenceList}
-                                        className="mt-2 text-sm text-blue-600 hover:underline"
-                                    >
-                                        다시 시도
-                                    </button>
                                 </div>
                             ) : evidenceList.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
