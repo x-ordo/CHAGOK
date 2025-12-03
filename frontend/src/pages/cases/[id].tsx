@@ -201,6 +201,7 @@ export default function CaseDetailPage() {
                     case_id: caseId,
                     evidence_temp_id,
                     s3_key,
+                    file_size: file.size,
                 });
 
                 if (completeResult.error) {

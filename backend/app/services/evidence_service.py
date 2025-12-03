@@ -177,8 +177,8 @@ class EvidenceService:
         }
         evidence_type = type_mapping.get(extension, "document")
 
-        # Generate evidence ID
-        evidence_id = generate_evidence_id()
+        # Use evidence_temp_id as evidence_id (matches S3 key for AI Worker)
+        evidence_id = request.evidence_temp_id
         created_at = datetime.utcnow()
 
         # Create evidence metadata for DynamoDB
@@ -188,6 +188,7 @@ class EvidenceService:
             "type": evidence_type,
             "filename": filename,
             "s3_key": request.s3_key,
+            "size": request.file_size,  # File size in bytes
             "content_type": self._get_content_type(extension),
             "status": "pending",  # Waiting for AI Worker processing
             "created_at": created_at.isoformat(),

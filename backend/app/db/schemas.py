@@ -253,6 +253,7 @@ class UploadCompleteRequest(BaseModel):
     case_id: str
     evidence_temp_id: str
     s3_key: str
+    file_size: int = 0  # File size in bytes
     note: Optional[str] = None
 
 

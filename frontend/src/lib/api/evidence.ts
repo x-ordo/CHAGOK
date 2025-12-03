@@ -43,6 +43,7 @@ export interface UploadCompleteRequest {
   case_id: string;
   evidence_temp_id: string;
   s3_key: string;
+  file_size: number;
   note?: string;
 }
 
