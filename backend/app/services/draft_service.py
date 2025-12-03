@@ -472,10 +472,11 @@ class DraftService:
 
         context_parts = []
         for i, doc in enumerate(evidence_results, start=1):
-            evidence_id = doc.get("id", f"evidence_{i}")
-            content = doc.get("content", "")
-            labels = doc.get("labels", [])
-            speaker = doc.get("speaker", "")
+            # AI Worker 필드명과 매핑 (chunk_id, document, legal_categories, sender)
+            evidence_id = doc.get("chunk_id") or doc.get("id", f"evidence_{i}")
+            content = doc.get("document") or doc.get("content", "")
+            labels = doc.get("legal_categories") or doc.get("labels", [])
+            speaker = doc.get("sender") or doc.get("speaker", "")
             timestamp = doc.get("timestamp", "")
 
             # Truncate content if too long

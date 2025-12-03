@@ -179,6 +179,8 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
             segment_end = metadata.get("segment_end_sec")
 
             # 4. Qdrant에 벡터 + 풍부한 메타데이터 저장
+            # Collection name: case_rag_{case_id} (Backend와 동일한 형식)
+            collection_name = f"case_rag_{case_id}"
             vector_store.add_chunk_with_metadata(
                 chunk_id=chunk_id,
                 file_id=file_id,
@@ -188,6 +190,7 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                 timestamp=timestamp,
                 sender=message.sender,
                 score=None,
+                collection_name=collection_name,
                 # Extended metadata
                 file_name=file_path.name,
                 file_type=source_type,
