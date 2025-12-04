@@ -6,8 +6,12 @@ Following TDD approach: RED-GREEN-REFACTOR
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
-from src.parsers.image_ocr import ImageOCRParser
-from src.parsers.base import Message
+
+# Skip entire module if pytesseract is not installed
+pytesseract = pytest.importorskip("pytesseract", reason="pytesseract not installed")
+
+from src.parsers.image_ocr import ImageOCRParser  # noqa: E402
+from src.parsers.base import Message  # noqa: E402
 
 
 class TestImageOCRParserInitialization:

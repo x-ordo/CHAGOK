@@ -11,21 +11,21 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-import logging
-from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+import logging  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from mangum import Mangum  # AWS Lambda handler
+from fastapi import FastAPI  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi.responses import JSONResponse  # noqa: E402
+from mangum import Mangum  # noqa: E402 - AWS Lambda handler
 
 # Import configuration and middleware
-from app.core.config import settings
+from app.core.config import settings  # noqa: E402
 
 # Import API routers
-from app.api import auth, admin, cases, evidence
-from app.middleware import (
+from app.api import auth, admin, cases, evidence, lawyer_portal  # noqa: E402
+from app.middleware import (  # noqa: E402
     register_exception_handlers,
     SecurityHeadersMiddleware,
     HTTPSRedirectMiddleware,
@@ -36,7 +36,7 @@ from app.middleware import (
 # ============================================
 # Logging Configuration
 # ============================================
-from app.core.logging_filter import SensitiveDataFilter
+from app.core.logging_filter import SensitiveDataFilter  # noqa: E402
 
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL.upper()),
@@ -188,6 +188,11 @@ app.include_router(cases.router, prefix="/cases", tags=["Cases"])
 
 # 증거 라우터
 app.include_router(evidence.router, prefix="/evidence", tags=["Evidence"])
+
+# 변호사 포털 라우터 (003-role-based-ui Feature)
+app.include_router(lawyer_portal.router, prefix="/lawyer", tags=["Lawyer Portal"])
+
+# Note: Timeline router removed (002-evidence-timeline feature incomplete)
 
 # Note: Draft endpoints are integrated into cases router (POST /cases/{case_id}/draft-preview)
 # Note: RAG search is integrated into draft generation service (draft_service.py)
