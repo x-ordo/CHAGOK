@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { login } from '@/lib/api/auth';
 import { Button, Input } from '@/components/primitives';
+import { getDashboardPath, UserRole } from '@/types/user';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -27,18 +28,35 @@ export default function LoginForm() {
         return;
       }
 
-      // Store auth token in localStorage
+      // Store auth token in localStorage and cookie
+      // NOTE: See Issue #63 for HTTP-only cookie migration plan
       localStorage.setItem('authToken', response.data.access_token);
+
+      // Set access_token cookie for middleware authentication check
+      document.cookie = `access_token=${response.data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}`;
 
       // Store user info for display purposes
       if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Normalize role to lowercase for frontend compatibility
+        const normalizedRole = response.data.user.role.toLowerCase();
+        const normalizedUser = { ...response.data.user, role: normalizedRole };
+
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
+
+        // Set user_data cookie for middleware and portal layouts
+        const userData = {
+          name: response.data.user.name,
+          email: response.data.user.email,
+          role: normalizedRole,
+        };
+        document.cookie = `user_data=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=${7 * 24 * 60 * 60}`;
       }
 
-      // Redirect to cases page
-      router.push('/cases');
-    } catch (err) {
-      console.error('Login error:', err);
+      // Redirect based on user role (normalized to lowercase)
+      const userRole = (response.data.user?.role?.toLowerCase() || 'lawyer') as UserRole;
+      const dashboardPath = getDashboardPath(userRole);
+      router.push(dashboardPath);
+    } catch {
       setError('로그인 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
