@@ -24,6 +24,24 @@ from src.analysis.timeline_generator import (
     TimelineResult,
     TimelineEventType,
 )
+from src.analysis.ai_analyzer import (
+    AIAnalyzer,
+    AIAnalyzerConfig,
+    analyze_with_ai,
+)
+from src.analysis.evidence_advisor import (
+    EvidenceAdvisor,
+    EvidenceAdvice,
+    EvidenceAdviceResponse,
+    AdviceType,
+    Severity,
+)
+from src.analysis.streaming_analyzer import (
+    StreamingAnalyzer,
+    StreamingConfig,
+    stream_analysis,
+    stream_analysis_async,
+)
 
 __all__ = [
     # Evidence Scorer
@@ -63,4 +81,22 @@ __all__ = [
     "TimelineEvent",
     "TimelineResult",
     "TimelineEventType",
+
+    # AI Analyzer
+    "AIAnalyzer",
+    "AIAnalyzerConfig",
+    "analyze_with_ai",
+
+    # Evidence Advisor (규칙 기반)
+    "EvidenceAdvisor",
+    "EvidenceAdvice",
+    "EvidenceAdviceResponse",
+    "AdviceType",
+    "Severity",
+
+    # Streaming Analyzer
+    "StreamingAnalyzer",
+    "StreamingConfig",
+    "stream_analysis",
+    "stream_analysis_async",
 ]
