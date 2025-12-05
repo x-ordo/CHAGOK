@@ -173,7 +173,8 @@ docker-data/
 
 # Agent & Personal Configs
 .agent/
-.claude/
+.claude/*
+!.claude/commands/
 /CLAUDE.md
 
 # 개인 파일들 담아주세요
@@ -208,4 +209,6 @@ docs/guides/claude.md
 
 # Personal Claude configuration directory
 .agent/
+# Note: .claude/commands/ is tracked for speckit sharing
+.specify/
 *.pdf
