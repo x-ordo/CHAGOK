@@ -1,8 +1,7 @@
 # CODEOWNERS - 코드 변경 시 자동 리뷰어 할당
-# 참고: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # 기본 리뷰어 (모든 파일)
-* @KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd
+* @Prometheus-P
 
 # Backend (FastAPI)
 backend/** @Prometheus-P
@@ -16,7 +15,12 @@ ai_worker/** @Prometheus-P
 # Infrastructure & CI/CD
 .github/** @Prometheus-P
 infra/** @Prometheus-P
+docker-compose*.yml @Prometheus-P
+Makefile @Prometheus-P
 
-# Documentation (모든 팀원)
-docs/** @KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd
-*.md @KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd
+# Documentation
+docs/** @Prometheus-P
+*.md @Prometheus-P
+
+# Specifications
+specs/** @Prometheus-P

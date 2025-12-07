@@ -7,43 +7,31 @@
 .PHONY: lint clean help
 
 # =============================================================================
-# SETUP COMMANDS (Idempotent - safe to run multiple times)
+# SETUP COMMANDS
 # =============================================================================
 
 ## Install all dependencies for all services
 setup: setup-backend setup-ai-worker setup-frontend
 	@echo "All services set up successfully!"
 
-## Setup Backend (FastAPI) - skips if venv exists
+## Setup Backend (FastAPI)
 setup-backend:
 	@echo "Setting up Backend..."
-	@if [ ! -d "backend/.venv" ]; then \
-		cd backend && python3 -m venv .venv; \
-	else \
-		echo "  Backend venv already exists, skipping creation..."; \
-	fi
-	cd backend && . .venv/bin/activate && pip install -q -r requirements.txt
+	cd backend && python3 -m venv .venv
+	cd backend && . .venv/bin/activate && pip install -r requirements.txt
 	@echo "Backend setup complete!"
 
-## Setup AI Worker (Lambda) - skips if venv exists
+## Setup AI Worker (Lambda)
 setup-ai-worker:
 	@echo "Setting up AI Worker..."
-	@if [ ! -d "ai_worker/.venv" ]; then \
-		cd ai_worker && python3 -m venv .venv; \
-	else \
-		echo "  AI Worker venv already exists, skipping creation..."; \
-	fi
-	cd ai_worker && . .venv/bin/activate && pip install -q -r requirements.txt
+	cd ai_worker && python3 -m venv .venv
+	cd ai_worker && . .venv/bin/activate && pip install -r requirements.txt
 	@echo "AI Worker setup complete!"
 
-## Setup Frontend (Next.js) - skips if node_modules exists
+## Setup Frontend (Next.js)
 setup-frontend:
 	@echo "Setting up Frontend..."
-	@if [ ! -d "frontend/node_modules" ]; then \
-		cd frontend && npm install; \
-	else \
-		echo "  Frontend node_modules already exists, skipping install..."; \
-	fi
+	cd frontend && npm install
 	@echo "Frontend setup complete!"
 
 # =============================================================================

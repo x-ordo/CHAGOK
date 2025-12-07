@@ -35,6 +35,8 @@ class UserStatus(str, enum.Enum):
 class CaseStatus(str, enum.Enum):
     """Case status enum"""
     ACTIVE = "active"
+    OPEN = "open"              # 진행 중 (open and active)
+    IN_PROGRESS = "in_progress"  # 검토 대기 (being actively worked)
     CLOSED = "closed"
 
 
@@ -45,6 +47,8 @@ class CaseMemberRole(str, enum.Enum):
     VIEWER = "viewer"
 
 
+<<<<<<< HEAD
+=======
 class DocumentType(str, enum.Enum):
     """Legal document type enum (민법 840조 관련)"""
     COMPLAINT = "complaint"      # 소장
@@ -74,6 +78,7 @@ class ExportJobStatus(str, enum.Enum):
     FAILED = "failed"
 
 
+>>>>>>> origin/dev
 class CalendarEventType(str, enum.Enum):
     """Calendar event type enum"""
     COURT = "court"          # 재판/출석
@@ -101,6 +106,39 @@ class InvoiceStatus(str, enum.Enum):
     CANCELLED = "cancelled"  # 취소
 
 
+<<<<<<< HEAD
+class JobType(str, enum.Enum):
+    """Job type enum for async processing"""
+    OCR = "ocr"                      # Image/PDF text extraction
+    STT = "stt"                      # Audio transcription
+    VISION_ANALYSIS = "vision"       # GPT-4o image understanding
+    DRAFT_GENERATION = "draft"       # RAG + GPT-4o legal document
+    EVIDENCE_ANALYSIS = "analysis"   # Evidence re-analysis
+    PDF_EXPORT = "pdf_export"        # Export draft to PDF
+    DOCX_EXPORT = "docx_export"      # Export draft to DOCX
+
+
+class JobStatus(str, enum.Enum):
+    """Job status enum"""
+    QUEUED = "queued"          # Waiting to be processed
+    PROCESSING = "processing"  # Currently running
+    COMPLETED = "completed"    # Success
+    FAILED = "failed"          # Error occurred
+    RETRY = "retry"            # Waiting to retry
+    CANCELLED = "cancelled"    # User cancelled
+
+
+class EvidenceStatus(str, enum.Enum):
+    """Evidence processing status enum"""
+    PENDING = "pending"        # Upload URL generated, waiting for file
+    UPLOADED = "uploaded"      # File uploaded, waiting for processing
+    PROCESSING = "processing"  # AI processing in progress
+    COMPLETED = "completed"    # AI processing complete
+    FAILED = "failed"          # Processing failed
+
+
+=======
+>>>>>>> origin/dev
 # ============================================
 # Models
 # ============================================
@@ -226,6 +264,8 @@ class AuditLog(Base):
         return f"<AuditLog(id={self.id}, user_id={self.user_id}, action={self.action})>"
 
 
+<<<<<<< HEAD
+=======
 class DraftDocument(Base):
     """
     Draft document model - AI-generated legal document drafts
@@ -305,6 +345,7 @@ class DocumentTemplate(Base):
         return f"<DocumentTemplate(id={self.id}, name={self.name}, document_type={self.document_type})>"
 
 
+>>>>>>> origin/dev
 class Message(Base):
     """
     Message model - real-time communication between users
@@ -405,3 +446,101 @@ class Invoice(Base):
 
     def __repr__(self):
         return f"<Invoice(id={self.id}, amount={self.amount}, status={self.status})>"
+<<<<<<< HEAD
+
+
+class Evidence(Base):
+    """
+    Evidence model - uploaded evidence files for cases
+    Metadata is stored here, actual files in S3, AI analysis results in DynamoDB/Qdrant
+    """
+    __tablename__ = "evidence"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    case_id = Column(String, ForeignKey("cases.id"), nullable=False, index=True)
+
+    # File info
+    file_name = Column(String, nullable=False)
+    s3_key = Column(String, nullable=False)
+    file_type = Column(String, nullable=True)  # MIME type
+    file_size = Column(String, nullable=True)  # Size in bytes (stored as string for SQLite compatibility)
+    description = Column(String, nullable=True)
+
+    # Processing status
+    status = Column(String, nullable=False, default="pending")  # pending, uploaded, processing, completed, failed
+
+    # AI analysis results (stored as JSON strings for SQLite compatibility)
+    ai_labels = Column(String, nullable=True)  # JSON array: ["폭언", "불륜", ...]
+    ai_summary = Column(String, nullable=True)  # AI-generated summary
+    ai_score = Column(String, nullable=True)  # Evidence strength score
+
+    # Upload tracking
+    uploaded_by = Column(String, ForeignKey("users.id"), nullable=True, index=True)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    case = relationship("Case", backref="evidence_items")
+    uploader = relationship("User")
+
+    @property
+    def ai_labels_list(self) -> list:
+        """Parse ai_labels JSON string to list"""
+        import json
+        if not self.ai_labels:
+            return []
+        try:
+            return json.loads(self.ai_labels)
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def __repr__(self):
+        return f"<Evidence(id={self.id}, file_name={self.file_name}, status={self.status})>"
+
+
+class Job(Base):
+    """
+    Job model - tracks async processing tasks (OCR, STT, draft generation, etc.)
+    """
+    __tablename__ = "jobs"
+
+    id = Column(String, primary_key=True, default=lambda: f"job_{uuid.uuid4().hex[:12]}")
+    case_id = Column(String, ForeignKey("cases.id"), nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    job_type = Column(SQLEnum(JobType), nullable=False)
+    status = Column(SQLEnum(JobStatus), nullable=False, default=JobStatus.QUEUED)
+
+    # Related resources
+    evidence_id = Column(String, nullable=True, index=True)  # For evidence-related jobs
+
+    # Job data (stored as JSON strings)
+    input_data = Column(String, nullable=True)   # JSON: {s3_key, file_type, parameters, ...}
+    output_data = Column(String, nullable=True)  # JSON: Result from AI processing
+    error_details = Column(String, nullable=True)  # JSON: {error_code, message, traceback, ...}
+
+    # Progress tracking
+    progress = Column(String, default="0")  # 0-100 for long-running jobs
+
+    # Retry tracking
+    retry_count = Column(String, default="0")
+    max_retries = Column(String, default="3")
+
+    # AWS Lambda correlation
+    lambda_request_id = Column(String, nullable=True)  # For CloudWatch logs correlation
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    case = relationship("Case")
+    user = relationship("User")
+
+    def __repr__(self):
+        return f"<Job(id={self.id}, type={self.job_type}, status={self.status})>"
+=======
+>>>>>>> origin/dev
