@@ -9,6 +9,9 @@
 .env
 .env.*
 !.env.example
+!.env.production
+!frontend/.env.production
+!.env.production
 *.pem
 *.key
 *.cert
@@ -69,6 +72,8 @@ ai_worker/workflows/local_debug/
 .env
 .env.*
 !.env.example
+!.env.production
+!frontend/.env.production
 # Distribution / Packaging
 build/
 dist/
@@ -197,11 +202,10 @@ docker-data/
 # Personal CLAUDE.md (prevent accidental commits)
 /CLAUDE.md
 /claude.md
+AGENTS.md
 docs/guides/CLAUDE.md
 docs/guides/claude.md
 
 # Personal Claude configuration directory
-.claude/
-.specify/
 .agent/
 *.pdf

@@ -5,13 +5,17 @@
  * 003-role-based-ui Feature
  *
  * Layout for the detective portal with field investigation tools.
+ * Responsive design with mobile drawer.
  * Uses design system tokens.
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import PortalSidebar, { NavIcons, NavItem } from '@/components/shared/PortalSidebar';
-import { logout } from '@/lib/api/auth';
+import PortalSidebar, { NavIcons, NavItem, HamburgerIcon } from '@/components/shared/PortalSidebar';
+import RoleGuard from '@/components/auth/RoleGuard';
+import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
+import { UserRole } from '@/types/user';
 
 // Detective navigation items
 const detectiveNavItems: NavItem[] = [
@@ -63,11 +67,7 @@ const detectiveNavItems: NavItem[] = [
   },
 ];
 
-interface UserData {
-  name: string;
-  email: string;
-  role: 'detective';
-}
+const ALLOWED_ROLES: UserRole[] = ['detective'];
 
 export default function DetectiveLayout({
   children,
@@ -75,60 +75,29 @@ export default function DetectiveLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [user, setUser] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const getUserData = () => {
-      try {
-        const userCookie = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('user_data='));
-
-        if (userCookie) {
-          const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
-          if (userData && userData.role === 'detective') {
-            setUser(userData);
-          } else {
-            router.push('/login');
-          }
-        } else {
-          router.push('/login');
-        }
-      } catch {
-        router.push('/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUserData();
-  }, [router]);
+  const { user, logout } = useAuth();
+  const { role } = useRole();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
       await logout();
-    } finally {
-      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      document.cookie = 'user_data=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
   };
 
-  if (loading) {
+  const renderContent = () => {
+    if (!user || !role) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]" />
+        </div>
+      );
+    }
+
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  return (
-    <div className="flex min-h-screen bg-[var(--color-bg-secondary)]">
+      <div className="flex min-h-screen bg-[var(--color-bg-secondary)]">
       {/* Sidebar */}
       <PortalSidebar
         role={user.role}
@@ -136,26 +105,33 @@ export default function DetectiveLayout({
         userEmail={user.email}
         navItems={detectiveNavItems}
         onLogout={handleLogout}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       {/* Main Content */}
-      <main
-        className="flex-1 ml-64"
-        style={{
-          minHeight: '100vh',
-        }}
-      >
+      <main className="flex-1 lg:ml-64 min-h-screen">
         {/* Top Header */}
-        <header className="sticky top-0 z-10 h-16 bg-white border-b border-[var(--color-border-default)] flex items-center px-6">
+        <header className="sticky top-0 z-10 h-16 bg-white border-b border-[var(--color-border-default)] flex items-center px-4 lg:px-6">
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors mr-2"
+            aria-label="메뉴 열기"
+          >
+            <HamburgerIcon />
+          </button>
+
           <div className="flex-1" />
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Quick field record button */}
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors min-h-[44px]"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors min-h-[44px]"
               onClick={() => router.push('/detective/field')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span className="text-sm font-medium">현장 기록</span>
             </button>
@@ -180,10 +156,17 @@ export default function DetectiveLayout({
         </header>
 
         {/* Page Content */}
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           {children}
         </div>
       </main>
     </div>
+    );
+  };
+
+  return (
+    <RoleGuard allowedRoles={ALLOWED_ROLES}>
+      {renderContent()}
+    </RoleGuard>
   );
 }

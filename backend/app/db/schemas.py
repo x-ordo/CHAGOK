@@ -8,9 +8,20 @@ from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 from app.db.models import (
-    UserRole, UserStatus, CaseStatus, CaseMemberRole,
-    CalendarEventType, InvestigationRecordType, InvoiceStatus,
-    PropertyType, PropertyOwner, ConfidenceLevel
+    UserRole,
+    UserStatus,
+    CaseStatus,
+    CaseMemberRole,
+    CalendarEventType,
+    InvestigationRecordType,
+    InvoiceStatus,
+    PropertyType,
+    PropertyOwner,
+    ConfidenceLevel,
+    JobStatus,
+    JobType,
+    NotificationFrequency,
+    ProfileVisibility,
 )
 
 
@@ -889,3 +900,156 @@ class DivisionPredictionOut(BaseModel):
 class DivisionPredictionRequest(BaseModel):
     """Request to trigger new prediction calculation"""
     force_recalculate: bool = False  # Force recalculation even if recent prediction exists
+
+
+# ============================================
+# Job Queue Schemas
+# ============================================
+class JobCreate(BaseModel):
+    """Job creation request schema"""
+    case_id: str
+    job_type: JobType
+    evidence_id: Optional[str] = None
+    parameters: Optional[dict] = None
+
+
+class JobOut(BaseModel):
+    """Job output schema"""
+    id: str
+    case_id: str
+    user_id: str
+    job_type: JobType
+    status: JobStatus
+    evidence_id: Optional[str] = None
+    progress: int = 0
+    retry_count: int = 0
+    max_retries: int = 3
+    created_at: datetime
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class JobDetail(BaseModel):
+    """Job detail schema with full data"""
+    id: str
+    case_id: str
+    user_id: str
+    job_type: JobType
+    status: JobStatus
+    evidence_id: Optional[str] = None
+    input_data: Optional[dict] = None
+    output_data: Optional[dict] = None
+    error_details: Optional[dict] = None
+    progress: int = 0
+    retry_count: int = 0
+    max_retries: int = 3
+    lambda_request_id: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class JobListResponse(BaseModel):
+    """Job list response schema"""
+    jobs: List[JobOut]
+    total: int
+
+
+class JobStatusUpdate(BaseModel):
+    """Job status update request (for callbacks)"""
+    status: JobStatus
+    output_data: Optional[dict] = None
+    error_details: Optional[dict] = None
+    lambda_request_id: Optional[str] = None
+
+
+class JobProgressUpdate(BaseModel):
+    """Job progress update request"""
+    progress: int = Field(..., ge=0, le=100)
+
+
+# ============================================
+# User Settings Schemas
+# ============================================
+class ProfileSettingsUpdate(BaseModel):
+    """Profile settings update request"""
+    display_name: Optional[str] = Field(None, max_length=100)
+    avatar_url: Optional[str] = Field(None, max_length=500)
+    timezone: Optional[str] = Field(None, max_length=50)
+    language: Optional[str] = Field(None, max_length=10)
+
+
+class NotificationSettingsUpdate(BaseModel):
+    """Notification settings update request"""
+    email_notifications: Optional[bool] = None
+    push_notifications: Optional[bool] = None
+    notification_frequency: Optional[NotificationFrequency] = None
+
+
+class PrivacySettingsUpdate(BaseModel):
+    """Privacy settings update request"""
+    profile_visibility: Optional[ProfileVisibility] = None
+
+
+class SecuritySettingsUpdate(BaseModel):
+    """Security settings update request"""
+    two_factor_enabled: Optional[bool] = None
+
+
+class ProfileSettingsOut(BaseModel):
+    """Profile settings output schema"""
+    display_name: Optional[str] = None
+    email: str
+    name: str
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+    timezone: str = "Asia/Seoul"
+    language: str = "ko"
+
+    class Config:
+        from_attributes = True
+
+
+class NotificationSettingsOut(BaseModel):
+    """Notification settings output schema"""
+    email_enabled: bool = True
+    push_enabled: bool = True
+    frequency: NotificationFrequency = NotificationFrequency.IMMEDIATE
+
+    class Config:
+        from_attributes = True
+
+
+class SecuritySettingsOut(BaseModel):
+    """Security settings output schema"""
+    two_factor_enabled: bool = False
+    last_password_change: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UserSettingsResponse(BaseModel):
+    """Complete user settings response"""
+    profile: ProfileSettingsOut
+    notifications: NotificationSettingsOut
+    security: SecuritySettingsOut
+
+    class Config:
+        from_attributes = True
+
+
+class SettingsUpdateRequest(BaseModel):
+    """Combined settings update request"""
+    profile: Optional[ProfileSettingsUpdate] = None
+    notifications: Optional[NotificationSettingsUpdate] = None
+    privacy: Optional[PrivacySettingsUpdate] = None
+    security: Optional[SecuritySettingsUpdate] = None

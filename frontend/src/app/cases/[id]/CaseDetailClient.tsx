@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, CheckCircle2, Filter, Shield, Sparkles, Loader2, AlertCircle, RefreshCw, Users, ExternalLink } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Filter, Shield, Sparkles, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceTable from '@/components/evidence/EvidenceTable';
@@ -9,8 +9,7 @@ import { Evidence, EvidenceType, EvidenceStatus } from '@/types/evidence';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import { DraftCitation } from '@/types/draft';
-import { PropertyDivisionDashboard } from '@/components/property-division';
-import { downloadDraftAsDocx, DraftDownloadFormat } from '@/services/documentService';
+import { downloadDraftAsDocx, DraftDownloadFormat, DownloadResult } from '@/services/documentService';
 import {
   getPresignedUploadUrl,
   uploadToS3,
@@ -34,7 +33,7 @@ function mapApiCitationToCitation(apiCitation: ApiDraftCitation, evidenceList: E
     quote: apiCitation.snippet,
   };
 }
-type CaseDetailTab = 'evidence' | 'opponent' | 'timeline' | 'draft' | 'property';
+type CaseDetailTab = 'evidence' | 'opponent' | 'timeline' | 'draft';
 type UploadFeedback = { message: string; tone: 'info' | 'success' | 'error' };
 type UploadStatus = {
   isUploading: boolean;
@@ -118,32 +117,6 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
         fetchCaseData();
     }, [caseId]);
 
-    // Fetch evidence list from API
-    const fetchEvidenceList = useCallback(async () => {
-        if (!caseId) return;
-
-        setIsLoadingEvidence(true);
-
-        try {
-            const result = await getEvidence(caseId);
-            if (result.data) {
-                const mapped = result.data.evidence.map(e => mapApiEvidenceToEvidence(e));
-                setEvidenceList(mapped);
-            }
-            // On error, just show empty list (no evidence yet)
-        } catch (err) {
-            console.error('Failed to fetch evidence:', err);
-            // On error, keep empty list - user sees "no evidence" instead of error
-        } finally {
-            setIsLoadingEvidence(false);
-        }
-    }, [caseId]);
-
-    // Load evidence when caseId changes
-    useEffect(() => {
-        fetchEvidenceList();
-    }, [fetchEvidenceList]);
-
     // Auto-polling: silently check for status updates without full re-render
     useEffect(() => {
         // Check if there are any evidence items still processing
@@ -183,7 +156,7 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
                         return hasChanges ? [...updatedList, ...newItems] : prevList;
                     });
                 }
-            } catch (err) {
+            } catch {
                 // Silently ignore polling errors
             }
         }, 5000);
@@ -329,15 +302,16 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
         }
     }, [caseId, isGeneratingDraft, evidenceList]);
 
-    const handleDownload = async (content: string, format: DraftDownloadFormat = 'docx') => {
-        if (!id) return;
-        await downloadDraftAsDocx(content, id, format);
+    const handleDownload = async (content: string, format: DraftDownloadFormat = 'docx'): Promise<DownloadResult> => {
+        if (!id) {
+            return { success: false, error: '케이스 ID가 없습니다.' };
+        }
+        return downloadDraftAsDocx(content, id, format);
     };
 
     const tabItems: { id: CaseDetailTab; label: string; description: string }[] = useMemo(
         () => [
             { id: 'evidence', label: '증거', description: '업로드 · 상태 · 요약' },
-            { id: 'property', label: '재산분할', description: '재산 목록 · AI 예측' },
             { id: 'opponent', label: '상대방 주장', description: '주장 정리 & AI 추천' },
             { id: 'timeline', label: '타임라인', description: '사건 맥락 · 흐름' },
             { id: 'draft', label: 'Draft', description: 'AI 초안 검토/다운로드' },
@@ -408,19 +382,6 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
                             </button>
                         );
                     })}
-
-                    {/* Relationship Graph Link */}
-                    <Link
-                        href={`/lawyer/cases/${caseId}/relationship`}
-                        className="flex items-center gap-2 rounded-xl border border-secondary/30 bg-secondary/5 px-4 py-3 text-secondary hover:bg-secondary/10 hover:border-secondary/50 transition-all ml-auto"
-                    >
-                        <Users className="w-5 h-5" />
-                        <div className="text-left">
-                            <span className="text-sm font-semibold block">인물 관계도</span>
-                            <span className="text-xs text-secondary/70">AI 분석 결과</span>
-                        </div>
-                        <ExternalLink className="w-4 h-4 ml-1" />
-                    </Link>
                 </nav>
 
                 {activeTab === 'evidence' && (
@@ -531,12 +492,6 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
                             )}
                         </section>
                     </div>
-                )}
-
-                {activeTab === 'property' && (
-                    <section role="tabpanel" aria-label="재산분할 탭">
-                        <PropertyDivisionDashboard caseId={caseId} />
-                    </section>
                 )}
 
                 {activeTab === 'opponent' && (

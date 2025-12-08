@@ -1,9 +1,14 @@
 /**
  * API Client Configuration
  * Base API client for making HTTP requests to the backend
+ *
+ * Security: Uses HTTP-only cookies for authentication (XSS protection)
+ * - Token is never stored in localStorage
+ * - Cookies are automatically included via credentials: 'include'
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 export interface ApiResponse<T> {
   data?: T;
@@ -13,6 +18,11 @@ export interface ApiResponse<T> {
 
 /**
  * Generic API request function
+ *
+ * Authentication is handled via HTTP-only cookies:
+ * - credentials: 'include' ensures cookies are sent with requests
+ * - No token is stored in localStorage (XSS protection)
+ * - Backend sets/clears cookies on login/logout
  */
 export async function apiRequest<T>(
   endpoint: string,
@@ -21,14 +31,11 @@ export async function apiRequest<T>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
 
-    // Get auth token from localStorage
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-
     const response = await fetch(url, {
       ...options,
+      credentials: 'include', // Include HTTP-only cookies
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         ...options.headers,
       },
     });
@@ -48,11 +55,21 @@ export async function apiRequest<T>(
       // Handle both error formats: { error: { message: "..." } } and { detail: "..." }
       const errorMessage = data?.error?.message || data?.detail || 'An error occurred';
 
-      // Handle 401 Unauthorized - clear token and redirect to login
+      // Handle 401 Unauthorized - redirect to login (but not from /auth/me or if already on login)
+      // Note: Cookie cleanup is handled by the logout endpoint
       if (response.status === 401 && typeof window !== 'undefined') {
+        // Clear any legacy localStorage tokens (migration)
         localStorage.removeItem('authToken');
-        // Redirect to login page
-        window.location.href = '/login';
+        localStorage.removeItem('user');
+        // Don't redirect if:
+        // 1. We're checking auth status (/auth/me) - 401 is expected for unauthenticated users
+        // 2. We're already on the login/signup page
+        const isAuthCheck = endpoint === '/auth/me';
+        const isAuthPage = window.location.pathname.startsWith('/login') ||
+                           window.location.pathname.startsWith('/signup');
+        if (!isAuthCheck && !isAuthPage) {
+          window.location.href = '/login';
+        }
       }
 
       return {
@@ -72,3 +89,56 @@ export async function apiRequest<T>(
     };
   }
 }
+
+/**
+ * Helper fetcher that throws when the API responds with an error.
+ * Useful for libraries like SWR that expect a resolved payload or thrown error.
+ */
+export async function apiFetcher<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const response = await apiRequest<T>(endpoint, options);
+
+  if (response.error) {
+    throw new Error(response.error);
+  }
+
+  if (typeof response.data === 'undefined') {
+    throw new Error('No data returned from API');
+  }
+
+  return response.data;
+}
+
+/**
+ * API Client object with HTTP methods
+ */
+export const apiClient = {
+  get: <T>(endpoint: string, options?: RequestInit) =>
+    apiRequest<T>(endpoint, { ...options, method: 'GET' }),
+
+  post: <T>(endpoint: string, body?: unknown, options?: RequestInit) =>
+    apiRequest<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  put: <T>(endpoint: string, body?: unknown, options?: RequestInit) =>
+    apiRequest<T>(endpoint, {
+      ...options,
+      method: 'PUT',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  patch: <T>(endpoint: string, body?: unknown, options?: RequestInit) =>
+    apiRequest<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  delete: <T>(endpoint: string, options?: RequestInit) =>
+    apiRequest<T>(endpoint, { ...options, method: 'DELETE' }),
+};
