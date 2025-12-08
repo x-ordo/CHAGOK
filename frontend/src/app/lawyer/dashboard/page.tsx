@@ -1,10 +1,12 @@
 /**
  * Lawyer Dashboard Page
  * 003-role-based-ui Feature - US2
+ * 007-lawyer-portal-v1 Feature - US7 (Today View)
  *
  * - 진행중/검토필요/완료 케이스 통계 카드
  * - 최근 케이스 목록 (5건)
- * - 오늘/이번주 일정 요약
+ * - 오늘의 일정 (Today View)
+ * - 이번 주 일정 (Weekly Preview)
  */
 
 'use client';
@@ -12,7 +14,10 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLawyerDashboard } from '@/hooks/useLawyerDashboard';
+import { useTodayView } from '@/hooks/useTodayView';
 import { StatsCard } from '@/components/lawyer/StatsCard';
+import { TodayCard } from '@/components/lawyer/TodayCard';
+import { WeeklyPreview } from '@/components/lawyer/WeeklyPreview';
 import { DashboardSkeleton } from '@/components/shared/LoadingSkeletons';
 import { useRole } from '@/hooks/useRole';
 
@@ -106,47 +111,16 @@ function RecentCaseItem({
   );
 }
 
-// Event Item
-function EventItem({
-  title,
-  event_type,
-  start_time,
-  case_title,
-}: {
-  title: string;
-  event_type: string;
-  start_time: string;
-  case_title?: string;
-}) {
-  const typeStyles: Record<string, string> = {
-    court: 'bg-red-50 border-red-500',
-    meeting: 'bg-blue-50 border-blue-500',
-    deadline: 'bg-yellow-50 border-yellow-500',
-    other: 'bg-gray-50 border-gray-500',
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-  };
-
-  return (
-    <div className={`p-3 rounded-lg border-l-4 ${typeStyles[event_type] || typeStyles.other}`}>
-      <p className="font-medium text-sm text-gray-900">{title}</p>
-      <div className="flex items-center gap-2 mt-1">
-        <span className="text-xs text-gray-500">{formatTime(start_time)}</span>
-        {case_title && (
-          <span className="text-xs text-gray-400">• {case_title}</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function LawyerDashboardPage() {
   const router = useRouter();
   const { user } = useRole();
   const { data, isLoading, error } = useLawyerDashboard();
+  const {
+    urgent,
+    thisWeek,
+    allComplete,
+    isLoading: todayLoading,
+  } = useTodayView();
 
   // Loading state
   if (isLoading) {
@@ -198,10 +172,19 @@ export default function LawyerDashboardPage() {
         )}
       </div>
 
+      {/* Today View Section (US7) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Today's Urgent Items */}
+        <TodayCard items={urgent} allComplete={allComplete} isLoading={todayLoading} />
+
+        {/* This Week's Preview */}
+        <WeeklyPreview items={thisWeek} isLoading={todayLoading} />
+      </div>
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Cases - 2 columns */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200">
+        {/* Recent Cases - Full width */}
+        <div className="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <h2 className="font-semibold text-gray-900">최근 케이스</h2>
             <Link
@@ -223,30 +206,6 @@ export default function LawyerDashboardPage() {
             ) : (
               <p className="text-center text-gray-500 py-8">
                 최근 케이스가 없습니다.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Upcoming Events - 1 column */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">예정된 일정</h2>
-            <Link
-              href="/lawyer/calendar"
-              className="text-sm text-blue-600 hover:underline"
-            >
-              캘린더
-            </Link>
-          </div>
-          <div className="p-4 space-y-3">
-            {data?.upcoming_events && data.upcoming_events.length > 0 ? (
-              data.upcoming_events.map((event) => (
-                <EventItem key={event.id} {...event} />
-              ))
-            ) : (
-              <p className="text-center text-gray-500 py-4">
-                예정된 일정이 없습니다.
               </p>
             )}
           </div>

@@ -22,6 +22,9 @@ from app.db.models import (
     JobType,
     NotificationFrequency,
     ProfileVisibility,
+    PartyType,
+    RelationshipType,
+    LinkType,
 )
 
 
@@ -1053,3 +1056,120 @@ class SettingsUpdateRequest(BaseModel):
     notifications: Optional[NotificationSettingsUpdate] = None
     privacy: Optional[PrivacySettingsUpdate] = None
     security: Optional[SecuritySettingsUpdate] = None
+
+
+# ============================================
+# Party Graph Schemas (v1 Lawyer Portal)
+# ============================================
+class Position(BaseModel):
+    """Position schema for React Flow coordinates"""
+    x: float = 0
+    y: float = 0
+
+
+class PartyNodeCreate(BaseModel):
+    """Create party node request schema"""
+    type: PartyType
+    name: str = Field(..., min_length=1, max_length=100)
+    alias: Optional[str] = Field(None, max_length=50)
+    birth_year: Optional[int] = Field(None, ge=1900, le=2100)
+    occupation: Optional[str] = Field(None, max_length=100)
+    position: Position = Position()
+    extra_data: Optional[dict] = None
+
+
+class PartyNodeUpdate(BaseModel):
+    """Update party node request schema"""
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    alias: Optional[str] = Field(None, max_length=50)
+    birth_year: Optional[int] = Field(None, ge=1900, le=2100)
+    occupation: Optional[str] = Field(None, max_length=100)
+    position: Optional[Position] = None
+    extra_data: Optional[dict] = None
+
+
+class PartyNodeResponse(BaseModel):
+    """Party node response schema"""
+    id: str
+    case_id: str
+    type: PartyType
+    name: str
+    alias: Optional[str] = None
+    birth_year: Optional[int] = None
+    occupation: Optional[str] = None
+    position: Position
+    extra_data: Optional[dict] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class RelationshipCreate(BaseModel):
+    """Create relationship request schema"""
+    source_party_id: str
+    target_party_id: str
+    type: RelationshipType
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
+class RelationshipUpdate(BaseModel):
+    """Update relationship request schema"""
+    type: Optional[RelationshipType] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
+class RelationshipResponse(BaseModel):
+    """Relationship response schema"""
+    id: str
+    case_id: str
+    source_party_id: str
+    target_party_id: str
+    type: RelationshipType
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PartyGraphResponse(BaseModel):
+    """Combined party graph data response"""
+    nodes: List[PartyNodeResponse]
+    relationships: List[RelationshipResponse]
+
+
+class EvidenceLinkCreate(BaseModel):
+    """Create evidence-party link request schema"""
+    evidence_id: str = Field(..., max_length=100)
+    party_id: Optional[str] = None
+    relationship_id: Optional[str] = None
+    link_type: LinkType = LinkType.MENTIONS
+
+
+class EvidenceLinkResponse(BaseModel):
+    """Evidence-party link response schema"""
+    id: str
+    case_id: str
+    evidence_id: str
+    party_id: Optional[str] = None
+    relationship_id: Optional[str] = None
+    link_type: LinkType
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class EvidenceLinksResponse(BaseModel):
+    """List of evidence links response"""
+    links: List[EvidenceLinkResponse]
+    total: int

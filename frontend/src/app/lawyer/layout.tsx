@@ -12,6 +12,7 @@
 import { useState } from 'react';
 import PortalSidebar, { NavIcons, NavItem, HamburgerIcon } from '@/components/shared/PortalSidebar';
 import RoleGuard from '@/components/auth/RoleGuard';
+import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UserRole } from '@/types/user';
@@ -117,7 +118,7 @@ export default function LawyerLayout({
         className="flex-1 lg:ml-64 min-h-screen"
       >
         {/* Top Header */}
-        <header className="sticky top-0 z-10 h-16 bg-white border-b border-[var(--color-border-default)] flex items-center px-4 lg:px-6">
+        <header className="sticky top-0 z-10 h-16 bg-[var(--color-bg-primary)] border-b border-[var(--color-border-default)] flex items-center px-4 lg:px-6">
           {/* Mobile menu button */}
           <button
             onClick={() => setSidebarOpen(true)}
@@ -131,6 +132,9 @@ export default function LawyerLayout({
             {/* Breadcrumb or page title can go here */}
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
+            {/* Theme toggle */}
+            <ThemeToggle size="md" />
+
             {/* Notification bell */}
             <button
               className="relative p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -145,7 +149,7 @@ export default function LawyerLayout({
 
             {/* User menu */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white font-semibold text-sm">
+              <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-[var(--color-primary-contrast)] font-semibold text-sm">
                 {user.name.slice(0, 2).toUpperCase()}
               </div>
             </div>

@@ -1,19 +1,19 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.0.0 → 1.1.0
+Version change: 1.1.0 → 1.1.1
 
-Modified principles: None
+Modified principles:
+- Principle V: Clean Architecture (expanded with explicit repository pattern requirements)
 
-Added sections:
-- Principle VII: TDD Cycle
+Added sections: None
 
 Removed sections: None
 
 Templates validated:
 - .specify/templates/plan-template.md ✅ (Constitution Check section exists)
 - .specify/templates/spec-template.md ✅ (No updates needed)
-- .specify/templates/tasks-template.md ✅ (Tests-first guidance already present)
+- .specify/templates/tasks-template.md ✅ (Repository pattern aligns with existing structure)
 
 Follow-up TODOs: None
 -->
@@ -46,11 +46,23 @@ All evidence data MUST remain within AWS infrastructure (S3, DynamoDB, Qdrant on
 
 **Rationale**: Centralized AWS storage ensures consistent security controls, audit capabilities, and compliance with data sovereignty requirements.
 
-### V. Clean Architecture
+### V. Clean Architecture with Repository Pattern
 
-Backend code MUST follow the pattern: Routers → Services → Repositories → DB/External Services. Routers handle HTTP concerns only. Services contain business logic. Repositories handle data persistence. Utils are stateless helpers.
+Backend code MUST follow the layered pattern: **Routers → Services → Repositories → DB/External Services**.
 
-**Rationale**: Separation of concerns enables independent testing, clear dependency flow, and maintainable codebase as the platform grows.
+**Layer Responsibilities**:
+- **Routers (API)**: Handle HTTP concerns only (request parsing, response formatting, status codes). MUST NOT contain business logic.
+- **Services**: Contain business logic, orchestrate repositories, enforce business rules. MUST NOT directly access database or external APIs.
+- **Repositories**: Handle data persistence with single-entity focus. Each repository MUST manage ONE entity type. MUST NOT contain business logic or call other repositories directly.
+- **Utils**: Stateless helpers for cross-cutting concerns (S3, OpenAI clients). MUST NOT maintain state.
+
+**Repository Pattern Requirements**:
+- Each domain entity MUST have a dedicated repository (e.g., `CaseRepository`, `EvidenceRepository`, `PartyRepository`)
+- Repositories MUST expose CRUD methods: `create()`, `get_by_id()`, `get_all()`, `update()`, `delete()`
+- Complex queries spanning multiple entities MUST be orchestrated in the Service layer, not repositories
+- Repository methods MUST NOT call Service methods (no circular dependencies)
+
+**Rationale**: The repository pattern provides a clean abstraction over data access, enabling independent unit testing with mocked repositories, database technology flexibility, and maintainable codebase as the platform grows.
 
 ### VI. Branch Protection
 
@@ -144,5 +156,6 @@ main ← dev ← feat/*
 - Code reviews SHOULD reference relevant principles when requesting changes
 - Complexity additions MUST be justified against Clean Architecture principle
 - Test-related PRs MUST demonstrate TDD cycle compliance when applicable
+- New backend features MUST follow Repository Pattern per Principle V
 
-**Version**: 1.1.0 | **Ratified**: 2025-12-03 | **Last Amended**: 2025-12-04
+**Version**: 1.1.1 | **Ratified**: 2025-12-03 | **Last Amended**: 2025-12-08

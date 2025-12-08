@@ -737,8 +737,14 @@ def test_case(test_env, test_user):
 
         yield case
 
-        # Cleanup
-        from app.db.models import CalendarEvent
+        # Cleanup (order matters for foreign key constraints)
+        from app.db.models import (
+            CalendarEvent, EvidencePartyLink, PartyRelationship, PartyNode
+        )
+        # Delete in reverse order of dependency
+        db.query(EvidencePartyLink).filter(EvidencePartyLink.case_id == case.id).delete()
+        db.query(PartyRelationship).filter(PartyRelationship.case_id == case.id).delete()
+        db.query(PartyNode).filter(PartyNode.case_id == case.id).delete()
         db.query(CalendarEvent).filter(CalendarEvent.case_id == case.id).delete()
         db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
         db.delete(case)
