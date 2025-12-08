@@ -12,6 +12,8 @@ from . import auth
 from . import cases
 from . import evidence
 from . import lawyer_portal
+from . import lawyer_clients
+from . import lawyer_investigators
 from . import settings
 
-__all__ = ["auth", "cases", "evidence", "lawyer_portal", "settings"]
+__all__ = ["auth", "cases", "evidence", "lawyer_portal", "lawyer_clients", "lawyer_investigators", "settings"]
