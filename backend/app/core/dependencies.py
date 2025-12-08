@@ -267,6 +267,7 @@ def require_role(allowed_roles: list[str]):
     return role_checker
 
 
+
 def get_role_redirect_path(role: UserRole) -> str:
     """
     Get the default redirect path for a user role after login
@@ -285,6 +286,8 @@ def get_role_redirect_path(role: UserRole) -> str:
         UserRole.DETECTIVE: "/detective/dashboard",
     }
     return role_paths.get(role, "/dashboard")
+
+
 def verify_internal_api_key(
     x_internal_api_key: Optional[str] = Header(None, alias="X-Internal-API-Key")
 ) -> bool:
