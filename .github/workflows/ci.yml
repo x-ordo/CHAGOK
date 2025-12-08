@@ -19,16 +19,14 @@ jobs:
 
       - name: Check merge conflict markers
         run: |
-          if git grep -n '<<<<<<< HEAD'; then
-            echo "::error::Merge conflict markers (<<<<<<< HEAD) detected. Resolve before merging."
+          # Exclude CI workflow file to prevent false positives from literal strings
+          if git grep -n '<''<<<<<< HEAD' -- ':!.github/workflows/ci.yml'; then
+            echo "::error::Merge conflict markers detected. Resolve before merging."
             exit 1
           fi
-          if git grep -n '>>>>>>>'; then
-            echo "::error::Merge conflict markers (>>>>>>>) detected. Resolve before merging."
+          if git grep -n '>>''>>>>>' -- ':!.github/workflows/ci.yml'; then
+            echo "::error::Merge conflict markers detected. Resolve before merging."
             exit 1
-          fi
-          if git grep -n '======='; then
-            echo "::warning::Potential conflict separator (=======) detected. Verify before merging."
           fi
 
   # ============================================

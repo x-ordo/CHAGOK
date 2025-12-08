@@ -24,6 +24,7 @@ from app.api import (  # noqa: E402
     cases,
     evidence,
     lawyer_portal,
+    settings as settings_router,
 )
 from app.middleware import (  # noqa: E402
     register_exception_handlers,
@@ -188,6 +189,9 @@ app.include_router(evidence.router, prefix="/evidence", tags=["Evidence"])
 
 # 변호사/스태프 포털 라우터
 app.include_router(lawyer_portal.router, prefix="/lawyer", tags=["Lawyer Portal"])
+
+# 사용자 설정 라우터
+app.include_router(settings_router.router, tags=["Settings"])
 
 # Note: Timeline router removed (002-evidence-timeline feature incomplete)
 # Draft preview endpoint (POST /cases/{case_id}/draft-preview) remains in cases router

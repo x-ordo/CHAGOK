@@ -325,7 +325,7 @@ def test_user(test_env):
     Issue #39 fix: Uses unique email per test to prevent duplicate key errors
     """
     from app.db.session import get_db
-    from app.db.models import User, Case, CaseMember, InviteToken
+    from app.db.models import User, Case, CaseMember, InviteToken, UserSettings
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
@@ -350,7 +350,9 @@ def test_user(test_env):
         yield user
 
         # Cleanup - delete in correct order to respect foreign keys
-        # Delete invite tokens first
+        # Delete user_settings first (FK to user)
+        db.query(UserSettings).filter(UserSettings.user_id == user.id).delete()
+        # Delete invite tokens
         db.query(InviteToken).filter(InviteToken.created_by == user.id).delete()
         # Delete case_members
         db.query(CaseMember).filter(CaseMember.user_id == user.id).delete()
@@ -391,7 +393,7 @@ def admin_user(test_env):
     Issue #39 fix: Uses unique email per test to prevent duplicate key errors
     """
     from app.db.session import get_db, init_db
-    from app.db.models import User
+    from app.db.models import User, Case, CaseMember, InviteToken, UserSettings
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
@@ -418,7 +420,8 @@ def admin_user(test_env):
         yield admin
 
         # Cleanup
-        from app.db.models import Case, CaseMember, InviteToken
+        # Delete user_settings first (FK to user)
+        db.query(UserSettings).filter(UserSettings.user_id == admin.id).delete()
         # Delete invite tokens created by admin
         db.query(InviteToken).filter(InviteToken.created_by == admin.id).delete()
         # Delete case_members
@@ -460,7 +463,7 @@ def client_user(test_env):
     US4 Tests (T055-T060)
     """
     from app.db.session import get_db
-    from app.db.models import User, Case, CaseMember, InviteToken
+    from app.db.models import User, Case, CaseMember, InviteToken, UserSettings
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
@@ -484,6 +487,7 @@ def client_user(test_env):
         yield user
 
         # Cleanup - delete in correct order to respect foreign keys
+        db.query(UserSettings).filter(UserSettings.user_id == user.id).delete()
         db.query(InviteToken).filter(InviteToken.created_by == user.id).delete()
         db.query(CaseMember).filter(CaseMember.user_id == user.id).delete()
         db.query(Case).filter(Case.created_by == user.id).delete()
@@ -577,7 +581,7 @@ def detective_user(test_env):
     US5 Tests (T077-T084)
     """
     from app.db.session import get_db
-    from app.db.models import User, Case, CaseMember, InviteToken, InvestigationRecord
+    from app.db.models import User, Case, CaseMember, InviteToken, InvestigationRecord, UserSettings
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
@@ -601,6 +605,7 @@ def detective_user(test_env):
         yield user
 
         # Cleanup - delete in correct order to respect foreign keys
+        db.query(UserSettings).filter(UserSettings.user_id == user.id).delete()
         db.query(InviteToken).filter(InviteToken.created_by == user.id).delete()
         db.query(CaseMember).filter(CaseMember.user_id == user.id).delete()
         db.query(Case).filter(Case.created_by == user.id).delete()
