@@ -12,7 +12,7 @@ import Link from 'next/link';
 
 export default function ProcedurePage() {
   const params = useParams();
-  const caseId = params.id as string;
+  const caseId = params?.id as string;
 
   const {
     stages,
