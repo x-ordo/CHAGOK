@@ -281,15 +281,30 @@ except ImportError:
 # ============================================
 @app.get("/admin/check-roles", tags=["Admin"])
 async def check_roles():
-    """Check current role values in database."""
+    """Check current role values in database and enum type definition."""
     from app.db.session import get_db
     from sqlalchemy import text
 
     db = next(get_db())
     try:
+        # Check users
         result = db.execute(text("SELECT id, email, role::text as role FROM users"))
         users = [{"id": r[0], "email": r[1], "role": r[2]} for r in result.fetchall()]
-        return {"users": users}
+
+        # Check enum type definition
+        enum_result = db.execute(text("""
+            SELECT e.enumlabel
+            FROM pg_type t
+            JOIN pg_enum e ON t.oid = e.enumtypid
+            WHERE t.typname = 'userrole'
+            ORDER BY e.enumsortorder
+        """))
+        enum_values = [r[0] for r in enum_result.fetchall()]
+
+        return {
+            "users": users,
+            "enum_values": enum_values
+        }
     finally:
         db.close()
 
