@@ -274,6 +274,39 @@ try:
 except ImportError:
     pass  # l_demo 모듈 없으면 무시
 
+
+# ============================================
+# TEMPORARY: Database Migration Endpoint
+# Remove after migration is complete
+# ============================================
+@app.post("/admin/migrate-roles", tags=["Admin"])
+async def migrate_roles_to_lowercase():
+    """
+    Temporary endpoint to migrate role values from uppercase to lowercase.
+    Remove this endpoint after migration is complete.
+    """
+    from app.db.session import get_db
+    from sqlalchemy import text
+
+    db = next(get_db())
+    try:
+        # Update all uppercase role values to lowercase
+        result = db.execute(text("""
+            UPDATE users
+            SET role = LOWER(role)
+            WHERE role != LOWER(role)
+        """))
+        db.commit()
+        return {
+            "status": "success",
+            "message": f"Migrated {result.rowcount} users to lowercase roles"
+        }
+    except Exception as e:
+        db.rollback()
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()
+
 # Note: Timeline router removed (002-evidence-timeline feature incomplete)
 # Draft preview endpoint (POST /cases/{case_id}/draft-preview) remains in cases router
 # Note: RAG search is integrated into draft generation service (draft_service.py)
