@@ -308,14 +308,11 @@ async def check_roles():
         db.close()
 
 
-@app.post("/admin/migrate-roles", tags=["Admin"])
-async def migrate_roles_to_lowercase():
+@app.post("/admin/migrate-enums", tags=["Admin"])
+async def migrate_enums_to_lowercase():
     """
-    Migrate role enum from uppercase to lowercase.
-    Steps:
-    1. Add lowercase values to enum if not exist
-    2. Update users to use lowercase values
-    3. Remove uppercase values from enum
+    Migrate all enum values from uppercase to lowercase.
+    Handles: userrole, userstatus, and other enums.
     """
     from app.db.session import get_db
     from sqlalchemy import text
@@ -324,44 +321,56 @@ async def migrate_roles_to_lowercase():
     try:
         steps = []
 
-        # Step 1: Add lowercase values to enum (if not exists)
-        lowercase_roles = ['lawyer', 'staff', 'admin', 'client', 'detective']
-        for role in lowercase_roles:
-            try:
-                db.execute(text(f"ALTER TYPE userrole ADD VALUE IF NOT EXISTS '{role}'"))
-                steps.append(f"Added enum value: {role}")
-            except Exception as e:
-                steps.append(f"Skipped {role}: {str(e)}")
+        # Migration config: (enum_type, table, column, values)
+        migrations = [
+            ('userrole', 'users', 'role', ['lawyer', 'staff', 'admin', 'client', 'detective']),
+            ('userstatus', 'users', 'status', ['active', 'inactive']),
+        ]
 
-        db.commit()
+        for enum_type, table, column, values in migrations:
+            # Step 1: Add lowercase values to enum
+            for val in values:
+                try:
+                    db.execute(text(f"ALTER TYPE {enum_type} ADD VALUE IF NOT EXISTS '{val}'"))
+                    steps.append(f"Added {enum_type}.{val}")
+                except Exception as e:
+                    steps.append(f"Skipped {enum_type}.{val}: {str(e)}")
+            db.commit()
 
-        # Step 2: Update users from UPPERCASE to lowercase
-        for role in lowercase_roles:
-            upper_role = role.upper()
-            try:
-                result = db.execute(
-                    text(f"UPDATE users SET role = '{role}' WHERE role::text = '{upper_role}'")
-                )
-                db.commit()
-                steps.append(f"Updated {result.rowcount} users from {upper_role} to {role}")
-            except Exception as e:
-                db.rollback()
-                steps.append(f"Error updating {upper_role}: {str(e)}")
+            # Step 2: Update from UPPERCASE to lowercase
+            for val in values:
+                upper_val = val.upper()
+                try:
+                    result = db.execute(
+                        text(f"UPDATE {table} SET {column} = '{val}' WHERE {column}::text = '{upper_val}'")
+                    )
+                    db.commit()
+                    steps.append(f"Updated {result.rowcount} rows: {table}.{column} {upper_val} -> {val}")
+                except Exception as e:
+                    db.rollback()
+                    steps.append(f"Error {table}.{column} {upper_val}: {str(e)}")
 
         # Verify
-        check_result = db.execute(text("SELECT DISTINCT role::text FROM users"))
-        final_roles = [r[0] for r in check_result.fetchall()]
+        check_result = db.execute(text("SELECT DISTINCT role::text, status::text FROM users"))
+        final_values = [{"role": r[0], "status": r[1]} for r in check_result.fetchall()]
 
         return {
             "status": "success",
             "steps": steps,
-            "final_roles": final_roles
+            "final_values": final_values
         }
     except Exception as e:
         db.rollback()
         return {"status": "error", "message": str(e)}
     finally:
         db.close()
+
+
+# Keep old endpoint for backwards compatibility
+@app.post("/admin/migrate-roles", tags=["Admin"])
+async def migrate_roles_redirect():
+    """Redirects to migrate-enums endpoint."""
+    return await migrate_enums_to_lowercase()
 
 # Note: Timeline router removed (002-evidence-timeline feature incomplete)
 # Draft preview endpoint (POST /cases/{case_id}/draft-preview) remains in cases router
