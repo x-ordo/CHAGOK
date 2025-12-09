@@ -371,11 +371,11 @@
 
 ### Frontend Implementation for US8
 
-- [ ] T152 [US8] Create summary API client in `frontend/src/lib/api/summary.ts`
-- [ ] T153 [US8] Create ExplainerCard component in `frontend/src/components/cases/ExplainerCard.tsx`
-- [ ] T154 [US8] Create ShareSummaryModal component in `frontend/src/components/cases/ShareSummaryModal.tsx`
-- [ ] T155 [US8] Add "요약 카드 생성" button to case detail page
-- [ ] T156 [P] [US8] Component test for ExplainerCard in `frontend/src/__tests__/components/cases/ExplainerCard.test.tsx`
+- [x] T152 [US8] Create summary API client in `frontend/src/lib/api/summary.ts`
+- [x] T153 [US8] Create ExplainerCard component in `frontend/src/components/cases/ExplainerCard.tsx`
+- [x] T154 [US8] Create ShareSummaryModal component in `frontend/src/components/cases/ShareSummaryModal.tsx`
+- [x] T155 [US8] Add "요약 카드 생성" button to case detail page
+- [x] T156 [P] [US8] Component test for ExplainerCard in `frontend/src/__tests__/components/cases/ExplainerCard.test.tsx`
 
 **Checkpoint**: Summary cards work - generate, view, download PDF, share
 
