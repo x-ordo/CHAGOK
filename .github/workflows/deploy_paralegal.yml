@@ -124,6 +124,7 @@ jobs:
           NEXT_PUBLIC_API_BASE_URL: ${{ secrets.BACKEND_API_URL }}
           NEXT_PUBLIC_APP_ENV: ${{ steps.env.outputs.ENV }}
           NEXT_PUBLIC_APP_VERSION: ${{ github.sha }}
+          NEXT_OUTPUT_EXPORT: 'true'
         run: |
           cd frontend
           npm ci
