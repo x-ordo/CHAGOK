@@ -276,9 +276,24 @@ except ImportError:
 
 
 # ============================================
-# TEMPORARY: Database Migration Endpoint
+# TEMPORARY: Database Debug Endpoints
 # Remove after migration is complete
 # ============================================
+@app.get("/admin/check-roles", tags=["Admin"])
+async def check_roles():
+    """Check current role values in database."""
+    from app.db.session import get_db
+    from sqlalchemy import text
+
+    db = next(get_db())
+    try:
+        result = db.execute(text("SELECT id, email, role::text as role FROM users"))
+        users = [{"id": r[0], "email": r[1], "role": r[2]} for r in result.fetchall()]
+        return {"users": users}
+    finally:
+        db.close()
+
+
 @app.post("/admin/migrate-roles", tags=["Admin"])
 async def migrate_roles_to_lowercase():
     """
@@ -290,16 +305,24 @@ async def migrate_roles_to_lowercase():
 
     db = next(get_db())
     try:
-        # PostgreSQL enum needs to be cast to text for LOWER() to work
-        result = db.execute(text("""
-            UPDATE users
-            SET role = LOWER(role::text)::userrole
-            WHERE role::text != LOWER(role::text)
-        """))
-        db.commit()
+        # Just check what roles exist first
+        check_result = db.execute(text("SELECT DISTINCT role::text FROM users"))
+        existing_roles = [r[0] for r in check_result.fetchall()]
+
+        # If all roles are already lowercase, nothing to migrate
+        uppercase_roles = [r for r in existing_roles if r != r.lower()]
+        if not uppercase_roles:
+            return {
+                "status": "success",
+                "message": "All roles are already lowercase",
+                "existing_roles": existing_roles
+            }
+
         return {
-            "status": "success",
-            "message": f"Migrated {result.rowcount} users to lowercase roles"
+            "status": "info",
+            "message": "Found uppercase roles that need migration",
+            "existing_roles": existing_roles,
+            "uppercase_roles": uppercase_roles
         }
     except Exception as e:
         db.rollback()
