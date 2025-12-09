@@ -3,7 +3,6 @@ Contract tests for Search API
 007-lawyer-portal-v1: US6 (Global Search)
 """
 
-import pytest
 from fastapi.testclient import TestClient
 
 

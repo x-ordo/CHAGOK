@@ -5,7 +5,7 @@ Search API - Global search endpoint
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user_id

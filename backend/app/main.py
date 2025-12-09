@@ -32,7 +32,6 @@ from app.api import (  # noqa: E402
     drafts,
     evidence,
     evidence_links,
-    jobs,
     lawyer_portal,
     lawyer_clients,
     lawyer_investigators,
