@@ -22,19 +22,28 @@ from app.core.config import settings  # noqa: E402
 from app.api import (  # noqa: E402
     auth,
     admin,
+    assets,
+    billing,
+    calendar,
     cases,
+    client_portal,
+    dashboard,
+    detective_portal,
+    drafts,
     evidence,
+    evidence_links,
+    jobs,
     lawyer_portal,
     lawyer_clients,
     lawyer_investigators,
-    properties,
-    settings as settings_router,
+    messages,
     party,
+    procedure,
+    properties,
     relationships,
-    evidence_links,
     search,
-    dashboard,
-    calendar,
+    settings as settings_router,
+    staff_progress,
 )
 from app.middleware import (  # noqa: E402
     register_exception_handlers,
@@ -194,17 +203,32 @@ app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 # 사건 라우터
 app.include_router(cases.router, prefix="/cases", tags=["Cases"])
 
+# 재산분할 라우터 (US2 - Asset Division)
+app.include_router(assets.router, prefix="/cases/{case_id}/assets", tags=["Assets"])
+
+# 절차 단계 라우터 (US3 - Procedure Stage Tracking)
+app.include_router(procedure.router, tags=["Procedure"])
+app.include_router(procedure.deadlines_router, tags=["Procedure"])
+
 # 증거 라우터
 app.include_router(evidence.router, prefix="/evidence", tags=["Evidence"])
 
+# 초안 라우터 (케이스별 초안 CRUD)
+app.include_router(drafts.router, prefix="/cases/{case_id}/drafts", tags=["Drafts"])
+
 # 변호사/스태프 포털 라우터
 app.include_router(lawyer_portal.router, prefix="/lawyer", tags=["Lawyer Portal"])
+app.include_router(staff_progress.router, tags=["Staff Progress"])
 
 # 변호사 고객 관리 라우터 (005-lawyer-portal-pages US2)
 app.include_router(lawyer_clients.router, tags=["Lawyer Clients"])
 
 # 변호사 탐정 관리 라우터 (005-lawyer-portal-pages US3)
 app.include_router(lawyer_investigators.router, tags=["Lawyer Investigators"])
+
+# 의뢰인/탐정 포털 라우터
+app.include_router(client_portal.router, tags=["Client Portal"])
+app.include_router(detective_portal.router, tags=["Detective Portal"])
 
 # 재산분할 라우터 (Phase 1: Property Division)
 app.include_router(properties.router, tags=["Properties"])
@@ -225,6 +249,13 @@ app.include_router(search.router, tags=["Search"])
 
 # 007-lawyer-portal-v1: Dashboard (Today View - US7)
 app.include_router(dashboard.router, tags=["Dashboard"])
+
+# 메시지 라우터
+app.include_router(messages.router, prefix="/messages", tags=["Messages"])
+
+# 청구/결제 라우터
+app.include_router(billing.router, tags=["Billing"])
+app.include_router(billing.client_router, tags=["Client Billing"])
 
 # Calendar 라우터
 app.include_router(calendar.router, tags=["Calendar"])

@@ -1,12 +1,13 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.1.0 → 1.1.1
+Version change: 1.1.1 → 1.2.0
 
 Modified principles:
 - Principle V: Clean Architecture (expanded with explicit repository pattern requirements)
 
-Added sections: None
+Added sections:
+- Principle VIII: Semantic Versioning (Release Management)
 
 Removed sections: None
 
@@ -80,6 +81,17 @@ When tests are requested or specified in a feature, tests MUST be written FIRST 
 Test files MUST be committed separately or alongside implementation with clear commit messages indicating TDD phase.
 
 **Rationale**: Test-Driven Development ensures code correctness from inception, prevents regression, documents expected behavior, and produces inherently testable designs. Writing tests first forces developers to think about API contracts and edge cases before implementation.
+
+### VIII. Semantic Versioning
+
+All application releases MUST follow Semantic Versioning (SemVer) with the format `MAJOR.MINOR.PATCH`:
+- **MAJOR**: Incremented for backward-incompatible API changes or breaking changes
+- **MINOR**: Incremented for new features that are backward-compatible
+- **PATCH**: Incremented for backward-compatible bug fixes
+
+Version tags MUST be created for all releases using the format `vX.Y.Z` (e.g., `v1.2.0`). Each version tag MUST include a changelog entry describing changes. Pre-release versions SHOULD use suffixes like `-alpha`, `-beta`, `-rc.1`.
+
+**Rationale**: Semantic versioning enables clear communication of change impact to users and integrators. Consistent versioning supports automated dependency management, rollback procedures, and release documentation.
 
 ## Development Constraints
 
@@ -157,5 +169,6 @@ main ← dev ← feat/*
 - Complexity additions MUST be justified against Clean Architecture principle
 - Test-related PRs MUST demonstrate TDD cycle compliance when applicable
 - New backend features MUST follow Repository Pattern per Principle V
+- Release PRs MUST include version bump following Semantic Versioning principle
 
-**Version**: 1.1.1 | **Ratified**: 2025-12-03 | **Last Amended**: 2025-12-08
+**Version**: 1.2.0 | **Ratified**: 2025-12-03 | **Last Amended**: 2025-12-09
