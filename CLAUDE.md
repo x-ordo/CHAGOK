@@ -45,6 +45,12 @@ These rules must NEVER be violated under any circumstances:
      - Backend: `--assignee leaf446`
      - Frontend: `--assignee Prometheus-P`
 
+6. **NEVER include Claude signature in commit messages**
+   - Do NOT add "Generated with [Claude Code]" footer
+   - Do NOT add "Co-Authored-By: Claude" footer
+   - Commit messages should contain only the actual change description
+   - This applies to all commits, PRs, and any git operations
+
 ## Common Development Commands
 
 ### Backend (FastAPI)
