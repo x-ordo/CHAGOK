@@ -37,6 +37,25 @@ Legal Evidence Hub의 정보 구조(Information Architecture) 가이드입니다
 └── 설정 (/lawyer/settings)
 ```
 
+### Case List Quick Actions
+
+케이스 목록 페이지 (`/lawyer/cases`)에서 각 케이스 행/카드에 퀵 액션 버튼:
+
+```
+케이스 목록 페이지
+├── 테이블 뷰 (CaseTable)
+│   └── 각 행 → 액션 컬럼
+│       ├── 절차 진행 (파란색 아이콘)
+│       ├── 재산분할 (초록색 아이콘)
+│       └── AI 분석 (보라색 아이콘)
+│
+└── 카드 뷰 (CaseCard)
+    └── 각 카드 → 퀵 액션 버튼
+        ├── 절차 (파란색)
+        ├── 재산 (초록색)
+        └── AI (보라색)
+```
+
 ### Case Detail Navigation
 
 케이스 상세 페이지 (`/lawyer/cases/[id]`) 내 탭 구조:
@@ -132,6 +151,22 @@ Legal Evidence Hub의 정보 구조(Information Architecture) 가이드입니다
 **After (1 click)**:
 대시보드 → 초안 생성 (메인 네비게이션)
 
+### 절차 진행 접근
+
+**Before (3+ clicks)**:
+대시보드 → 케이스 목록 → 케이스 상세 → 절차 진행 버튼
+
+**After (2 clicks)**:
+대시보드 → 케이스 목록 → 절차 진행 퀵 액션 (테이블/카드에서 바로 접근)
+
+### 재산분할 접근
+
+**Before (3+ clicks)**:
+대시보드 → 케이스 목록 → 케이스 상세 → 재산분할 버튼
+
+**After (2 clicks)**:
+대시보드 → 케이스 목록 → 재산분할 퀵 액션 (테이블/카드에서 바로 접근)
+
 ### 케이스 상세 접근
 
 **Path 1**: 대시보드 → 최근 케이스 카드 클릭 (2 clicks)
@@ -163,6 +198,8 @@ Legal Evidence Hub의 정보 구조(Information Architecture) 가이드입니다
 | LawyerNav | `frontend/src/components/lawyer/LawyerNav.tsx` |
 | PortalSidebar | `frontend/src/components/shared/PortalSidebar.tsx` |
 | Footer | `frontend/src/components/common/Footer.tsx` |
+| CaseCard | `frontend/src/components/lawyer/CaseCard.tsx` |
+| CaseTable | `frontend/src/components/lawyer/CaseTable.tsx` |
 | Breadcrumb | Case detail pages (inline) |
 
 ## Related Requirements
@@ -177,3 +214,4 @@ Legal Evidence Hub의 정보 구조(Information Architecture) 가이드입니다
 |------|--------|------|
 | 2025-12-10 | Initial IA documentation | T074 |
 | 2025-12-10 | Added 증거업로드, 초안생성 to main nav | T071 |
+| 2025-12-10 | Added quick actions to CaseCard/CaseTable (절차, 재산분할, AI 분석) | IA 개선 |

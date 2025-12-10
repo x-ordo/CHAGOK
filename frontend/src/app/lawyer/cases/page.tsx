@@ -8,16 +8,20 @@
  */
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCaseList } from '@/hooks/useCaseList';
 import { CaseCard } from '@/components/lawyer/CaseCard';
 import { CaseTable } from '@/components/lawyer/CaseTable';
 import { CaseFilter } from '@/components/lawyer/CaseFilter';
 import { BulkActionBar } from '@/components/lawyer/BulkActionBar';
+import { apiClient } from '@/lib/api/client';
 
 type ViewMode = 'grid' | 'table';
 
 export default function LawyerCasesPage() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [isAnalyzing, setIsAnalyzing] = useState<string | null>(null);
   const {
     cases,
     isLoading,
@@ -50,6 +54,25 @@ export default function LawyerCasesPage() {
       setSelectedIds([...selectedIds, id]);
     } else {
       setSelectedIds(selectedIds.filter((i) => i !== id));
+    }
+  };
+
+  // Case action handler for quick actions (procedure, assets, ai-analyze)
+  const handleCaseAction = async (caseId: string, action: 'procedure' | 'assets' | 'ai-analyze') => {
+    if (action === 'procedure') {
+      router.push(`/lawyer/cases/${caseId}/procedure`);
+    } else if (action === 'assets') {
+      router.push(`/lawyer/cases/${caseId}/assets`);
+    } else if (action === 'ai-analyze') {
+      setIsAnalyzing(caseId);
+      try {
+        await apiClient.post(`/cases/${caseId}/analyze`);
+        alert('AI 분석이 요청되었습니다. 완료까지 몇 분 정도 소요될 수 있습니다.');
+      } catch {
+        alert('AI 분석 요청 중 오류가 발생했습니다.');
+      } finally {
+        setIsAnalyzing(null);
+      }
     }
   };
 
@@ -129,6 +152,7 @@ export default function LawyerCasesPage() {
                   progress={caseItem.progress}
                   selected={selectedIds.includes(caseItem.id)}
                   onSelect={handleCardSelect}
+                  onAction={handleCaseAction}
                 />
               ))}
             </div>
@@ -141,6 +165,7 @@ export default function LawyerCasesPage() {
                 sortBy={sort.sortBy}
                 sortOrder={sort.sortOrder}
                 onSort={setSort}
+                onAction={handleCaseAction}
               />
             </div>
           )}
