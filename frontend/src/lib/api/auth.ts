@@ -52,6 +52,7 @@ export interface SignupRequest {
   password: string;
   law_firm?: string;
   accept_terms: boolean;
+  accept_privacy: boolean;  // FR-022: 개인정보처리방침 동의
 }
 
 export interface SignupResponse {

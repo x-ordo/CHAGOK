@@ -21,6 +21,7 @@ export default function SignupPage() {
   const [lawFirm, setLawFirm] = useState('');
   const [password, setPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -39,6 +40,11 @@ export default function SignupPage() {
       return;
     }
 
+    if (!acceptPrivacy) {
+      setError('개인정보처리방침에 동의해주세요.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -49,6 +55,7 @@ export default function SignupPage() {
         password,
         law_firm: lawFirm || undefined,
         accept_terms: acceptTerms,
+        accept_privacy: acceptPrivacy,
       });
 
       if (response.error || !response.data) {
@@ -156,19 +163,42 @@ export default function SignupPage() {
             />
           </div>
 
-          <div className="flex items-center">
-            <input
-              id="accept-terms"
-              name="accept-terms"
-              type="checkbox"
-              checked={acceptTerms}
-              onChange={(e) => setAcceptTerms(e.target.checked)}
-              className="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
-            />
-            <label htmlFor="accept-terms" className="ml-2 block text-sm text-neutral-700">
-              <a href="/terms" className="text-accent hover:underline">이용약관</a> 및{' '}
-              <a href="/privacy" className="text-accent hover:underline">개인정보처리방침</a>에 동의합니다
-            </label>
+          {/* T063 - FR-021, FR-022: 개별 동의 체크박스 */}
+          <div className="space-y-3">
+            <div className="flex items-start">
+              <input
+                id="accept-terms"
+                name="accept-terms"
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="h-4 w-4 mt-0.5 text-accent focus:ring-accent border-gray-300 rounded"
+              />
+              <label htmlFor="accept-terms" className="ml-2 block text-sm text-neutral-700">
+                <span className="text-red-500">*</span>{' '}
+                <a href="/terms" target="_blank" className="text-accent hover:underline">
+                  이용약관
+                </a>
+                에 동의합니다 (필수)
+              </label>
+            </div>
+            <div className="flex items-start">
+              <input
+                id="accept-privacy"
+                name="accept-privacy"
+                type="checkbox"
+                checked={acceptPrivacy}
+                onChange={(e) => setAcceptPrivacy(e.target.checked)}
+                className="h-4 w-4 mt-0.5 text-accent focus:ring-accent border-gray-300 rounded"
+              />
+              <label htmlFor="accept-privacy" className="ml-2 block text-sm text-neutral-700">
+                <span className="text-red-500">*</span>{' '}
+                <a href="/privacy" target="_blank" className="text-accent hover:underline">
+                  개인정보처리방침
+                </a>
+                에 동의합니다 (필수)
+              </label>
+            </div>
           </div>
 
           {error && (
