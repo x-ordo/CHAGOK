@@ -1,6 +1,11 @@
 """
 Draft Service - Business logic for draft generation with RAG
 Orchestrates Qdrant RAG + OpenAI GPT-4o for draft preview
+
+Refactored in Phase 13: Extracted helper services for better modularity
+- RAGOrchestrator: RAG search and context formatting
+- PromptBuilder: GPT-4o prompt construction
+- CitationExtractor: Citation parsing and extraction
 """
 
 from sqlalchemy.orm import Session
@@ -31,6 +36,11 @@ from app.utils.qdrant import (
 from app.utils.openai_client import generate_chat_completion
 from app.services.document_renderer import DocumentRenderer
 from app.middleware import NotFoundError, PermissionError, ValidationError
+
+# Phase 13 refactored services (available for gradual migration)
+from app.services.rag_orchestrator import RAGOrchestrator, get_rag_orchestrator
+from app.services.prompt_builder import PromptBuilder, get_prompt_builder
+from app.services.citation_extractor import CitationExtractor, get_citation_extractor
 
 # Optional: python-docx for DOCX generation
 try:
