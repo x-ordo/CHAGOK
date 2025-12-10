@@ -13,6 +13,7 @@ from .error_handler import (
 )
 from .security import SecurityHeadersMiddleware, HTTPSRedirectMiddleware
 from .audit_log import AuditLogMiddleware
+from .latency import LatencyLoggingMiddleware, SLOW_REQUEST_THRESHOLD
 from .case_permission import (
     CasePermissionChecker,
     get_permission_checker,
@@ -35,6 +36,8 @@ __all__ = [
     "SecurityHeadersMiddleware",
     "HTTPSRedirectMiddleware",
     "AuditLogMiddleware",
+    "LatencyLoggingMiddleware",
+    "SLOW_REQUEST_THRESHOLD",
     # Case permission utilities
     "CasePermissionChecker",
     "get_permission_checker",
