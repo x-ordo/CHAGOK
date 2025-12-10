@@ -78,17 +78,16 @@ class DraftService:
             Draft preview with citations
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have access to case
+            PermissionError: User does not have access (also for non-existent cases)
             ValidationError: No evidence in case
         """
-        # 1. Validate case access
+        # 1. Validate case access - check permission first to prevent info leakage
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        if not self.member_repo.has_access(case_id, user_id):
-            raise PermissionError("You do not have access to this case")
 
         # 2. Retrieve evidence metadata from DynamoDB
         evidence_list = get_evidence_by_case(case_id)
@@ -517,17 +516,16 @@ class DraftService:
             Tuple of (file_bytes, filename, content_type)
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have access to case
+            PermissionError: User does not have access (also for non-existent cases)
             ValidationError: Export format not supported or missing dependencies
         """
-        # 1. Validate case access
+        # 1. Validate case access - check permission first to prevent info leakage
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        if not self.member_repo.has_access(case_id, user_id):
-            raise PermissionError("You do not have access to this case")
 
         # 2. Generate draft preview
         request = DraftPreviewRequest()  # Use default sections
@@ -872,16 +870,15 @@ class DraftService:
             List of draft summaries
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have access to case
+            PermissionError: User does not have access (also for non-existent cases)
         """
-        # Validate case access
+        # Check permission first to prevent information leakage
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        if not self.member_repo.has_access(case_id, user_id):
-            raise PermissionError("You do not have access to this case")
 
         # Query drafts for case
         drafts = self.db.query(DraftDocument).filter(
@@ -913,16 +910,16 @@ class DraftService:
             Draft response with full content
 
         Raises:
-            NotFoundError: Case or draft not found
-            PermissionError: User does not have access to case
+            PermissionError: User does not have access (also for non-existent cases)
+            NotFoundError: Draft not found
         """
-        # Validate case access
+        # Check permission first to prevent information leakage
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        if not self.member_repo.has_access(case_id, user_id):
-            raise PermissionError("You do not have access to this case")
 
         # Get draft
         draft = self.db.query(DraftDocument).filter(
@@ -964,16 +961,15 @@ class DraftService:
             Created draft response
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have write access to case
+            PermissionError: User does not have write access (also for non-existent cases)
         """
-        # Validate case access (need write permission)
+        # Check permission first to prevent information leakage
+        if not self.member_repo.has_write_access(case_id, user_id):
+            raise PermissionError("You do not have write access to this case")
+
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        if not self.member_repo.has_write_access(case_id, user_id):
-            raise PermissionError("You do not have write access to this case")
 
         # Map schema document type to model enum
         doc_type_map = {
@@ -1031,16 +1027,16 @@ class DraftService:
             Updated draft response
 
         Raises:
-            NotFoundError: Case or draft not found
-            PermissionError: User does not have write access to case
+            PermissionError: User does not have write access (also for non-existent cases)
+            NotFoundError: Draft not found
         """
-        # Validate case access (need write permission)
+        # Check permission first to prevent information leakage
+        if not self.member_repo.has_write_access(case_id, user_id):
+            raise PermissionError("You do not have write access to this case")
+
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        if not self.member_repo.has_write_access(case_id, user_id):
-            raise PermissionError("You do not have write access to this case")
 
         # Get draft
         draft = self.db.query(DraftDocument).filter(
@@ -1124,16 +1120,15 @@ class DraftService:
             Saved draft response
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have write access
+            PermissionError: User does not have write access (also for non-existent cases)
         """
-        # Validate case access
+        # Check permission first to prevent information leakage
+        if not self.member_repo.has_write_access(case_id, user_id):
+            raise PermissionError("You do not have write access to this case")
+
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        if not self.member_repo.has_write_access(case_id, user_id):
-            raise PermissionError("You do not have write access to this case")
 
         # Build content structure from draft preview
         content = {

@@ -269,17 +269,16 @@ class EvidenceService:
             List of evidence summary
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have access to case
+            PermissionError: User does not have access (also for non-existent cases)
         """
-        # Check if case exists
+        # Check permission first to prevent information leakage
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
+        # Check if case exists (only after permission check)
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        # Check if user has access to case
-        if not self.member_repo.has_access(case_id, user_id):
-            raise PermissionError("You do not have access to this case")
 
         # Get evidence metadata from DynamoDB
         evidence_list = get_evidence_by_case(case_id)
