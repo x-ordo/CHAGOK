@@ -251,9 +251,136 @@ class CaseMember(Base):
 
 ---
 
+## 5. DetectiveEarnings (PostgreSQL/RDS) - NEW (US11)
+
+### Location
+- **Table**: `detective_earnings`
+- **Database**: PostgreSQL (RDS)
+
+### Schema
+
+```python
+class DetectiveEarnings(Base):
+    __tablename__ = "detective_earnings"
+
+    id = Column(UUID, primary_key=True, default=uuid4)
+    detective_id = Column(UUID, ForeignKey("users.id"), nullable=False, index=True)
+    case_id = Column(UUID, ForeignKey("cases.id"), nullable=False, index=True)
+    amount = Column(Numeric(12, 2), nullable=False)
+    description = Column(String(500), nullable=True)
+    status = Column(Enum(EarningsStatus), default='pending')  # pending, paid
+    created_at = Column(DateTime, default=func.now())
+    paid_at = Column(DateTime, nullable=True)
+
+    # Relationships
+    detective = relationship("User", foreign_keys=[detective_id])
+    case = relationship("Case", foreign_keys=[case_id])
+```
+
+### Status Types (EarningsStatus Enum)
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Earnings recorded, awaiting payment |
+| `paid` | Payment completed |
+
+### Indexes
+- `ix_detective_earnings_detective_id` - Query by detective
+- `ix_detective_earnings_case_id` - Query by case
+- `ix_detective_earnings_status` - Filter by payment status
+
+---
+
+## 6. Evidence Status Extension (US10)
+
+### Additional Fields for Evidence (DynamoDB)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `review_status` | Enum | `pending_review`, `approved`, `rejected` |
+| `uploaded_by` | String | User ID who uploaded (client vs lawyer) |
+| `reviewed_by` | String | User ID who approved/rejected |
+| `reviewed_at` | ISO8601 | Review decision timestamp |
+
+### Review Status State Machine
+
+```
+Client Upload → pending_review
+                    ↓
+        Lawyer Review Decision
+            ↓           ↓
+        approved    rejected
+
+Lawyer Upload → approved (auto-approved)
+```
+
+### Business Rules
+- Client uploads default to `pending_review`
+- Lawyer uploads default to `approved`
+- Only case OWNER/MEMBER can review
+- Review changes are logged in audit_logs
+
+---
+
+## 7. User Role Extension (US9)
+
+### Existing UserRole Enum
+
+```python
+class UserRole(str, enum.Enum):
+    LAWYER = "lawyer"
+    STAFF = "staff"
+    ADMIN = "admin"
+    CLIENT = "client"       # 의뢰인
+    DETECTIVE = "detective" # 탐정/조사원
+```
+
+### Self-Signup Roles
+Only these roles can self-register:
+- `LAWYER`
+- `CLIENT`
+- `DETECTIVE`
+
+Staff and Admin require invitation.
+
+### Role-Based Dashboard Mapping
+
+| Role | Dashboard Path |
+|------|---------------|
+| `lawyer` | `/lawyer/dashboard` |
+| `client` | `/client/dashboard` |
+| `detective` | `/detective/dashboard` |
+| `staff` | `/lawyer/dashboard` (same as lawyer) |
+| `admin` | `/admin/dashboard` |
+
+---
+
 ## Migration Notes
 
-No database migrations required for this feature. All entities already exist.
+### New Migration Required: detective_earnings
+
+```python
+# alembic/versions/xxx_add_detective_earnings.py
+def upgrade():
+    op.create_table(
+        'detective_earnings',
+        sa.Column('id', UUID(), primary_key=True),
+        sa.Column('detective_id', UUID(), sa.ForeignKey('users.id'), nullable=False),
+        sa.Column('case_id', UUID(), sa.ForeignKey('cases.id'), nullable=False),
+        sa.Column('amount', sa.Numeric(12, 2), nullable=False),
+        sa.Column('description', sa.String(500)),
+        sa.Column('status', sa.Enum('pending', 'paid', name='earningsstatus'), default='pending'),
+        sa.Column('created_at', sa.DateTime(), default=func.now()),
+        sa.Column('paid_at', sa.DateTime()),
+    )
+    op.create_index('ix_detective_earnings_detective_id', 'detective_earnings', ['detective_id'])
+    op.create_index('ix_detective_earnings_case_id', 'detective_earnings', ['case_id'])
+
+def downgrade():
+    op.drop_table('detective_earnings')
+```
+
+### Existing Tables - No Migration Needed
 
 ### Verification Queries
 

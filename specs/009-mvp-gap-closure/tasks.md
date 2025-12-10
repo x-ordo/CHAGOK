@@ -239,6 +239,69 @@
 
 ---
 
+## Phase 14: User Story 9 - 회원가입 역할 선택 (Priority: P2)
+
+**Goal**: Users select their role (lawyer/client/detective) during signup and redirect to role-specific dashboard
+
+**Independent Test**: Complete signup with "client" role, verify redirect to `/client/dashboard`
+
+### Implementation for User Story 9
+
+- [ ] T082 [P] [US9] Add role dropdown to signup form in `frontend/src/app/signup/page.tsx`
+- [ ] T083 [P] [US9] Update signup API call to include role parameter in `frontend/src/lib/api/auth.ts`
+- [ ] T084 [US9] Verify backend accepts role in `POST /auth/signup` in `backend/app/api/auth.py`
+- [ ] T085 [US9] Implement role-based redirect in middleware `frontend/src/middleware.ts`
+- [ ] T086 [US9] Add validation - block signup without role selection
+- [ ] T087 [US9] Test signup → login → redirect flow for each role (lawyer, client, detective)
+
+**Checkpoint**: Users can register with role selection and land on role-specific dashboard
+
+---
+
+## Phase 15: User Story 10 - 의뢰인(Client) 포털 기능 (Priority: P2)
+
+**Goal**: Clients can view their cases, upload evidence (pending review), and message lawyers
+
+**Independent Test**: Login as client, upload evidence, verify status shows "검토 대기"
+
+### Implementation for User Story 10
+
+- [ ] T088 [P] [US10] Verify client can only see assigned cases via `case_members` in `backend/app/api/cases.py`
+- [ ] T089 [P] [US10] Add `review_status` field to evidence upload response in `backend/app/api/evidence.py`
+- [ ] T090 [US10] Update evidence upload to set `pending_review` for client uploads in `backend/app/services/evidence_service.py`
+- [ ] T091 [US10] Create evidence review endpoint `PATCH /cases/{id}/evidence/{eid}/review` in `backend/app/api/evidence.py`
+- [ ] T092 [US10] Add evidence review UI for lawyers in `frontend/src/components/lawyer/EvidenceReviewCard.tsx`
+- [ ] T093 [P] [US10] Update client evidence list to show review status in `frontend/src/app/client/cases/[id]/page.tsx`
+- [ ] T094 [US10] Add contract test for client evidence upload in `backend/tests/contract/test_client_evidence.py`
+- [ ] T095 [US10] Verify 403 for client accessing non-assigned cases
+
+**Checkpoint**: Clients can upload evidence (pending review), lawyers can approve/reject
+
+---
+
+## Phase 16: User Story 11 - 탐정(Detective) 포털 기능 (Priority: P2)
+
+**Goal**: Detectives can view assigned cases, upload evidence with EXIF extraction, and check earnings
+
+**Independent Test**: Upload image with GPS data, verify location metadata is extracted and displayed
+
+### Implementation for User Story 11
+
+- [ ] T096 [P] [US11] Create `exif_service.py` for metadata extraction in `backend/app/services/exif_service.py`
+- [ ] T097 [P] [US11] Create `detective_earnings` table migration in `backend/alembic/versions/xxx_add_detective_earnings.py`
+- [ ] T098 [US11] Create DetectiveEarnings model in `backend/app/db/models.py`
+- [ ] T099 [US11] Create DetectiveEarningsRepository in `backend/app/repositories/detective_earnings_repository.py`
+- [ ] T100 [US11] Create earnings API endpoints in `backend/app/api/detective_portal.py`
+- [ ] T101 [US11] Extract EXIF on evidence upload for image files in `backend/app/services/evidence_service.py`
+- [ ] T102 [P] [US11] Update detective earnings page to show data in `frontend/src/app/detective/earnings/page.tsx`
+- [ ] T103 [P] [US11] Add EXIF metadata display to evidence detail in `frontend/src/components/detective/EvidenceMetadata.tsx`
+- [ ] T104 [US11] Add contract test for EXIF extraction in `backend/tests/contract/test_exif_extraction.py`
+- [ ] T105 [US11] Verify 403 for detective accessing non-assigned cases
+
+**Checkpoint**: Detectives see EXIF data on uploads, earnings page shows case-based income
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -256,6 +319,9 @@
 - **Phase 11 (US7)**: Can start after Phase 1 - independent (P2 priority, pre-deployment required)
 - **Phase 12 (US8)**: Can start after Phase 1 - independent (P3 priority, UX improvement)
 - **Phase 13 (Refactoring)**: Can start after Phase 1 - independent (P2 priority, code quality)
+- **Phase 14 (US9)**: Can start after Phase 1 - independent (P2 priority, role signup)
+- **Phase 15 (US10)**: Depends on Phase 14 (US9) - client portal needs role signup
+- **Phase 16 (US11)**: Depends on Phase 14 (US9) - detective portal needs role signup
 
 ### User Story Dependencies
 
@@ -263,12 +329,15 @@
 |-------|------------|---------------------|
 | US1 (AI Worker) | Phase 2 (AWS) | - |
 | US2 (RAG/Draft) | US1 (needs data) | - |
-| US3 (Error Handling) | Phase 1 only | US4, US5, US6, US7, US8 |
-| US4 (CI Tests) | Phase 1 only | US3, US5, US6, US7, US8 |
-| US5 (Permissions) | Phase 1 only | US3, US4, US6, US7, US8 |
-| US6 (Deployment) | Phase 1 only | US3, US4, US5, US7, US8 |
-| US7 (Legal/Terms) | Phase 1 only | US3, US4, US5, US6, US8 |
-| US8 (IA) | Phase 1 only | US3, US4, US5, US6, US7 |
+| US3 (Error Handling) | Phase 1 only | US4, US5, US6, US7, US8, US9, US10, US11 |
+| US4 (CI Tests) | Phase 1 only | US3, US5, US6, US7, US8, US9, US10, US11 |
+| US5 (Permissions) | Phase 1 only | US3, US4, US6, US7, US8, US9, US10, US11 |
+| US6 (Deployment) | Phase 1 only | US3, US4, US5, US7, US8, US9, US10, US11 |
+| US7 (Legal/Terms) | Phase 1 only | US3, US4, US5, US6, US8, US9, US10, US11 |
+| US8 (IA) | Phase 1 only | US3, US4, US5, US6, US7, US9, US10, US11 |
+| US9 (Role Signup) | Phase 1 only | US3, US4, US5, US6, US7, US8, US10, US11 |
+| US10 (Client Portal) | US9 (needs role signup) | US11 |
+| US11 (Detective Portal) | US9 (needs role signup) | US10 |
 
 ### Within Each User Story
 
@@ -430,9 +499,12 @@ Execute in priority order:
 - CI tasks (US4) may require running tests locally first to identify gaps - **80% coverage required per Constitution**
 - Commit after each task or logical group
 - Create PR after each user story for review
-- **Total Tasks**: 81 (T001-T081)
+- **Total Tasks**: 105 (T001-T105)
   - Core Tasks (T001-T055 + T019a): 56
   - NFR Tasks (T056-T059): 4 - Deferred to post-MVP (Phase 10)
   - US7 Legal/Terms (T060-T069): 10 - P2 priority
   - US8 IA Improvement (T070-T074): 5 - P3 priority
   - Phase 13 Refactoring (T075-T081): 7 - P2 priority, code quality
+  - US9 Role Signup (T082-T087): 6 - P2 priority, role selection at signup
+  - US10 Client Portal (T088-T095): 8 - P2 priority, client evidence upload & review
+  - US11 Detective Portal (T096-T105): 10 - P2 priority, EXIF extraction & earnings

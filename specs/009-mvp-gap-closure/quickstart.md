@@ -260,6 +260,79 @@ curl https://api.openai.com/v1/models \
   -H "Authorization: Bearer $OPENAI_API_KEY"
 ```
 
+## US9-11 Feature Verification
+
+### US9: Role Selection at Signup
+
+```bash
+# 1. Open signup page
+open http://localhost:3000/signup
+
+# 2. Verify role dropdown exists (변호사/의뢰인/탐정)
+
+# 3. Test signup with client role
+curl -X POST http://localhost:8000/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "테스트 의뢰인",
+    "email": "client@test.com",
+    "password": "test1234",
+    "role": "client",
+    "accept_terms": true,
+    "accept_privacy": true
+  }'
+
+# Expected: User created with role=client
+```
+
+### US10: Client Portal Evidence Upload
+
+```bash
+# 1. Login as client
+TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"client@test.com","password":"test1234"}' | jq -r '.token')
+
+# 2. Upload evidence (should be pending_review)
+curl -X POST http://localhost:8000/cases/{case_id}/evidence \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@test.jpg"
+
+# Expected: review_status = "pending_review"
+
+# 3. Verify access control (should get 403 for other cases)
+curl -X GET http://localhost:8000/cases/other-case-id \
+  -H "Authorization: Bearer $TOKEN"
+
+# Expected: 403 Forbidden
+```
+
+### US11: Detective Portal EXIF + Earnings
+
+```bash
+# 1. Login as detective
+TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"detective@test.com","password":"test1234"}' | jq -r '.token')
+
+# 2. Upload image with EXIF
+curl -X POST http://localhost:8000/cases/{case_id}/evidence \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@photo_with_gps.jpg"
+
+# 3. Get EXIF metadata
+curl -X GET http://localhost:8000/detective/evidence/{evidence_id}/exif \
+  -H "Authorization: Bearer $TOKEN"
+
+# Expected: gps_latitude, gps_longitude, datetime_original
+
+# 4. Check earnings
+curl -X GET http://localhost:8000/detective/earnings \
+  -H "Authorization: Bearer $TOKEN"
+
+# Expected: total_earned, earnings list
+```
+
 ## Success Verification
 
 After setup, verify:
@@ -270,3 +343,8 @@ After setup, verify:
 4. ✅ S3 upload triggers Lambda (check CloudWatch logs)
 5. ✅ RAG search returns results
 6. ✅ Draft generation completes within 30 seconds
+7. ✅ Signup page shows role dropdown (US9)
+8. ✅ Client portal restricts to assigned cases (US10)
+9. ✅ Client evidence shows "검토 대기" status (US10)
+10. ✅ Detective EXIF extraction works (US11)
+11. ✅ Detective earnings page displays data (US11)
