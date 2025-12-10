@@ -411,19 +411,26 @@ When implementing features, files typically go in:
 - **Type definition:** `frontend/src/types/{resource}.ts`
 
 ## Active Technologies
-- Python 3.11+ (Backend), TypeScript (Frontend) + FastAPI, Next.js 14, python-docx (Word generation), WeasyPrint or ReportLab (PDF generation) (001-draft-export)
-- PostgreSQL (export job records), S3 (temporary file storage for large exports) (001-draft-export)
-- react-kakao-maps-sdk (Kakao Maps for GPS), react-big-calendar (calendar UI), Recharts (dashboard charts), jwt-decode (JWT parsing in middleware), WebSocket (real-time messaging) (003-role-based-ui)
-- react-hot-toast (toast notifications for error handling), useRetry hook (exponential backoff) (009-mvp-gap-closure)
-- Python 3.11+ (Backend/AI Worker), TypeScript (Frontend) + FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3 (009-mvp-gap-closure)
-- PostgreSQL (RDS), AWS S3, DynamoDB, Qdrant Cloud (009-mvp-gap-closure)
-- TypeScript 5.x (Frontend), Python 3.11+ (Backend API) + Next.js 14, React 18, React Flow, Tailwind CSS (010-calm-control-design)
-- PostgreSQL (cases, assets), Backend API (/cases/{id}/assets) (010-calm-control-design)
-- Python 3.11+ (Backend/AI Worker), TypeScript (Frontend) + FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3, TipTap/Quill (draft editor) (009-mvp-gap-closure)
 
-## Recent Changes
-- 009-mvp-gap-closure: (IN PROGRESS) MVP production readiness. AI Worker 100% code complete (awaiting S3 IAM permissions), Backend RAG/Draft 90% complete (fully functional), Frontend error handling 100% (react-hot-toast + useRetry hook implemented). CI coverage target 70% (ai_worker) / 80% (backend). Completed: US3 에러 처리 통일, ROLLBACK.md 문서화, README 배지 추가. **프로젝트 구조 정리** (2025-12-10): 빈 디렉토리 8개 삭제, V2 파서 아카이브, 문서 아카이브, 404.tsx App Router 마이그레이션, Frontend 테스트 디렉토리 통합(`tests/` → `__tests__/`). Backend 34개 서비스 문서화 완료.
-- 005-lawyer-portal-pages: (CORE COMPLETE) Fixed 404 errors on lawyer portal pages. All pages now render: `/lawyer/clients`, `/lawyer/investigators`, `/settings`, `/lawyer/cases`, `/lawyer/calendar`, `/lawyer/messages`, `/lawyer/billing`.
-- 004-paralegal-progress: Added staff progress dashboard (`/staff/progress`) - case throughput monitoring, 16-item mid-demo feedback checklist.
-- 003-role-based-ui: Added react-kakao-maps-sdk, react-big-calendar, Recharts, jwt-decode, WebSocket support
-- 001-draft-export: Added Python 3.11+, TypeScript, python-docx, WeasyPrint/ReportLab
+| Layer | Stack |
+|-------|-------|
+| **Frontend** | Next.js 14, React 18, TypeScript 5.x, Tailwind CSS |
+| **Backend** | FastAPI, Python 3.11+, SQLAlchemy, Alembic |
+| **AI Worker** | AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), boto3 |
+| **Database** | PostgreSQL (RDS), DynamoDB, Qdrant Cloud |
+| **Storage** | AWS S3, CloudFront CDN |
+
+**Key Libraries:**
+- **Frontend:** react-hot-toast, react-big-calendar, Recharts, React Flow, jwt-decode, WebSocket
+- **Backend:** python-docx, WeasyPrint (PDF), Pydantic
+- **AI:** langchain, tiktoken, qdrant-client
+
+## Recent Changes (2025-12)
+
+| Feature | Status | Summary |
+|---------|--------|---------|
+| **009-mvp-gap-closure** | 🔄 IN PROGRESS | MVP 안정화. AI Worker 100%, Backend 90%, Frontend 100% 완료. 프로젝트 구조 정리 (빈 디렉토리 삭제, 테스트 통합) |
+| **005-lawyer-portal** | ✅ COMPLETE | 변호사 포털 페이지 전체 구현 |
+| **004-paralegal-progress** | ✅ COMPLETE | 스태프 진행 대시보드 |
+| **003-role-based-ui** | ✅ COMPLETE | 역할별 UI, 캘린더, 메시징 |
+| **001-draft-export** | ✅ COMPLETE | DOCX/PDF 내보내기 |
