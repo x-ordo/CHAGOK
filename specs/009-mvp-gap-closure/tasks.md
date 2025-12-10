@@ -198,6 +198,47 @@
 
 ---
 
+## Phase 11: User Story 7 - 법적 고지 및 약관 (Priority: P2)
+
+**Goal**: Copyright notice, Terms of Service, Privacy Policy, and registration consent
+
+**Independent Test**: Complete signup with terms agreement, verify footer copyright text
+
+### Implementation for User Story 7
+
+- [ ] T060 [P] [US7] Add copyright footer component in `frontend/src/components/shared/Footer.tsx`
+- [ ] T061 [P] [US7] Create Terms of Service page at `frontend/src/app/terms/page.tsx`
+- [ ] T062 [P] [US7] Create Privacy Policy page at `frontend/src/app/privacy/page.tsx`
+- [ ] T063 [US7] Add terms/privacy agreement checkboxes to signup form in `frontend/src/app/signup/page.tsx`
+- [ ] T064 [US7] Create `user_agreements` table migration in `backend/alembic/versions/`
+- [ ] T065 [US7] Create UserAgreement model in `backend/app/db/models.py`
+- [ ] T066 [US7] Update signup API to record agreement in `backend/app/api/auth.py`
+- [ ] T067 [US7] Add agreement validation - block signup without consent
+- [ ] T068 [US7] Draft Terms of Service content (Korean) in `frontend/public/legal/terms-ko.md`
+- [ ] T069 [US7] Draft Privacy Policy content (PIPA compliant) in `frontend/public/legal/privacy-ko.md`
+
+**Checkpoint**: Signup requires terms agreement, footer shows copyright, legal pages accessible
+
+---
+
+## Phase 12: User Story 8 - 정보 구조(IA) 개선 (Priority: P3)
+
+**Goal**: Improve navigation structure for better usability
+
+**Independent Test**: Access all major features within 3 clicks from dashboard
+
+### Implementation for User Story 8
+
+- [ ] T070 [P] [US8] Audit current navigation structure in `frontend/src/components/layout/`
+- [ ] T071 [US8] Update main navigation to 1-depth for key features in `frontend/src/components/layout/Sidebar.tsx`
+- [ ] T072 [US8] Add tab/sidebar navigation to case detail page in `frontend/src/app/lawyer/cases/[id]/page.tsx`
+- [ ] T073 [US8] Ensure consistent back/home button behavior across all pages
+- [ ] T074 [US8] Create IA documentation in `docs/guides/INFORMATION_ARCHITECTURE.md`
+
+**Checkpoint**: 3-click access to all major features verified, consistent navigation
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -212,6 +253,9 @@
 - **Phase 8 (US6)**: Can start after Phase 1 - independent (but recommend after US1)
 - **Phase 9 (Polish)**: Depends on all user stories complete
 - **Phase 10 (Observability)**: Can start after Phase 1 - independent, but deferred to P3
+- **Phase 11 (US7)**: Can start after Phase 1 - independent (P2 priority, pre-deployment required)
+- **Phase 12 (US8)**: Can start after Phase 1 - independent (P3 priority, UX improvement)
+- **Phase 13 (Refactoring)**: Can start after Phase 1 - independent (P2 priority, code quality)
 
 ### User Story Dependencies
 
@@ -219,10 +263,12 @@
 |-------|------------|---------------------|
 | US1 (AI Worker) | Phase 2 (AWS) | - |
 | US2 (RAG/Draft) | US1 (needs data) | - |
-| US3 (Error Handling) | Phase 1 only | US4, US5, US6 |
-| US4 (CI Tests) | Phase 1 only | US3, US5, US6 |
-| US5 (Permissions) | Phase 1 only | US3, US4, US6 |
-| US6 (Deployment) | Phase 1 only | US3, US4, US5 |
+| US3 (Error Handling) | Phase 1 only | US4, US5, US6, US7, US8 |
+| US4 (CI Tests) | Phase 1 only | US3, US5, US6, US7, US8 |
+| US5 (Permissions) | Phase 1 only | US3, US4, US6, US7, US8 |
+| US6 (Deployment) | Phase 1 only | US3, US4, US5, US7, US8 |
+| US7 (Legal/Terms) | Phase 1 only | US3, US4, US5, US6, US8 |
+| US8 (IA) | Phase 1 only | US3, US4, US5, US6, US7 |
 
 ### Within Each User Story
 
@@ -318,6 +364,64 @@ Execute in priority order:
 
 ---
 
+## Phase 13: Code Quality - DraftService 리팩토링 (Priority: P2)
+
+**Goal**: Decompose God Class DraftService (1186 lines) into focused, single-responsibility services
+
+**Problem**: DraftService violates Single Responsibility Principle with 5+ concerns:
+- RAG search orchestration
+- Prompt building
+- Document rendering (DOCX/PDF)
+- Evidence context formatting
+- Citation extraction
+
+**Independent Test**: After refactoring, all existing draft-related tests must pass without modification
+
+### Implementation for DraftService Decomposition
+
+**⚠️ CRITICAL**: No functional changes - structure only. All existing tests must pass.
+
+- [ ] T075 [P] [REFACTOR] Create `backend/app/services/rag_orchestrator.py` (~200 lines)
+  - Extract: `_perform_rag_search()`, `_build_qdrant_filter()`, `_format_rag_context()`
+  - Dependencies: Qdrant client, case_repository
+
+- [ ] T076 [P] [REFACTOR] Create `backend/app/services/prompt_builder.py` (~150 lines)
+  - Extract: `_build_draft_prompt()`, `_format_legal_context()`, `_format_evidence_context()`
+  - Dependencies: None (pure functions)
+
+- [ ] T077 [P] [REFACTOR] Create `backend/app/services/citation_extractor.py` (~100 lines)
+  - Extract: `_extract_citations()`, citation parsing logic
+  - Dependencies: None (pure functions)
+
+- [ ] T078 [REFACTOR] Refactor DraftService to orchestrator pattern (~200 lines target)
+  - Import and use: RAGOrchestrator, PromptBuilder, CitationExtractor
+  - Keep: `generate_draft_preview()`, `export_draft()` as thin orchestrators
+  - Remove: All extracted private methods
+  - File: `backend/app/services/draft_service.py`
+
+- [ ] T079 [REFACTOR] Update imports in `backend/app/api/drafts.py` if needed
+  - Verify DraftService interface unchanged
+  - No API contract changes allowed
+
+- [ ] T080 [REFACTOR] Run existing tests: `pytest backend/tests/ -k draft`
+  - All tests must pass without modification
+  - If tests fail, fix refactoring (not tests)
+
+- [ ] T081 [REFACTOR] Update `backend/app/services/__init__.py` with new exports
+
+**Checkpoint**: DraftService < 300 lines, all tests pass, no API changes
+
+### Refactoring Metrics
+
+| Metric | Before | Target |
+|--------|--------|--------|
+| DraftService lines | 1,186 | < 300 |
+| Methods in DraftService | 17 | < 6 |
+| Imports in DraftService | 25 | < 10 |
+| New services created | 0 | 3 |
+
+---
+
 ## Notes
 
 - Most code is already implemented (70-100% complete per user story)
@@ -326,5 +430,9 @@ Execute in priority order:
 - CI tasks (US4) may require running tests locally first to identify gaps - **80% coverage required per Constitution**
 - Commit after each task or logical group
 - Create PR after each user story for review
-- **Total Tasks**: 59 (T001-T055 + T019a + T056-T059)
-- **NFR Tasks (T056-T059)**: Deferred to post-MVP (Phase 10)
+- **Total Tasks**: 81 (T001-T081)
+  - Core Tasks (T001-T055 + T019a): 56
+  - NFR Tasks (T056-T059): 4 - Deferred to post-MVP (Phase 10)
+  - US7 Legal/Terms (T060-T069): 10 - P2 priority
+  - US8 IA Improvement (T070-T074): 5 - P3 priority
+  - Phase 13 Refactoring (T075-T081): 7 - P2 priority, code quality

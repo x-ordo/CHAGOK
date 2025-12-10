@@ -15,6 +15,14 @@
 - Q: 최대 증거 파일 크기? → A: 500MB (영상 녹화 파일 지원)
 - Q: Observability 요구사항? → A: Standard (CloudWatch logs + Lambda metrics + API latency tracking)
 
+### Session 2025-12-10
+
+- Q: 저작권 표시? → A: 모든 페이지 푸터에 "© 2025 [회사명]. All Rights Reserved. 무단 활용 금지." 명시
+- Q: 약관 업데이트? → A: 이용약관(ToS) 페이지 `/terms` 추가
+- Q: 개인정보보호? → A: 개인정보처리방침 페이지 `/privacy` 추가 (PIPA 준수)
+- Q: 회원가입 약관 동의? → A: 가입 시 ToS + Privacy 동의 체크박스 필수, 동의 이력 DB 저장
+- Q: IA 개선? → A: 메인 네비게이션 1-depth 배치, 사건 상세에서 1클릭 접근, 일관된 뒤로가기 동작
+
 ## 배경 (Background)
 
 현재 LEH 프로젝트는 엔터프라이즈급 문서/설계가 완성되어 있으나, 실제 구현과의 갭이 존재:
@@ -122,6 +130,39 @@
 
 ---
 
+### User Story 7 - 법적 고지 및 약관 동의 (Priority: P2)
+
+사용자가 서비스를 이용하기 전에 저작권, 약관, 개인정보처리방침에 동의하고, 해당 내용을 명확히 확인할 수 있다.
+
+**Why this priority**: 법적 보호와 규정 준수(PIPA)가 서비스 운영의 전제조건. 배포 전 반드시 필요.
+
+**Independent Test**: 회원가입 시 약관 동의 체크박스 확인, 푸터에서 약관/개인정보처리방침 링크 접근 가능 확인
+
+**Acceptance Scenarios**:
+
+1. **Given** 신규 사용자가 회원가입 페이지에 접근, **When** 가입 양식을 작성할 때, **Then** 이용약관과 개인정보처리방침 동의 체크박스가 필수로 표시됨
+2. **Given** 사용자가 동의 체크박스를 선택하지 않고, **When** 가입 버튼을 클릭하면, **Then** "약관에 동의해주세요" 에러 메시지 표시
+3. **Given** 로그인한 사용자가 푸터를 확인할 때, **When** 저작권 표시가 있으면, **Then** "© 2025 [회사명]. All Rights Reserved. 무단 활용 금지." 문구 표시
+4. **Given** 사용자가 약관 또는 개인정보처리방침 링크를 클릭하면, **When** 해당 페이지로 이동, **Then** 전문이 표시됨
+
+---
+
+### User Story 8 - 정보 구조(IA) 개선 (Priority: P3)
+
+사용자가 서비스 내에서 원하는 기능에 쉽게 접근할 수 있도록 화면 간 연결 관계가 명확하다.
+
+**Why this priority**: UX 개선 사항으로 핵심 기능 완성 후 진행. 사용성 향상에 기여.
+
+**Independent Test**: 메인 네비게이션에서 모든 주요 기능에 3클릭 이내 접근 가능 확인
+
+**Acceptance Scenarios**:
+
+1. **Given** 로그인한 변호사가 대시보드에 접근, **When** 네비게이션 메뉴를 확인하면, **Then** 사건목록/증거업로드/초안생성/설정이 1-depth에 표시됨
+2. **Given** 사용자가 사건 상세 페이지에 있을 때, **When** 관련 기능(증거, 당사자, 초안)을 찾으면, **Then** 탭 또는 사이드바로 1클릭 접근 가능
+3. **Given** 사용자가 어떤 페이지에서든, **When** 뒤로가기/홈 버튼을 클릭하면, **Then** 예상한 페이지로 이동 (일관된 네비게이션)
+
+---
+
 ### Edge Cases
 
 - AI Worker Lambda가 타임아웃(15분 초과) 발생 시 어떻게 처리?
@@ -169,11 +210,25 @@
 - **FR-018**: GitHub Actions에서 main 머지 시 production 배포 (수동 승인)
 - **FR-019**: 배포 실패 시 이전 버전으로 롤백 가능
 
+**법적 고지 및 약관 (US7)**
+- **FR-020**: 모든 페이지 푸터에 저작권 표시: "© 2025 [회사명]. All Rights Reserved. 무단 활용 금지."
+- **FR-021**: 회원가입 시 이용약관(ToS) 동의 체크박스 필수
+- **FR-022**: 회원가입 시 개인정보처리방침(Privacy Policy) 동의 체크박스 필수
+- **FR-023**: `/terms` 페이지에 이용약관 전문 표시
+- **FR-024**: `/privacy` 페이지에 개인정보처리방침 전문 표시 (PIPA 준수)
+- **FR-025**: 사용자 동의 이력이 `user_agreements` 테이블에 기록됨 (user_id, agreement_type, agreed_at, version)
+
+**정보 구조 개선 (US8)**
+- **FR-026**: 메인 네비게이션에 주요 기능 1-depth 배치 (사건목록, 증거업로드, 초안생성, 설정)
+- **FR-027**: 사건 상세 페이지에서 관련 기능(증거, 당사자, 초안)에 1클릭 접근 가능
+- **FR-028**: 모든 페이지에서 일관된 뒤로가기/홈 버튼 동작 보장
+
 ### Key Entities
 
 - **Evidence**: 증거 파일 메타데이터 (case_id, type, timestamp, ai_summary, labels, qdrant_id)
 - **AuditLog**: 감사 로그 (user_id, action, resource_type, resource_id, ip_address, created_at)
 - **CaseMember**: 사건-사용자 권한 매핑 (case_id, user_id, role: OWNER/MEMBER/VIEWER)
+- **UserAgreement**: 사용자 약관 동의 이력 (user_id, agreement_type: ToS/Privacy, agreed_at, version)
 
 ### Non-Functional Requirements
 
@@ -196,6 +251,9 @@
 - **SC-006**: 권한 없는 API 접근 시 100% 403 반환
 - **SC-007**: dev→staging 배포가 CI 통과 후 10분 이내 완료
 - **SC-008**: 모든 API 에러 시 사용자 친화적 메시지 표시율 100%
+- **SC-009**: 회원가입 시 약관 동의 없이 가입 불가 (100% 검증)
+- **SC-010**: 모든 페이지 푸터에 저작권 표시 확인
+- **SC-011**: 주요 기능에 메인 네비게이션에서 3클릭 이내 접근 가능
 
 ## Assumptions
 

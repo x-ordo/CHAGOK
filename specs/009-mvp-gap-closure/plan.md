@@ -23,7 +23,7 @@ Production readiness를 위한 MVP 갭 해소. 현재 구현 상태 분석 결�
 **Project Type**: Web application (frontend + backend + ai_worker)
 **Performance Goals**: 5min AI analysis, 2sec RAG search, 30sec Draft generation
 **Constraints**: JWT auth (HTTP-only cookies), RBAC, Case isolation (`case_rag_{case_id}`), 500MB max file size
-**Scale/Scope**: MVP with 6 user stories, 22 functional requirements, 3 NFRs
+**Scale/Scope**: MVP with 8 user stories, 28 functional requirements, 3 NFRs
 
 ## Constitution Check
 
@@ -177,6 +177,24 @@ frontend/
 | Production environment | ✅ Configured | main branch → production |
 | Rollback | ❌ Missing | No automated rollback mechanism |
 
+### Legal/Terms (US7) - 0% Complete (New)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Copyright footer | ❌ Missing | "© 2025 [회사명]. All Rights Reserved. 무단 활용 금지." |
+| Terms of Service page | ❌ Missing | `/terms` page needed |
+| Privacy Policy page | ❌ Missing | `/privacy` page needed, PIPA compliant |
+| Registration consent | ❌ Missing | Checkboxes for ToS/Privacy agreement |
+| user_agreements table | ❌ Missing | Track consent history |
+
+### IA Improvement (US8) - 50% Complete (New)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Main navigation | ⚠️ Partial | Sidebar exists, needs 1-depth review |
+| Case detail tabs | ⚠️ Partial | Tabs exist, need consistency review |
+| Back/Home buttons | ⚠️ Partial | Present but behavior inconsistent |
+
 ## Implementation Priority
 
 Based on spec priorities and current implementation state:
@@ -218,18 +236,32 @@ Based on spec priorities and current implementation state:
    - Add audit_logs writes for all access attempts
    - **Effort**: Medium
 
+7. **Legal/Terms Implementation** (US7)
+   - Add copyright footer to all pages
+   - Create ToS and Privacy Policy pages
+   - Add consent checkboxes to signup form
+   - Create user_agreements table and API
+   - **Effort**: Medium
+
 ### P3 - Nice to Have
 
-7. **Rollback Mechanism** (US6)
+8. **Rollback Mechanism** (US6)
    - Document manual rollback procedure
    - Consider automated rollback on health check failure
    - **Effort**: Medium
 
-8. **Observability Setup** (NFR)
+9. **Observability Setup** (NFR)
    - Enable CloudWatch structured logging
    - Configure Lambda metrics collection
    - Add API latency tracking
    - **Effort**: Low-Medium
+
+10. **IA Improvement** (US8)
+    - Audit and improve main navigation structure
+    - Ensure 1-depth access to key features
+    - Standardize back/home button behavior
+    - Create IA documentation
+    - **Effort**: Low-Medium
 
 ## Generated Artifacts
 
