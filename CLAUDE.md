@@ -408,7 +408,7 @@ When implementing features, files typically go in:
 - Python 3.11+ (Backend), TypeScript (Frontend) + FastAPI, Next.js 14, python-docx (Word generation), WeasyPrint or ReportLab (PDF generation) (001-draft-export)
 - PostgreSQL (export job records), S3 (temporary file storage for large exports) (001-draft-export)
 - react-kakao-maps-sdk (Kakao Maps for GPS), react-big-calendar (calendar UI), Recharts (dashboard charts), jwt-decode (JWT parsing in middleware), WebSocket (real-time messaging) (003-role-based-ui)
-- react-hot-toast (toast notifications for error handling) (009-mvp-gap-closure - planned)
+- react-hot-toast (toast notifications for error handling), useRetry hook (exponential backoff) (009-mvp-gap-closure)
 - Python 3.11+ (Backend/AI Worker), TypeScript (Frontend) + FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3 (009-mvp-gap-closure)
 - PostgreSQL (RDS), AWS S3, DynamoDB, Qdrant Cloud (009-mvp-gap-closure)
 - TypeScript 5.x (Frontend), Python 3.11+ (Backend API) + Next.js 14, React 18, React Flow, Tailwind CSS (010-calm-control-design)
@@ -416,7 +416,7 @@ When implementing features, files typically go in:
 - Python 3.11+ (Backend/AI Worker), TypeScript (Frontend) + FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3, TipTap/Quill (draft editor) (009-mvp-gap-closure)
 
 ## Recent Changes
-- 009-mvp-gap-closure: (PLANNING) MVP production readiness. AI Worker 100% code complete (awaiting S3 IAM permissions), Backend RAG/Draft 90% complete (fully functional), Frontend error handling 70% (needs toast + retry). CI coverage at 65% (target 80%). Key tasks: S3 permission setup, enable AI Worker deployment, unify error handling, increase test coverage.
+- 009-mvp-gap-closure: (IN PROGRESS) MVP production readiness. AI Worker 100% code complete (awaiting S3 IAM permissions), Backend RAG/Draft 90% complete (fully functional), Frontend error handling 100% (react-hot-toast + useRetry hook implemented). CI coverage target 70% (ai_worker) / 80% (backend). Completed: US3 에러 처리 통일, ROLLBACK.md 문서화, README 배지 추가.
 - 005-lawyer-portal-pages: (CORE COMPLETE) Fixed 404 errors on lawyer portal pages. All pages now render: `/lawyer/clients`, `/lawyer/investigators`, `/settings`, `/lawyer/cases`, `/lawyer/calendar`, `/lawyer/messages`, `/lawyer/billing`. Created frontend types (`client.ts`, `investigator.ts`, `settings.ts`) and API clients. Middleware `/cases` redirect verified. **Future enhancements**: Dedicated backend APIs for clients/investigators/settings, advanced filtering, detail views.
 - 004-paralegal-progress: Added staff progress dashboard (`/staff/progress`) - case throughput monitoring, 16-item mid-demo feedback checklist, blocked case filtering. Backend: `ProgressService`, `staff_progress.py` router. Frontend: React dashboard with `ProgressCard`, `FeedbackChecklist` components.
 - 003-role-based-ui: Added react-kakao-maps-sdk, react-big-calendar, Recharts, jwt-decode, WebSocket support for real-time messaging

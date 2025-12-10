@@ -1,5 +1,8 @@
 # Team H·P·L - Legal Evidence Hub (LEH)
 
+[![CI](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/ci.yml/badge.svg)](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/ci.yml)
+[![Deploy](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/deploy_paralegal.yml/badge.svg)](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/deploy_paralegal.yml)
+
 > "변호사는 사건만 생성하고 증거를 S3에 올린다.
 > AI는 AWS 안에서 증거를 정리·분석해 '소장 초안 후보'를 보여준다.
 > 최종 문서는 언제나 변호사가 직접 결정한다."
