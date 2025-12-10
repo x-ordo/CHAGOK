@@ -343,6 +343,65 @@ Only these roles can self-register:
 
 Staff and Admin require invitation.
 
+---
+
+## 8. UserAgreement (PostgreSQL/RDS) - NEW (US7)
+
+### Location
+- **Table**: `user_agreements`
+- **Database**: PostgreSQL (RDS)
+
+### Schema
+
+```python
+class UserAgreement(Base):
+    __tablename__ = "user_agreements"
+
+    id = Column(UUID, primary_key=True, default=uuid4)
+    user_id = Column(UUID, ForeignKey("users.id"), nullable=False, index=True)
+    agreement_type = Column(Enum(AgreementType), nullable=False)  # ToS, Privacy
+    version = Column(String(20), nullable=False)  # e.g., "1.0.0"
+    agreed_at = Column(DateTime, default=func.now(), nullable=False)
+    ip_address = Column(String(45), nullable=True)  # IPv6 support
+
+    # Relationships
+    user = relationship("User", back_populates="agreements")
+```
+
+### Agreement Types (AgreementType Enum)
+
+| Type | Description |
+|------|-------------|
+| `ToS` | Terms of Service |
+| `Privacy` | Privacy Policy (PIPA) |
+
+### Indexes
+- `ix_user_agreements_user_id` - Query by user
+- `ix_user_agreements_agreement_type` - Filter by type
+
+### Business Rules
+- Users MUST agree to both ToS and Privacy before signup completes
+- Agreement records are immutable (no UPDATE/DELETE)
+- Version tracking enables re-consent on policy updates
+
+### Migration Reference
+```python
+# alembic/versions/xxx_add_user_agreements.py
+def upgrade():
+    op.create_table(
+        'user_agreements',
+        sa.Column('id', UUID(), primary_key=True),
+        sa.Column('user_id', UUID(), sa.ForeignKey('users.id'), nullable=False),
+        sa.Column('agreement_type', sa.Enum('ToS', 'Privacy', name='agreementtype'), nullable=False),
+        sa.Column('version', sa.String(20), nullable=False),
+        sa.Column('agreed_at', sa.DateTime(), default=func.now(), nullable=False),
+        sa.Column('ip_address', sa.String(45)),
+    )
+    op.create_index('ix_user_agreements_user_id', 'user_agreements', ['user_id'])
+```
+
+---
+
 ### Role-Based Dashboard Mapping
 
 | Role | Dashboard Path |
