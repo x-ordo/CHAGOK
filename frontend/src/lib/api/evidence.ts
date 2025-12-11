@@ -4,6 +4,7 @@
  */
 
 import { apiRequest, ApiResponse } from './client';
+import { logger } from '@/lib/logger';
 
 export interface Evidence {
   id: string;
@@ -177,7 +178,7 @@ export async function uploadToS3(
     });
 
     xhr.addEventListener('error', () => {
-      console.error('S3 upload error');
+      logger.error('S3 upload error');
       resolve(false);
     });
 

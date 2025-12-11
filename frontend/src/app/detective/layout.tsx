@@ -16,6 +16,7 @@ import RoleGuard from '@/components/auth/RoleGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UserRole } from '@/types/user';
+import { logger } from '@/lib/logger';
 
 // Detective navigation items
 const detectiveNavItems: NavItem[] = [
@@ -83,7 +84,7 @@ export default function DetectiveLayout({
     try {
       await logout();
     } catch (error) {
-      console.error('Logout failed:', error);
+      logger.error('Logout failed', error);
     }
   };
 

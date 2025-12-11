@@ -1,4 +1,5 @@
 /**
+import { logger } from '@/lib/logger';
  * Evidence DataTable Component
  * Shadcn/ui style with TanStack Table integration
  *
@@ -180,7 +181,7 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
       await retryEvidence(evidenceId);
       onRetry?.(evidenceId);
     } catch (err) {
-      console.error('Failed to retry evidence:', err);
+      logger.error('Failed to retry evidence:', err);
     } finally {
       setRetryingIds((prev) => {
         const next = new Set(prev);
@@ -212,7 +213,7 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
         setEvidenceContent(result.data.content);
       }
     } catch (err) {
-      console.error('Failed to fetch evidence content:', err);
+      logger.error('Failed to fetch evidence content:', err);
     } finally {
       setIsLoadingContent(false);
     }

@@ -1,4 +1,5 @@
 /**
+import { logger } from '@/lib/logger';
  * Hook for Case Relations Graph
  * 009-calm-control-design-system
  */
@@ -89,7 +90,7 @@ export function useCaseRelations({ caseId, autoSavePositions = true }: UseCaseRe
       setParties(data.parties);
       setRelations(data.relations);
     } catch (err) {
-      console.error('Failed to fetch case relations:', err);
+      logger.error('Failed to fetch case relations:', err);
       setError('관계 데이터를 불러오는데 실패했습니다.');
       // Set mock data for development
       setParties([
@@ -191,7 +192,7 @@ export function useCaseRelations({ caseId, autoSavePositions = true }: UseCaseRe
         })
       );
     } catch (err) {
-      console.error('Failed to save positions:', err);
+      logger.error('Failed to save positions:', err);
     }
   }, [caseId, autoSavePositions]);
 
@@ -202,7 +203,7 @@ export function useCaseRelations({ caseId, autoSavePositions = true }: UseCaseRe
       setParties((prev) => [...prev, newParty]);
       return newParty;
     } catch (err) {
-      console.error('Failed to create party:', err);
+      logger.error('Failed to create party:', err);
       throw err;
     }
   }, [caseId]);
@@ -213,7 +214,7 @@ export function useCaseRelations({ caseId, autoSavePositions = true }: UseCaseRe
       setParties((prev) => prev.map((p) => (p.id === partyId ? updated : p)));
       return updated;
     } catch (err) {
-      console.error('Failed to update party:', err);
+      logger.error('Failed to update party:', err);
       throw err;
     }
   }, [caseId]);
@@ -227,7 +228,7 @@ export function useCaseRelations({ caseId, autoSavePositions = true }: UseCaseRe
         prev.filter((r) => r.source_party_id !== partyId && r.target_party_id !== partyId)
       );
     } catch (err) {
-      console.error('Failed to delete party:', err);
+      logger.error('Failed to delete party:', err);
       throw err;
     }
   }, [caseId]);
@@ -238,7 +239,7 @@ export function useCaseRelations({ caseId, autoSavePositions = true }: UseCaseRe
       setRelations((prev) => [...prev, newRelation]);
       return newRelation;
     } catch (err) {
-      console.error('Failed to create relation:', err);
+      logger.error('Failed to create relation:', err);
       throw err;
     }
   }, [caseId]);
@@ -248,7 +249,7 @@ export function useCaseRelations({ caseId, autoSavePositions = true }: UseCaseRe
       await relationsApi.deleteRelation(caseId, relationId);
       setRelations((prev) => prev.filter((r) => r.id !== relationId));
     } catch (err) {
-      console.error('Failed to delete relation:', err);
+      logger.error('Failed to delete relation:', err);
       throw err;
     }
   }, [caseId]);

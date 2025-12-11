@@ -13,6 +13,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signup, SignupRole } from '@/lib/api/auth';
+import { logger } from '@/lib/logger';
 
 // T082: Role options for signup dropdown
 const ROLE_OPTIONS: { value: SignupRole | ''; label: string; description: string }[] = [
@@ -107,7 +108,7 @@ export default function SignupPage() {
       const redirectPath = ROLE_DASHBOARD_PATHS[userRole as SignupRole] || '/lawyer/dashboard';
       router.push(redirectPath);
     } catch (err) {
-      console.error('Signup error:', err);
+      logger.error('Signup error', err);
       setError('회원가입 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -253,7 +254,7 @@ export default function SignupPage() {
           </div>
 
           {error && (
-            <div className="text-sm text-red-600 text-center">
+            <div data-testid="error-message" className="text-sm text-red-600 text-center">
               {error}
             </div>
           )}

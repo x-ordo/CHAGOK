@@ -7,6 +7,7 @@
  */
 
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -153,7 +154,7 @@ export function CaseRelationsGraph({ caseId, readOnly = false }: CaseRelationsGr
       setNewPartyName('');
       setShowAddParty(false);
     } catch (err) {
-      console.error('Failed to add party:', err);
+      logger.error('Failed to add party:', err);
     }
   }, [newPartyName, newPartyType, addParty]);
 
@@ -166,7 +167,7 @@ export function CaseRelationsGraph({ caseId, readOnly = false }: CaseRelationsGr
         await removeParty(selectedParty.id);
         setSelectedParty(null);
       } catch (err) {
-        console.error('Failed to delete party:', err);
+        logger.error('Failed to delete party:', err);
       }
     }
   }, [selectedParty, removeParty, setSelectedParty]);

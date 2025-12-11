@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, CheckCircle2, Filter, Shield, Sparkles, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -88,7 +89,7 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
                 setEvidenceList(mappedEvidence);
             }
         } catch (err) {
-            console.error('Failed to fetch evidence:', err);
+            logger.error('Failed to fetch evidence:', err);
             setEvidenceError('증거 목록을 불러오는데 실패했습니다.');
             setEvidenceList([]);
         } finally {
@@ -228,7 +229,7 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
 
                 successCount++;
             } catch (error) {
-                console.error(`Upload failed for ${file.name}:`, error);
+                logger.error(`Upload failed for ${file.name}:`, error);
                 failCount++;
             }
 
@@ -295,7 +296,7 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
                 setHasGeneratedDraft(true);
             }
         } catch (err) {
-            console.error('Failed to generate draft:', err);
+            logger.error('Failed to generate draft:', err);
             setDraftError('초안 생성에 실패했습니다. 다시 시도해주세요.');
         } finally {
             setIsGeneratingDraft(false);

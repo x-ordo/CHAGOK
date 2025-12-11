@@ -388,6 +388,7 @@ class DraftPreviewResponse(BaseModel):
     draft_text: str
     citations: list[DraftCitation]
     generated_at: datetime
+    preview_disclaimer: str = "본 문서는 AI가 생성한 미리보기 초안입니다. 법적 효력이 없으며, 변호사의 검토 및 수정이 필수입니다."
 
 
 class DraftExportFormat(str, Enum):

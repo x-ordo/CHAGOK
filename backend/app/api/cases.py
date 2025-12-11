@@ -38,7 +38,9 @@ from app.services.draft_service import DraftService
 from app.core.dependencies import (
     get_current_user_id,
     require_internal_user,
-    require_lawyer_or_admin
+    require_lawyer_or_admin,
+    verify_case_read_access,
+    verify_case_write_access
 )
 from app.db.models import User
 
@@ -103,7 +105,7 @@ def list_cases(
 @router.get("/{case_id}", response_model=CaseOut)
 def get_case(
     case_id: str,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_read_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -129,7 +131,7 @@ def get_case(
 def update_case(
     case_id: str,
     update_data: CaseUpdate,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_write_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -159,7 +161,7 @@ def update_case(
 def list_case_evidence(
     case_id: str,
     categories: Optional[List[Article840Category]] = Query(None, description="Filter by Article 840 categories"),
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_read_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -207,7 +209,7 @@ def list_case_evidence(
 def generate_draft_preview(
     case_id: str,
     request: DraftPreviewRequest,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_read_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -257,7 +259,7 @@ def generate_draft_preview(
 def export_draft(
     case_id: str,
     format: DraftExportFormat = Query(DraftExportFormat.DOCX, description="Export format (docx or pdf)"),
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_read_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -318,7 +320,7 @@ def export_draft(
 @router.delete("/{case_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_case(
     case_id: str,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_write_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -349,7 +351,7 @@ def delete_case(
 def add_case_members(
     case_id: str,
     request: AddCaseMembersRequest,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_write_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -393,7 +395,7 @@ def add_case_members(
 @router.get("/{case_id}/members", response_model=CaseMembersListResponse, status_code=status.HTTP_200_OK)
 def get_case_members(
     case_id: str,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_read_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -433,6 +435,7 @@ def review_evidence(
     case_id: str,
     evidence_id: str,
     request: EvidenceReviewRequest,
+    _: str = Depends(verify_case_write_access),  # Case permission check
     current_user: User = Depends(require_lawyer_or_admin),
     db: Session = Depends(get_db)
 ):

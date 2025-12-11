@@ -5,6 +5,14 @@
 **Status**: Draft
 **Input**: User description: "MVP 구현 갭 해소 - 문서/설계 대비 실제 구현 갭을 좁히고 production-ready 상태로 만들기"
 
+## Clarifications
+
+### Session 2025-12-11
+
+- Q: What error display pattern should be used for different error types? → A: Toast for transient errors (network/timeout), inline for field validation errors
+- Q: How should evidence citations appear in generated drafts? → A: Inline bracketed IDs (e.g., `[EV-001]`)
+- Q: What is the maximum file size per evidence upload? → A: 500MB (multipart upload required)
+
 ## 배경 (Background)
 
 현재 LEH 프로젝트는 엔터프라이즈급 문서/설계가 완성되어 있으나, 실제 구현과의 갭이 존재:
@@ -130,15 +138,16 @@
 - **FR-002**: AI Worker Lambda가 S3 `ObjectCreated` 이벤트에 의해 자동 트리거됨
 - **FR-003**: 분석 결과가 DynamoDB `leh_evidence` 테이블에 저장됨
 - **FR-004**: 임베딩 벡터가 Qdrant `case_rag_{case_id}` 컬렉션에 저장됨
+- **FR-004a**: 증거 파일 최대 크기 500MB, S3 multipart upload 사용; 초과 시 프론트엔드에서 업로드 차단
 
 **Backend RAG/Draft (US2)**
 - **FR-005**: `GET /search?q={query}&case_id={id}` API가 Qdrant에서 유사 증거를 검색하여 반환
 - **FR-006**: `POST /cases/{id}/draft-preview` API가 GPT-4o를 사용하여 초안 생성
-- **FR-007**: Draft 응답에 각 문장별 출처 증거 ID가 포함됨
+- **FR-007**: Draft 응답에 각 문장별 인라인 출처 표시 (예: `본 증거에 따르면 [EV-001] 원고는...`)
 
 **Frontend 에러 처리 (US3)**
 - **FR-008**: 401 응답 시 자동으로 로그인 페이지 리다이렉트 및 메시지 표시
-- **FR-009**: 네트워크 오류 시 토스트/배너로 사용자 친화적 메시지 표시
+- **FR-009**: 네트워크/타임아웃 오류 시 토스트로 사용자 친화적 메시지 표시; 폼 필드 검증 오류는 인라인 표시
 - **FR-010**: API 호출 중 버튼 비활성화 및 로딩 상태 표시
 
 **CI 테스트 (US4)**

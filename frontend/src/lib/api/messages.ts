@@ -4,6 +4,7 @@
  */
 
 import { apiClient, ApiResponse } from './client';
+import { logger } from '@/lib/logger';
 import type {
   Message,
   MessageListResponse,
@@ -184,7 +185,7 @@ export function createMessageWebSocket(
             break;
         }
       } catch {
-        console.error('Failed to parse WebSocket message');
+        logger.error('Failed to parse WebSocket message');
       }
     };
   };

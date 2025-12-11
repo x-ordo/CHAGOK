@@ -22,7 +22,11 @@ from app.db.schemas import (
     AuditAction
 )
 from app.services.draft_service import DraftService
-from app.core.dependencies import get_current_user_id
+from app.core.dependencies import (
+    get_current_user_id,
+    verify_case_read_access,
+    verify_case_write_access
+)
 from app.utils.audit import log_audit_event
 
 
@@ -32,7 +36,7 @@ router = APIRouter()
 @router.get("", response_model=DraftListResponse, status_code=status.HTTP_200_OK)
 def list_drafts(
     case_id: str,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_read_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -64,7 +68,7 @@ def list_drafts(
 def create_draft(
     case_id: str,
     draft_data: DraftCreate,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_write_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -109,7 +113,7 @@ def create_draft(
 def get_draft(
     case_id: str,
     draft_id: str,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_read_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -141,7 +145,7 @@ def update_draft(
     case_id: str,
     draft_id: str,
     update_data: DraftUpdate,
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_write_access),
     db: Session = Depends(get_db)
 ):
     """
@@ -194,7 +198,7 @@ def export_draft(
     case_id: str,
     draft_id: str,
     format: DraftExportFormat = Query(DraftExportFormat.DOCX, description="Export format (docx or pdf)"),
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(verify_case_read_access),
     db: Session = Depends(get_db)
 ):
     """

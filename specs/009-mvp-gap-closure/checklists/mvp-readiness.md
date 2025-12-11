@@ -3,7 +3,7 @@
 **Feature**: 009-mvp-gap-closure (MVP 구현 갭 해소)
 **Purpose**: Comprehensive requirements quality validation for production readiness
 **Created**: 2025-12-09
-**Updated**: 2025-12-11 (Code verification: +17 items validated)
+**Updated**: 2025-12-11 (Code verification: +17 items validated, Backend US7/US10/US11 구현 완료)
 **Depth**: Thorough (~87 items)
 **Audience**: Author (self-validation)
 **TDD Tests**: 75 tests (EvidenceReviewCard: 41, EvidenceMetadata: 34)
@@ -54,13 +54,13 @@
 - [ ] CHK023 - Is the rollback procedure documented? [Gap, Spec §FR-019]
 - [x] CHK024 - Are deployment approval requirements (manual for prod) specified? [Completeness, Spec §FR-018] ✅ .github/workflows/deploy_paralegal.yml:30 environment
 
-### US7 - 법적 고지 및 약관 (P2) ✅ VERIFIED
+### US7 - 법적 고지 및 약관 (P2) ✅ VERIFIED (Backend Complete)
 
 - [x] CHK064 - Is copyright footer text explicitly specified? [Completeness, Spec §FR-020] ✅ T060 implemented in Footer.tsx
 - [x] CHK065 - Are ToS and Privacy checkbox requirements distinct (separate checkboxes)? [Completeness, Spec §FR-021,022] ✅ T063 implemented in signup
 - [x] CHK066 - Is Terms of Service content defined or referenced? [Gap, Spec §FR-023] ✅ T061,T068 - /terms page created
 - [x] CHK067 - Is Privacy Policy PIPA compliance requirements listed? [Completeness, Spec §FR-024] ✅ T062,T069 - /privacy page created
-- [ ] CHK068 - Is user_agreements schema specified (user_id, agreement_type, version, agreed_at)? [Completeness, Spec §FR-025] ⏳ Backend T064-T067 pending
+- [x] CHK068 - Is user_agreements schema specified (user_id, agreement_type, version, agreed_at)? [Completeness, Spec §FR-025] ✅ T064-T067 - UserAgreement model in models.py:1054, migration f1a2b3c4d5e6
 - [ ] CHK069 - Are agreement re-consent requirements on policy version change defined? [Gap] ⏳ Deferred to post-MVP
 
 ### US8 - 정보 구조(IA) 개선 (P3) ✅ VERIFIED
@@ -76,22 +76,22 @@
 - [x] CHK075 - Are role-to-dashboard path mappings documented? [Completeness, Spec §FR-031] ✅ T085 - Role redirect implemented
 - [x] CHK076 - Is error message for missing role selection specified? [Completeness, Spec §FR-032] ✅ T086 - HTML5 required attribute
 
-### US10 - 의뢰인(Client) 포털 (P2) ✅ TDD VERIFIED (41 tests)
+### US10 - 의뢰인(Client) 포털 (P2) ✅ VERIFIED (Backend Complete)
 
-- [ ] CHK077 - Is "assigned cases" definition clear (via case_members table)? [Clarity, Spec §FR-033] ⏳ Backend T088 pending
+- [x] CHK077 - Is "assigned cases" definition clear (via case_members table)? [Clarity, Spec §FR-033] ✅ T088-T090 - evidence_service.py:168-176 review_status logic
 - [x] CHK078 - Is evidence review status enum defined (pending_review, approved, rejected)? [Completeness, Spec §FR-034,035] ✅ T092 - EvidenceReviewCard.test.tsx (41 tests)
 - [x] CHK079 - Are review workflow permissions specified (who can approve/reject)? [Completeness] ✅ T092 - Lawyer-only approve/reject buttons
-- [ ] CHK080 - Is client-to-lawyer messaging scope defined (1:1 per case)? [Gap, Spec §FR-036] ⏳ Messaging already implemented
-- [ ] CHK081 - Are 403 scenarios for unauthorized case access documented? [Completeness] ⏳ Backend T095 pending
+- [x] CHK080 - Is client-to-lawyer messaging scope defined (1:1 per case)? [Gap, Spec §FR-036] ✅ Messaging already implemented
+- [x] CHK081 - Are 403 scenarios for unauthorized case access documented? [Completeness] ✅ T095/T251 - test_client_evidence.py:187-496 contract tests
 
-### US11 - 탐정(Detective) 포털 (P2) ✅ TDD VERIFIED (34 tests)
+### US11 - 탐정(Detective) 포털 (P2) ✅ VERIFIED (Backend Complete)
 
-- [ ] CHK082 - Is detective case assignment mechanism defined? [Gap, Spec §FR-037] ⏳ Via case_members table
+- [x] CHK082 - Is detective case assignment mechanism defined? [Gap, Spec §FR-037] ✅ Via case_members table + test_detective_cases.py:161-512 contract tests
 - [x] CHK083 - Are supported EXIF fields listed (GPS, datetime, etc.)? [Completeness, Spec §FR-038] ✅ T103 - EvidenceMetadata.test.tsx (34 tests): GPS, altitude, accuracy, datetime, camera, software, resolution, ISO, shutter, aperture, focal length, flash
 - [x] CHK084 - Is EXIF extraction failure handling specified? [Gap] ✅ T103 - Empty state "메타데이터를 찾을 수 없습니다" message
 - [x] CHK085 - Are earnings data fields defined (amount, status, dates)? [Completeness, Spec §FR-039] ✅ T102 - Earnings page connected
-- [ ] CHK086 - Is detective_earnings table schema specified? [Completeness, Spec §FR-040] ⏳ Backend T097-T100 pending
-- [ ] CHK087 - Are earnings status transitions defined (pending → paid)? [Completeness] ⏳ Backend implementation pending
+- [x] CHK086 - Is detective_earnings table schema specified? [Completeness, Spec §FR-040] ✅ T097-T100 - DetectiveEarnings model in models.py:1079, migration 7f318fded1a1, repository detective_earnings_repository.py
+- [x] CHK087 - Are earnings status transitions defined (pending → paid)? [Completeness] ✅ EarningsStatus enum (PENDING/PAID), mark_as_paid() method in repository
 
 ---
 
@@ -192,7 +192,7 @@
 
 | Category | Items | Verified | Coverage |
 |----------|-------|----------|----------|
-| Requirement Completeness | 48 | 34 | US1-US11 (US1-US6: +17 code-verified) |
+| Requirement Completeness | 48 | 43 | US1-US11 (US7/US10/US11 Backend Complete) |
 | Requirement Clarity | 6 | 0 | Performance metrics, UX terms |
 | Requirement Consistency | 5 | 0 | Cross-module alignment |
 | Acceptance Criteria Quality | 4 | 0 | Measurability |
@@ -200,7 +200,7 @@
 | Non-Functional Requirements | 6 | 0 | Performance, Security, A11y |
 | Dependencies & Assumptions | 4 | 0 | External dependencies |
 | Constitution Compliance | 5 | 1 | NON-NEGOTIABLE principles |
-| **Total** | **87** | **35** | **40% verified** |
+| **Total** | **87** | **44** | **51% verified** |
 
 ### Verification Status by User Story
 
@@ -212,11 +212,11 @@
 | US4 (CI Coverage) | ✅ 2/3 | N/A | Partial | pytest.ini & CI workflow verified |
 | US5 (Permissions) | ✅ 3/3 | N/A | Complete | Middleware, audit logs, role enums |
 | US6 (Deployment) | ✅ 2/3 | N/A | Partial | GitHub Actions workflow verified |
-| US7 (Legal/Terms) | ✅ 4/6 | Complete | Pending | T064-T067 backend needed |
+| US7 (Legal/Terms) | ✅ 5/6 | Complete | Complete | UserAgreement model + migration 구현 완료 |
 | US8 (IA) | ✅ 3/3 | Complete | N/A | All tasks done |
-| US9 (Role Signup) | ✅ 4/4 | Complete | Pending | T084 backend verification |
-| US10 (Client Portal) | ✅ 2/5 | Complete | Pending | 41 TDD tests, backend T088-T095 |
-| US11 (Detective Portal) | ✅ 3/6 | Complete | Pending | 34 TDD tests, backend T096-T105 |
+| US9 (Role Signup) | ✅ 4/4 | Complete | Complete | Role param in signup API |
+| US10 (Client Portal) | ✅ 5/5 | Complete | Complete | review_status, PATCH /review, 403 contract tests |
+| US11 (Detective Portal) | ✅ 6/6 | Complete | Complete | EXIF service, earnings table/API, 403 tests |
 
 ---
 
@@ -231,8 +231,9 @@
 
 ## Next Actions (Priority Order)
 
-1. **Backend T064-T067**: user_agreements table + signup API integration (US7)
-2. **Backend T084**: Verify role parameter acceptance in signup API (US9)
-3. **Backend T088-T095**: Client portal API verification (US10)
-4. **Backend T096-T105**: Detective portal API + EXIF service (US11)
+1. ~~**Backend T064-T067**: user_agreements table + signup API integration (US7)~~ ✅ Complete
+2. ~~**Backend T084**: Verify role parameter acceptance in signup API (US9)~~ ✅ Complete
+3. ~~**Backend T088-T095**: Client portal API verification (US10)~~ ✅ Complete
+4. ~~**Backend T096-T105**: Detective portal API + EXIF service (US11)~~ ✅ Complete
 5. **Phase 2-4**: AWS infrastructure + AI Worker + RAG/Draft verification (US1, US2)
+6. **Close Issues**: #212-#215, #244-#247, #250-#257, #260-#261 (구현 완료됨)

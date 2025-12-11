@@ -6,6 +6,7 @@
  */
 
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 
@@ -84,7 +85,7 @@ export function MessageInput({
         textareaRef.current.style.height = 'auto';
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      logger.error('Failed to send message:', error);
     } finally {
       setIsSending(false);
     }

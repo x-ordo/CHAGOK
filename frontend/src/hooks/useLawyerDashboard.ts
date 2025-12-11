@@ -6,6 +6,7 @@
  */
 
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -78,7 +79,7 @@ export function useLawyerDashboard(): UseLawyerDashboardResult {
       const response = await getLawyerAnalytics();
 
       if (response.error) {
-        console.error('Analytics fetch error:', response.error);
+        logger.error('Analytics fetch error:', response.error);
         return;
       }
 
@@ -86,7 +87,7 @@ export function useLawyerDashboard(): UseLawyerDashboardResult {
         setAnalytics(response.data);
       }
     } catch (err) {
-      console.error('Analytics fetch error:', err);
+      logger.error('Analytics fetch error:', err);
     }
   }, []);
 

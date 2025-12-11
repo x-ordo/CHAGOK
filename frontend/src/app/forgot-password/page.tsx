@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { forgotPassword } from '@/lib/api/auth';
+import { logger } from '@/lib/logger';
 import { Button, Input } from '@/components/primitives';
 
 export default function ForgotPasswordPage() {
@@ -31,7 +32,7 @@ export default function ForgotPasswordPage() {
 
       setSuccess(true);
     } catch (err) {
-      console.error('Forgot password error:', err);
+      logger.error('Forgot password error', err);
       setError('요청 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);

@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useRef, useEffect, FormEvent, KeyboardEvent } from 'react';
 import { useMessages } from '@/hooks/useMessages';
@@ -55,7 +56,7 @@ export function MessageThread({
       await sendMessage({ case_id: caseId, recipient_id: recipientId, content: inputValue.trim() });
       setInputValue("");
     } catch (err) {
-      console.error("Failed to send:", err);
+      logger.error("Failed to send:", err);
     } finally {
       setIsSending(false);
     }

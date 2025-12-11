@@ -16,6 +16,7 @@ import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UserRole } from '@/types/user';
+import { logger } from '@/lib/logger';
 
 // Lawyer navigation items
 const lawyerNavItems: NavItem[] = [
@@ -87,7 +88,7 @@ export default function LawyerLayout({
     try {
       await logout();
     } catch (error) {
-      console.error('Logout failed:', error);
+      logger.error('Logout failed', error);
     }
   };
 

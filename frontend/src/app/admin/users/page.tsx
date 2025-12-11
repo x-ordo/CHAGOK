@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -28,7 +29,7 @@ export default function AdminUsersPage() {
         setUsers(mappedUsers);
       }
     } catch (err) {
-      console.error('Failed to fetch users:', err);
+      logger.error('Failed to fetch users:', err);
       setError('사용자 목록을 불러오는데 실패했습니다.');
       setUsers([]);
     } finally {
@@ -64,7 +65,7 @@ export default function AdminUsersPage() {
         setTimeout(() => setInviteMessage(''), 3000);
       }
     } catch (err) {
-      console.error('Failed to delete user:', err);
+      logger.error('Failed to delete user:', err);
       setError('사용자 삭제에 실패했습니다.');
     } finally {
       setIsDeleting(null);

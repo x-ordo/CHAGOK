@@ -9,6 +9,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { resetPassword } from '@/lib/api/auth';
+import { logger } from '@/lib/logger';
 import { Button, Input } from '@/components/primitives';
 
 function ResetPasswordForm() {
@@ -66,7 +67,7 @@ function ResetPasswordForm() {
         router.push('/login');
       }, 3000);
     } catch (err) {
-      console.error('Reset password error:', err);
+      logger.error('Reset password error', err);
       setError('비밀번호 변경 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);

@@ -12,6 +12,7 @@
  */
 
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
@@ -129,17 +130,17 @@ export function useMessages({ caseId, recipientId }: UseMessagesOptions): UseMes
           const data: WebSocketMessage = JSON.parse(event.data);
           handleWebSocketMessage(data);
         } catch (e) {
-          console.error('Failed to parse WebSocket message:', e);
+          logger.error('Failed to parse WebSocket message:', e);
         }
       };
 
       ws.onerror = (event) => {
-        console.error('WebSocket error:', event);
+        logger.error('WebSocket error:', event);
       };
 
       wsRef.current = ws;
     } catch (e) {
-      console.error('Failed to connect WebSocket:', e);
+      logger.error('Failed to connect WebSocket:', e);
     }
   }, []);
 
@@ -212,7 +213,7 @@ export function useMessages({ caseId, recipientId }: UseMessagesOptions): UseMes
         break;
 
       case 'error':
-        console.error('WebSocket error:', data.payload);
+        logger.error('WebSocket error:', data.payload);
         break;
 
       default:

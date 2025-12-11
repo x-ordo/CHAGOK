@@ -6,6 +6,7 @@
  */
 
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useCallback } from 'react';
 import { useAssets } from '@/hooks/useAssets';
@@ -347,7 +348,7 @@ export function AssetDivisionForm({ caseId }: AssetDivisionFormProps) {
         await addAsset(data);
         setShowAddForm(false);
       } catch (err) {
-        console.error('Failed to add asset:', err);
+        logger.error('Failed to add asset:', err);
       }
     },
     [addAsset]
@@ -359,7 +360,7 @@ export function AssetDivisionForm({ caseId }: AssetDivisionFormProps) {
         try {
           await removeAsset(assetId);
         } catch (err) {
-          console.error('Failed to delete asset:', err);
+          logger.error('Failed to delete asset:', err);
         }
       }
     },

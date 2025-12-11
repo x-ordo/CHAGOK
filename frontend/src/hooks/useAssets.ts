@@ -1,4 +1,5 @@
 /**
+import { logger } from '@/lib/logger';
  * Hook for Asset Division
  * 009-calm-control-design-system
  */
@@ -71,7 +72,7 @@ export function useAssets({ caseId }: UseAssetsOptions) {
       const data = await assetsApi.getAssets(caseId);
       setAssets(data);
     } catch (err) {
-      console.error('Failed to fetch assets:', err);
+      logger.error('Failed to fetch assets:', err);
       setError('재산 데이터를 불러오는데 실패했습니다.');
       // Set mock data for development
       setAssets([
@@ -143,7 +144,7 @@ export function useAssets({ caseId }: UseAssetsOptions) {
         setAssets((prev) => [...prev, newAsset]);
         return newAsset;
       } catch (err) {
-        console.error('Failed to create asset:', err);
+        logger.error('Failed to create asset:', err);
         throw err;
       }
     },
@@ -157,7 +158,7 @@ export function useAssets({ caseId }: UseAssetsOptions) {
         setAssets((prev) => prev.map((a) => (a.id === assetId ? updated : a)));
         return updated;
       } catch (err) {
-        console.error('Failed to update asset:', err);
+        logger.error('Failed to update asset:', err);
         throw err;
       }
     },
@@ -170,7 +171,7 @@ export function useAssets({ caseId }: UseAssetsOptions) {
         await assetsApi.deleteAsset(caseId, assetId);
         setAssets((prev) => prev.filter((a) => a.id !== assetId));
       } catch (err) {
-        console.error('Failed to delete asset:', err);
+        logger.error('Failed to delete asset:', err);
         throw err;
       }
     },

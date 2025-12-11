@@ -4,6 +4,7 @@
  */
 
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { SearchResultItem, SearchCategory, QuickAccessEvent } from '@/types/search';
@@ -60,7 +61,7 @@ export function useGlobalSearch(options?: UseGlobalSearchOptions): UseGlobalSear
         });
       } catch {
         // Quick access is optional, don't show error
-        console.error('Failed to load quick access data');
+        logger.error('Failed to load quick access data');
       } finally {
         setIsLoadingQuickAccess(false);
       }

@@ -15,6 +15,7 @@ import RoleGuard from '@/components/auth/RoleGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UserRole } from '@/types/user';
+import { logger } from '@/lib/logger';
 
 // Client navigation items - simplified view
 const clientNavItems: NavItem[] = [
@@ -60,7 +61,7 @@ export default function ClientLayout({
     try {
       await logout();
     } catch (error) {
-      console.error('Logout failed:', error);
+      logger.error('Logout failed', error);
     }
   };
 

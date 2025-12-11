@@ -7,6 +7,7 @@
  */
 
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
@@ -58,7 +59,7 @@ function EvidencePageContent() {
   };
 
   const handleError = (err: string) => {
-    console.error('Upload error:', err);
+    logger.error('Upload error:', err);
   };
 
   if (loading) {

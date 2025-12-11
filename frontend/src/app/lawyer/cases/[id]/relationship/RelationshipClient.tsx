@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 /**
  * Relationship Visualization Client Component
@@ -42,7 +43,7 @@ export default function RelationshipClient({ caseId }: RelationshipClientProps) 
         setUseMockData(false);
       }
     } catch (err) {
-      console.error('Failed to load relationships:', err);
+      logger.error('Failed to load relationships:', err);
       // Fallback to mock data
       setGraph(getMockRelationshipGraph());
       setUseMockData(true);

@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Static HTML Export for S3/CloudFront deployment
-  output: 'export',
+  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
 
   // Disable image optimization for static export (use external CDN or unoptimized)
   images: {

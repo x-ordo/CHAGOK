@@ -1,23 +1,28 @@
 openapi: 3.0.3
 info:
-  title: LEH Draft API
-  description: AI-powered legal document draft generation with RAG
+  title: LEH Draft Preview API
+  description: AI-powered legal document draft generation for Legal Evidence Hub
   version: 1.0.0
 
 servers:
-  - url: https://api.legalevidence.hub
-    description: Production
-  - url: http://localhost:8000
-    description: Development
+  - url: https://api.legalevidence.hub/v1
+    description: Production API
+  - url: http://localhost:8000/v1
+    description: Local development
 
 paths:
   /cases/{case_id}/draft-preview:
     post:
-      operationId: generateDraftPreview
-      summary: Generate draft preview
+      summary: Generate draft preview with evidence citations
       description: |
-        Generate AI-powered draft document using RAG search over case evidence.
-        Returns "Preview Only" - requires manual lawyer review before use.
+        Generates a legal document draft using GPT-4o based on case evidence.
+        Returns "Preview Only" content with inline [EV-xxx] citations.
+        
+        IMPORTANT: This is a preview only. Lawyers MUST manually review
+        and approve before any external use (Constitution Principle III).
+        
+        Timeout: 30 seconds (SC-003 requirement)
+      operationId: generateDraftPreview
       tags:
         - Draft
       security:
@@ -26,6 +31,7 @@ paths:
         - name: case_id
           in: path
           required: true
+          description: Case identifier
           schema:
             type: string
             format: uuid
@@ -37,96 +43,47 @@ paths:
               $ref: '#/components/schemas/DraftPreviewRequest'
       responses:
         '200':
-          description: Draft preview generated
+          description: Draft preview generated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DraftPreviewResponse'
         '400':
           description: Invalid request
-        '401':
-          description: Authentication required
-        '403':
-          description: Access denied to case
-        '404':
-          description: Case not found
-        '422':
-          description: Insufficient evidence for draft
-        '500':
-          description: AI generation error
-
-  /cases/{case_id}/draft-export:
-    get:
-      operationId: exportDraft
-      summary: Export draft to file
-      description: Export saved draft to DOCX or PDF format
-      tags:
-        - Draft
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: case_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [docx, pdf]
-            default: docx
-        - name: draft_id
-          in: query
-          required: false
-          schema:
-            type: string
-            format: uuid
-          description: Specific draft version (default: latest)
-      responses:
-        '200':
-          description: Draft file
-          content:
-            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
-              schema:
-                type: string
-                format: binary
-            application/pdf:
-              schema:
-                type: string
-                format: binary
-        '401':
-          description: Authentication required
-        '403':
-          description: Access denied
-        '404':
-          description: Draft not found
-
-  /cases/{case_id}/drafts:
-    get:
-      operationId: listDrafts
-      summary: List draft versions
-      description: Get all draft versions for a case
-      tags:
-        - Draft
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: case_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Draft list
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DraftListResponse'
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No access to this case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Case not found or insufficient evidence
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Generation timeout (exceeded 30s)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: AI service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   securitySchemes:
@@ -138,123 +95,117 @@ components:
   schemas:
     DraftPreviewRequest:
       type: object
+      required:
+        - document_type
       properties:
         document_type:
           type: string
-          enum: [complaint, response, motion, settlement]
-          default: complaint
+          enum: [준비서면, 소장, 답변서, 진술서]
           description: Type of legal document to generate
+          example: "준비서면"
         focus_topics:
           type: array
           items:
             type: string
-          description: Topics to emphasize in draft
-          example: ["폭행", "재산분할"]
+          description: Optional topics to emphasize
+          example: ["폭언", "정서적 학대"]
+        evidence_ids:
+          type: array
+          items:
+            type: string
+            pattern: '^EV-[a-f0-9]{8}$'
+          description: Specific evidence to include (optional, uses all if omitted)
+          example: ["EV-1a2b3c4d", "EV-5e6f7g8h"]
         max_length:
           type: integer
           minimum: 500
-          maximum: 10000
-          default: 3000
-          description: Maximum content length in characters
-        include_citations:
-          type: boolean
-          default: true
-          description: Include evidence citations in draft
+          maximum: 5000
+          default: 2000
+          description: Approximate target word count
+          example: 2000
 
     DraftPreviewResponse:
       type: object
       required:
         - draft_id
         - content
-        - status
         - citations
+        - generated_at
+        - disclaimer
       properties:
         draft_id:
           type: string
           format: uuid
-          description: Unique draft version ID
+          description: Temporary identifier for this preview session
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         content:
           type: string
-          description: Generated draft content (markdown)
-        status:
-          type: string
-          enum: [preview]
-          description: Always "preview" - requires manual review
+          description: |
+            Markdown-formatted draft with inline [EV-xxx] citations.
+            Example: "피고는 원고에게 반복적인 폭언을 하였습니다 [EV-1a2b3c4d]."
+          example: |
+            # 준비서면
+
+            ## 1. 사건의 개요
+
+            원고와 피고는 2010년 3월 결혼하였으나, 피고의 반복적인 폭언으로 인해
+            혼인을 계속하기 어려운 상황에 이르렀습니다 [EV-1a2b3c4d].
+
+            ## 2. 이혼 사유 (민법 제840조)
+
+            피고는 2024년 1월부터 3월까지 원고에게 수차례 폭언을 하였습니다 [EV-5e6f7g8h].
         citations:
           type: array
           items:
             $ref: '#/components/schemas/Citation'
-          description: Evidence citations referenced in draft
-        metadata:
-          type: object
-          properties:
-            model:
-              type: string
-              example: gpt-4o
-            tokens_used:
-              type: integer
-            generation_time_ms:
-              type: integer
-            evidence_count:
-              type: integer
-        warning:
+        generated_at:
           type: string
-          default: "이 초안은 AI가 생성한 것으로, 법적 검토가 필요합니다."
-          description: Mandatory preview warning
+          format: date-time
+          example: "2024-12-11T10:30:00Z"
+        model:
+          type: string
+          description: AI model used for generation
+          example: "gpt-4o"
+        token_count:
+          type: integer
+          description: Total tokens used
+          example: 1543
+        disclaimer:
+          type: string
+          description: Legal disclaimer (always included)
+          example: "본 초안은 AI가 생성한 미리보기입니다. 변호사의 검토 및 승인 후에만 사용할 수 있습니다."
 
     Citation:
       type: object
       required:
         - evidence_id
-        - text
+        - quote
+        - relevance
       properties:
         evidence_id:
           type: string
-          description: Source evidence ID
-        text:
+          pattern: '^EV-[a-f0-9]{8}$'
+          example: "EV-1a2b3c4d"
+        quote:
           type: string
-          description: Cited text excerpt
-        file_name:
+          maxLength: 200
+          description: Relevant text snippet from evidence
+          example: "너는 정말 쓸모없는 사람이야"
+        relevance:
           type: string
-          description: Source file name
-        timestamp:
-          type: string
-          format: date-time
-          description: Evidence timestamp
-        relevance_score:
-          type: number
-          format: float
-          description: AI-assigned relevance (0-1)
-
-    DraftListResponse:
-      type: object
-      properties:
-        drafts:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-                format: uuid
-              created_at:
-                type: string
-                format: date-time
-              document_type:
-                type: string
-              status:
-                type: string
-              created_by:
-                type: string
-        total:
-          type: integer
+          maxLength: 100
+          description: How this evidence supports the argument
+          example: "폭언 증거로 민법 제840조 제3호 해당"
 
     ErrorResponse:
       type: object
       required:
         - detail
+        - status_code
       properties:
         detail:
           type: string
+          example: "증거가 충분하지 않아 초안을 생성할 수 없습니다"
         status_code:
           type: integer
+          example: 404

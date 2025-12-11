@@ -1,272 +1,220 @@
 # Quickstart: MVP 구현 갭 해소
 
 **Feature**: 009-mvp-gap-closure
-**Branch**: `009-mvp-gap-closure`
-**Date**: 2025-12-09
+**Date**: 2025-12-11
 
 ## Prerequisites
 
-- Python 3.11+
-- Node.js 18+
-- Docker (for local DynamoDB/Qdrant)
-- AWS CLI configured
-- PostgreSQL 14+
+Before starting implementation, verify these are in place:
 
-## Environment Setup
-
-### 1. Clone and switch branch
-
+### Environment Variables
 ```bash
-git clone https://github.com/your-org/leh.git
-cd leh
-git checkout 009-mvp-gap-closure
-```
-
-### 2. Copy environment file
-
-```bash
-cp .env.example .env
-# Edit .env with your credentials
-```
-
-### 3. Required Environment Variables
-
-```bash
-# AWS
+# Backend (.env)
+DATABASE_URL=postgresql://...
+JWT_SECRET=your-secret-key
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
 AWS_REGION=ap-northeast-2
-AWS_ACCESS_KEY_ID=your-key
-AWS_SECRET_ACCESS_KEY=your-secret
-
-# Database
-DATABASE_URL=postgresql://user:pass@localhost:5432/leh_db
-
-# AI Services
-OPENAI_API_KEY=sk-your-key
-QDRANT_HOST=localhost
-QDRANT_PORT=6333
-
-# S3
 S3_EVIDENCE_BUCKET=leh-evidence-dev
+DYNAMODB_TABLE=leh_evidence_dev
+QDRANT_HOST=your-qdrant-host
+QDRANT_API_KEY=your-qdrant-key
+OPENAI_API_KEY=sk-...
 
-# DynamoDB
-DDB_EVIDENCE_TABLE=leh_evidence_dev
+# Frontend (.env.local)
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
-## Local Development
+### AWS Resources
+- [ ] S3 bucket `leh-evidence-dev` exists
+- [ ] Lambda execution role has S3:GetObject, S3:PutObject permissions
+- [ ] DynamoDB table `leh_evidence_dev` exists with GSIs
+- [ ] Qdrant Cloud cluster accessible
 
-### Backend
-
+### Dependencies
 ```bash
-cd backend
+# Backend
+pip install qdrant-client openai boto3
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Run migrations
-alembic upgrade head
-
-# Start server
-uvicorn app.main:app --reload --port 8000
+# Frontend
+npm install react-hot-toast @aws-sdk/client-s3 @aws-sdk/lib-storage
 ```
 
-### Frontend
+---
 
+## Verification Steps
+
+### US1: AI Worker Pipeline
+
+1. **Upload test file**
 ```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
+aws s3 cp test-evidence.pdf s3://leh-evidence-dev/cases/test-case-id/raw/EV-test1234_test.pdf
 ```
 
-### AI Worker (Local testing)
-
+2. **Check Lambda trigger** (wait 1-2 minutes)
 ```bash
-cd ai_worker
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run handler locally
-python -m handler
-```
-
-## Testing
-
-### Backend Tests
-
-```bash
-cd backend
-
-# All tests
-pytest
-
-# Unit tests only
-pytest -m unit
-
-# With coverage
-pytest --cov=app --cov-report=html
-```
-
-### AI Worker Tests
-
-```bash
-cd ai_worker
-
-# All tests
-pytest
-
-# Specific parser
-pytest tests/src/test_parsers.py -v
-```
-
-### Frontend Tests
-
-```bash
-cd frontend
-
-# Jest tests
-npm test
-
-# Watch mode
-npm run test:watch
-```
-
-## AWS Setup (Required for full functionality)
-
-### 1. Create S3 Buckets
-
-```bash
-aws s3 mb s3://leh-evidence-dev --region ap-northeast-2
-aws s3 mb s3://leh-evidence-prod --region ap-northeast-2
-```
-
-### 2. Configure Lambda IAM Role
-
-```bash
-# Attach S3 policy to Lambda role
-aws iam attach-role-policy \
-  --role-name leh-ai-worker-role \
-  --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
-```
-
-### 3. Configure S3 Event Notification
-
-```bash
-aws s3api put-bucket-notification-configuration \
-  --bucket leh-evidence-dev \
-  --notification-configuration '{
-    "LambdaFunctionConfigurations": [{
-      "LambdaFunctionArn": "arn:aws:lambda:ap-northeast-2:ACCOUNT:function:leh-ai-worker",
-      "Events": ["s3:ObjectCreated:*"],
-      "Filter": {"Key": {"FilterRules": [{"Name": "prefix", "Value": "cases/"}]}}
-    }]
-  }'
-```
-
-## Key Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Health check |
-| `/auth/login` | POST | User login |
-| `/cases` | GET | List user's cases |
-| `/cases/{id}` | GET | Case detail |
-| `/cases/{id}/evidence` | GET | Case evidence list |
-| `/search?q={query}` | GET | RAG search |
-| `/cases/{id}/draft-preview` | POST | Generate draft |
-| `/audit-logs` | GET | Audit log list |
-
-## Feature-Specific Commands
-
-### Test AI Worker S3 Integration
-
-```bash
-# Upload test file
-aws s3 cp test-file.jpg s3://leh-evidence-dev/cases/test-case-id/raw/test-evidence-id_test.jpg
-
-# Check Lambda logs
 aws logs tail /aws/lambda/leh-ai-worker --follow
 ```
 
-### Test RAG Search
-
+3. **Verify DynamoDB entry**
 ```bash
-curl -X GET "http://localhost:8000/search?q=폭행&case_id=your-case-id" \
-  -H "Authorization: Bearer $TOKEN"
+aws dynamodb get-item \
+  --table-name leh_evidence_dev \
+  --key '{"case_id": {"S": "test-case-id"}, "evidence_id": {"S": "EV-test1234"}}'
 ```
 
-### Test Draft Generation
+4. **Verify Qdrant vectors**
+```python
+from qdrant_client import QdrantClient
+client = QdrantClient(host="...", api_key="...")
+client.get_collection("case_rag_test-case-id")
+```
 
+**Expected**: Entry in DynamoDB with ai_summary, labels; vectors in Qdrant
+
+---
+
+### US2: RAG Search & Draft
+
+1. **Test search endpoint**
 ```bash
-curl -X POST "http://localhost:8000/cases/your-case-id/draft-preview" \
-  -H "Authorization: Bearer $TOKEN" \
+curl -X GET "http://localhost:8000/v1/search?q=폭언&case_id=<case_id>" \
+  -H "Authorization: Bearer <token>"
+```
+
+**Expected**: JSON with results array, each containing evidence_id, score, content_preview
+
+2. **Test draft preview**
+```bash
+curl -X POST "http://localhost:8000/v1/cases/<case_id>/draft-preview" \
+  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
-  -d '{"document_type": "complaint", "include_citations": true}'
+  -d '{"document_type": "준비서면"}'
 ```
 
-## CI/CD
+**Expected**: JSON with content containing `[EV-xxx]` inline citations, citations array
 
-### Run CI locally
+---
 
+### US3: Error Handling
+
+1. **Test 401 redirect** (frontend)
+   - Clear cookies/token
+   - Navigate to `/lawyer/dashboard`
+   - **Expected**: Redirect to `/login` with toast "세션이 만료되었습니다"
+
+2. **Test network error** (frontend)
+   - Stop backend server
+   - Click any API action button
+   - **Expected**: Toast "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+
+3. **Test loading state**
+   - Click form submit button
+   - **Expected**: Button disabled with loading spinner during API call
+
+---
+
+### US4: CI Tests
+
+1. **Run AI Worker tests locally**
 ```bash
-# Backend lint + test
-cd backend && ruff check . && pytest
-
-# AI Worker lint + test
-cd ai_worker && ruff check . && pytest
-
-# Frontend lint + test
-cd frontend && npm run lint && npm test
+cd ai_worker
+pytest -v --tb=short
 ```
+**Expected**: 300+ tests pass (integration tests may skip without AWS)
 
-### Deploy to staging
-
+2. **Run Backend tests with coverage**
 ```bash
-git push origin 009-mvp-gap-closure
-# Create PR to dev
-gh pr create --base dev --title "feat(009): MVP Gap Closure"
+cd backend
+pytest --cov=app --cov-report=term-missing
 ```
+**Expected**: 65%+ coverage
+
+3. **Verify CI workflow**
+   - Create PR with code changes
+   - Check GitHub Actions
+   - **Expected**: Tests run (not skipped), coverage reported
+
+---
+
+### US5: Permission Check
+
+1. **Create test users and case**
+```python
+# User A is OWNER of case-1
+# User B has no access to case-1
+```
+
+2. **Test unauthorized access**
+```bash
+curl -X GET "http://localhost:8000/v1/cases/<case-1>/evidence" \
+  -H "Authorization: Bearer <user-b-token>"
+```
+**Expected**: 403 Forbidden
+
+3. **Verify audit log**
+```sql
+SELECT * FROM audit_logs 
+WHERE action = 'ACCESS_DENIED' 
+AND resource_id = '<case-1>'
+ORDER BY created_at DESC LIMIT 1;
+```
+**Expected**: Entry with user_id = User B
+
+---
+
+### US6: Deployment Pipeline
+
+1. **Verify staging deployment**
+   - Merge PR to `dev` branch
+   - Wait for CI to complete
+   - **Expected**: Changes visible at staging CloudFront URL within 10 minutes
+
+2. **Verify production deployment**
+   - Create PR from `dev` to `main`
+   - Merge with approval
+   - **Expected**: GitHub Actions shows manual approval step, then deploys
+
+---
 
 ## Troubleshooting
 
-### Backend DB connection error
+### AI Worker not triggering
+- Check S3 event notification is configured
+- Verify Lambda has correct execution role
+- Check CloudWatch logs for errors
 
-```bash
-# Check PostgreSQL is running
-psql -h localhost -U postgres -c "SELECT 1"
+### RAG search returns empty
+- Verify Qdrant collection exists: `case_rag_{case_id}`
+- Check OpenAI API key is valid
+- Verify evidence has status=completed in DynamoDB
 
-# Reset database
-cd backend && alembic downgrade base && alembic upgrade head
-```
+### Draft generation timeout
+- Increase OpenAI API timeout to 30s
+- Check for rate limiting (429 errors)
+- Verify case has sufficient evidence (minimum 1)
 
-### Qdrant connection error
+### Permission check bypassed
+- Verify `CasePermissionChecker` dependency is in route
+- Check JWT token contains valid user_id
+- Verify case_members table has correct entries
 
-```bash
-# Start local Qdrant
-docker run -p 6333:6333 qdrant/qdrant
+### CI tests skipping
+- Check conftest.py skip logic
+- Verify pytest markers are correct (`@pytest.mark.integration`)
+- Ensure AWS credentials are NOT in CI environment (intentional)
 
-# Check connection
-curl http://localhost:6333/collections
-```
+---
 
-### OpenAI API error
+## Success Criteria Checklist
 
-```bash
-# Verify API key
-curl https://api.openai.com/v1/models \
-  -H "Authorization: Bearer $OPENAI_API_KEY"
-```
-
-## Success Verification
-
-After setup, verify:
-
-1. ✅ Backend starts without errors: `http://localhost:8000/health`
-2. ✅ Frontend loads: `http://localhost:3000`
-3. ✅ Tests pass: `pytest` and `npm test`
-4. ✅ S3 upload triggers Lambda (check CloudWatch logs)
-5. ✅ RAG search returns results
-6. ✅ Draft generation completes within 30 seconds
+| ID | Criteria | Test Method |
+|----|----------|-------------|
+| SC-001 | AI analysis <5min | Upload file, time until DynamoDB entry |
+| SC-002 | RAG search <2s | Measure /search response time |
+| SC-003 | Draft Preview <30s | Measure /draft-preview response time |
+| SC-004 | AI Worker tests 300+ | `pytest --collect-only \| wc -l` |
+| SC-005 | Backend coverage 65%+ | `pytest --cov` report |
+| SC-006 | 403 on unauthorized | Test with wrong user token |
+| SC-007 | Staging deploy <10min | Time from merge to live |
+| SC-008 | Error messages 100% | Manual UI testing |

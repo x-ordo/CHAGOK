@@ -2,10 +2,26 @@
 
 **Input**: Design documents from `/specs/009-mvp-gap-closure/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
+**Updated**: 2025-12-11
 
 **Tests**: Not explicitly requested - test tasks included only where necessary for CI coverage (US4).
 
 **Organization**: Tasks grouped by user story. Most features are 70-100% complete - tasks focus on configuration, integration, and polish.
+
+## Progress Summary
+
+| Phase | Tasks | Completed | Status |
+|-------|-------|-----------|--------|
+| Phase 1 (Setup) | T001-T004 | 4/4 | ✅ Complete |
+| Phase 2 (AWS) | T005-T010 | 6/6 | ✅ Complete |
+| Phase 3 (US1) | T011-T015 | 5/5 | ✅ Complete |
+| Phase 4 (US2) | T016-T020 | 5/5 | ✅ Complete |
+| Phase 5 (US3) | T021-T028 | 8/8 | ✅ Complete |
+| Phase 6 (US4) | T029-T036 | 8/8 | ✅ Complete |
+| Phase 7 (US5) | T037-T043 | 7/7 | ✅ Complete |
+| Phase 8 (US6) | T044-T050 | 7/7 | ✅ Complete |
+| Phase 9 (Polish) | T051-T055 | 5/5 | ✅ Complete |
+| **Total** | **55** | **55/55** | **100%** 🎉 |
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -22,35 +38,35 @@
 
 ---
 
-## Phase 1: Setup (Verification)
+## Phase 1: Setup (Verification) ✅ Complete
 
 **Purpose**: Verify existing implementation state before making changes
 
-- [ ] T001 Verify AWS CLI is configured with correct credentials
-- [ ] T002 [P] Verify OpenAI API key is set in environment
-- [ ] T003 [P] Verify Qdrant Cloud instance is accessible
-- [ ] T004 Run `git checkout 009-mvp-gap-closure` to ensure on correct branch
+- [x] T001 Verify AWS CLI is configured with correct credentials ✅ #138
+- [x] T002 [P] Verify OpenAI API key is set in environment ✅ #139
+- [x] T003 [P] Verify Qdrant Cloud instance is accessible ✅ #140
+- [x] T004 Run `git checkout 009-mvp-gap-closure` to ensure on correct branch ✅ #141
 
 ---
 
-## Phase 2: Foundational (AWS Infrastructure)
+## Phase 2: Foundational (AWS Infrastructure) ✅ Complete
 
 **Purpose**: AWS configuration that MUST be complete before US1 can function
 
 **⚠️ CRITICAL**: AI Worker cannot process files until this phase is complete
 
-- [ ] T005 Create S3 bucket `leh-evidence-dev` via AWS CLI: `aws s3 mb s3://leh-evidence-dev --region ap-northeast-2`
-- [ ] T006 [P] Create S3 bucket `leh-evidence-prod` via AWS CLI: `aws s3 mb s3://leh-evidence-prod --region ap-northeast-2`
-- [ ] T007 Attach S3 policy to Lambda execution role `leh-ai-worker-role`
-- [ ] T008 Configure S3 event notification on `leh-evidence-dev` to trigger `leh-ai-worker` Lambda
-- [ ] T009 [P] Configure S3 event notification on `leh-evidence-prod` to trigger production Lambda
-- [ ] T010 Verify Lambda function `leh-ai-worker` exists and has correct handler
+- [x] T005 Create S3 bucket `leh-evidence-dev` via AWS CLI: `aws s3 mb s3://leh-evidence-dev --region ap-northeast-2` ✅ #142
+- [x] T006 [P] Create S3 bucket `leh-evidence-prod` via AWS CLI: `aws s3 mb s3://leh-evidence-prod --region ap-northeast-2` ✅ #143
+- [x] T007 Attach S3 policy to Lambda execution role `leh-ai-worker-role` ✅ #144
+- [x] T008 Configure S3 event notification on `leh-evidence-dev` to trigger `leh-ai-worker` Lambda ✅ #145
+- [x] T009 [P] Configure S3 event notification on `leh-evidence-prod` to trigger production Lambda ✅ #146
+- [x] T010 Verify Lambda function `leh-ai-worker` exists and has correct handler ✅ #147
 
 **Checkpoint**: S3 → Lambda trigger chain is complete - US1 can now function
 
 ---
 
-## Phase 3: User Story 1 - AI Worker 실서비스 연동 (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - AI Worker 실서비스 연동 (Priority: P1) 🎯 MVP ✅ Complete
 
 **Goal**: Evidence files uploaded to S3 automatically trigger AI analysis
 
@@ -58,11 +74,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Test S3 upload triggers Lambda by uploading test file via AWS CLI
-- [ ] T012 [US1] Verify DynamoDB table `leh_evidence_dev` receives analysis results
-- [ ] T013 [US1] Verify Qdrant collection `case_rag_{case_id}` receives embeddings
-- [ ] T014 [US1] Check CloudWatch logs for Lambda execution success
-- [ ] T015 [US1] Document S3 path pattern in `docs/guides/EVIDENCE_UPLOAD.md`
+- [x] T011 [US1] Test S3 upload triggers Lambda by uploading test file via AWS CLI ✅ #148
+- [x] T012 [US1] Verify DynamoDB table `leh_evidence_dev` receives analysis results ✅ #149
+- [x] T013 [US1] Verify Qdrant collection `case_rag_{case_id}` receives embeddings ✅ #150
+- [x] T014 [US1] Check CloudWatch logs for Lambda execution success ✅ #151
+- [x] T015 [US1] Document S3 path pattern in `docs/guides/EVIDENCE_UPLOAD.md` ✅ #152
 
 **Checkpoint**: AI Worker is fully operational - files are processed automatically
 
@@ -78,11 +94,11 @@
 
 > **Note**: Backend RAG/Draft is 90-95% complete. Tasks focus on verification and minor fixes.
 
-- [ ] T016 [US2] Verify `GET /search?q={query}&case_id={id}` returns Qdrant results in `backend/app/api/search.py`
-- [ ] T017 [US2] Verify `POST /cases/{id}/draft-preview` generates draft with citations in `backend/app/api/drafts.py`
-- [ ] T018 [US2] Verify `GET /cases/{id}/draft-export` generates DOCX/PDF in `backend/app/services/draft_service.py`
-- [ ] T019 [US2] Test draft generation with real case data (requires US1 complete)
-- [ ] T020 [US2] Add smoke test for RAG search in `backend/tests/integration/test_search_smoke.py`
+- [x] T016 [US2] Verify `GET /search?q={query}&case_id={id}` returns Qdrant results in `backend/app/api/search.py` ✅ #153
+- [x] T017 [US2] Verify `POST /cases/{id}/draft-preview` generates draft with citations in `backend/app/api/drafts.py` ✅ #154
+- [x] T018 [US2] Verify `GET /cases/{id}/draft-export` generates DOCX/PDF in `backend/app/services/draft_service.py` ✅ #155
+- [x] T019 [US2] Test draft generation with real case data (requires US1 complete) ✅ #156
+- [x] T020 [US2] Add smoke test for RAG search in `backend/tests/integration/test_search_smoke.py` ✅ #157
 
 **Checkpoint**: RAG search and Draft generation work with AI Worker processed data
 
@@ -96,14 +112,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T021 [US3] Install react-hot-toast: `cd frontend && npm install react-hot-toast`
-- [ ] T022 [US3] Add Toaster component to `frontend/src/app/layout.tsx`
-- [ ] T023 [P] [US3] Add toast notifications to API client error handling in `frontend/src/lib/api/client.ts`
-- [ ] T024 [P] [US3] Create useRetry hook with exponential backoff in `frontend/src/hooks/useRetry.ts`
-- [ ] T025 [US3] Unify loading state naming (isLoading) across hooks in `frontend/src/hooks/`
-- [ ] T026 [US3] Add toast for 403 errors (permission denied) in `frontend/src/lib/api/client.ts`
-- [ ] T027 [US3] Add toast for 500 errors (server error) in `frontend/src/lib/api/client.ts`
-- [ ] T028 [US3] Update error boundary components to use toast in `frontend/src/components/shared/ErrorBoundary.tsx`
+- [x] T021 [US3] Install react-hot-toast: `cd frontend && npm install react-hot-toast` ✅ #158
+- [x] T022 [US3] Add Toaster component to `frontend/src/app/layout.tsx` ✅ #159
+- [x] T023 [P] [US3] Add toast notifications to API client error handling in `frontend/src/lib/api/client.ts` ✅ #160
+- [x] T024 [P] [US3] Create useRetry hook with exponential backoff in `frontend/src/hooks/useRetry.ts` ✅ #161
+- [x] T025 [US3] Unify loading state naming (isLoading) across hooks in `frontend/src/hooks/` ✅ #162
+- [x] T026 [US3] Add toast for 403 errors (permission denied) in `frontend/src/lib/api/client.ts` ✅ #163
+- [x] T027 [US3] Add toast for 500 errors (server error) in `frontend/src/lib/api/client.ts` ✅ #164
+- [x] T028 [US3] Update error boundary components to use toast in `frontend/src/components/shared/ErrorBoundary.tsx` ✅ #165
 
 **Checkpoint**: All API errors show user-friendly toast notifications with retry options
 
@@ -117,14 +133,14 @@
 
 ### Implementation for User Story 4
 
-- [ ] T029 [US4] Update backend coverage threshold to 70% in `backend/pytest.ini`
-- [ ] T030 [P] [US4] Update ai_worker coverage threshold to 70% in `ai_worker/pytest.ini`
-- [ ] T031 [US4] Fix conftest.py skip logic in `ai_worker/tests/conftest.py` - skip only integration tests on missing env vars
-- [ ] T032 [P] [US4] Add unit tests for draft_service.py in `backend/tests/unit/test_draft_service.py`
-- [ ] T033 [P] [US4] Add unit tests for search_service.py in `backend/tests/unit/test_search_service.py`
-- [ ] T034 [P] [US4] Add unit tests for qdrant.py in `backend/tests/unit/test_qdrant_client.py`
-- [ ] T035 [US4] Verify CI workflow runs tests without skipping in `.github/workflows/ci.yml`
-- [ ] T036 [US4] Run `pytest --cov=app --cov-report=term-missing` locally and fix coverage gaps
+- [x] T029 [US4] Update backend coverage threshold to 70% in `backend/pytest.ini` ✅ #166
+- [x] T030 [P] [US4] Update ai_worker coverage threshold to 70% in `ai_worker/pytest.ini` ✅ #167
+- [x] T031 [US4] Fix conftest.py skip logic in `ai_worker/tests/conftest.py` - skip only integration tests on missing env vars ✅ #168
+- [x] T032 [P] [US4] Add unit tests for draft_service.py in `backend/tests/unit/test_draft_service.py` ✅ #169
+- [x] T033 [P] [US4] Add unit tests for search_service.py in `backend/tests/unit/test_search_service.py` ✅ #170
+- [x] T034 [P] [US4] Add unit tests for qdrant.py in `backend/tests/unit/test_qdrant_client.py` ✅ #171
+- [x] T035 [US4] Verify CI workflow runs tests without skipping in `.github/workflows/ci.yml` ✅ #172
+- [x] T036 [US4] Run `pytest --cov=app --cov-report=term-missing` locally and fix coverage gaps ✅ #173
 
 **Checkpoint**: CI enforces 70% coverage, all 300+ tests run without skips
 
@@ -138,13 +154,13 @@
 
 ### Implementation for User Story 5
 
-- [ ] T037 [US5] Audit `/cases/*` endpoints for permission checks in `backend/app/api/cases.py`
-- [ ] T038 [P] [US5] Audit `/evidence/*` endpoints for permission checks in `backend/app/api/evidence.py`
-- [ ] T039 [P] [US5] Audit `/drafts/*` endpoints for permission checks in `backend/app/api/drafts.py`
-- [ ] T040 [US5] Ensure 403 (not 404) on unauthorized access across all audited endpoints
-- [ ] T041 [US5] Add audit_log write for ACCESS_DENIED in `backend/app/services/audit_log_service.py`
-- [ ] T042 [US5] Add permission check middleware in `backend/app/middleware/case_permission.py`
-- [ ] T043 [US5] Add contract test for 403 response in `backend/tests/contract/test_permission_403.py`
+- [x] T037 [US5] Audit `/cases/*` endpoints for permission checks in `backend/app/api/cases.py` ✅ #174
+- [x] T038 [P] [US5] Audit `/evidence/*` endpoints for permission checks in `backend/app/api/evidence.py` ✅ #175
+- [x] T039 [P] [US5] Audit `/drafts/*` endpoints for permission checks in `backend/app/api/drafts.py` ✅ #176
+- [x] T040 [US5] Ensure 403 (not 404) on unauthorized access across all audited endpoints ✅ #177
+- [x] T041 [US5] Add audit_log write for ACCESS_DENIED in `backend/app/services/audit_log_service.py` ✅ #178
+- [x] T042 [US5] Add permission check middleware in `backend/app/middleware/case_permission.py` ✅ #179
+- [x] T043 [US5] Add contract test for 403 response in `backend/tests/contract/test_permission_403.py` ✅ #180
 
 **Checkpoint**: Unauthorized access returns 403 and is logged in audit_logs table
 
@@ -158,13 +174,13 @@
 
 ### Implementation for User Story 6
 
-- [ ] T044 [US6] Enable AI Worker deployment in `.github/workflows/deploy_paralegal.yml` (remove `&& false`)
-- [ ] T045 [US6] Verify AI Worker Dockerfile exists at `ai_worker/Dockerfile.lambda`
-- [ ] T046 [US6] Add health check endpoint to AI Worker if missing
-- [ ] T047 [P] [US6] Document manual rollback procedure in `docs/guides/ROLLBACK.md`
-- [ ] T048 [P] [US6] Add deployment status badge to README.md
-- [ ] T049 [US6] Test staging deployment by merging small change to dev branch
-- [ ] T050 [US6] Verify CloudFront invalidation completes after frontend deploy
+- [x] T044 [US6] Enable AI Worker deployment in `.github/workflows/deploy_paralegal.yml` (remove `&& false`) ✅ #181
+- [x] T045 [US6] Verify AI Worker Dockerfile exists at `ai_worker/Dockerfile.lambda` ✅ #182
+- [x] T046 [US6] Add health check endpoint to AI Worker if missing ✅ #183
+- [x] T047 [P] [US6] Document manual rollback procedure in `docs/guides/ROLLBACK.md` ✅ #184
+- [x] T048 [P] [US6] Add deployment status badge to README.md ✅ #185
+- [x] T049 [US6] Test staging deployment by merging small change to dev branch ✅ #186
+- [x] T050 [US6] Verify CloudFront invalidation completes after frontend deploy ✅ #187
 
 **Checkpoint**: All components (Backend, Frontend, AI Worker) deploy on merge to dev/main
 
@@ -174,11 +190,11 @@
 
 **Purpose**: Final improvements affecting multiple user stories
 
-- [ ] T051 [P] Update CLAUDE.md with new technologies and recent changes
-- [ ] T052 [P] Run quickstart.md validation steps end-to-end
-- [ ] T053 [P] Update API documentation in `docs/specs/API_SPEC.md` if endpoints changed
-- [ ] T054 Create PR from `009-mvp-gap-closure` to `dev` with full changelog
-- [ ] T055 Merge PR after review and verify staging deployment
+- [x] T051 [P] Update CLAUDE.md with new technologies and recent changes ✅ #188
+- [x] T052 [P] Run quickstart.md validation steps end-to-end ✅ #189
+- [x] T053 [P] Update API documentation in `docs/specs/API_SPEC.md` if endpoints changed ✅ #190
+- [x] T054 Create PR from `009-mvp-gap-closure` to `dev` with full changelog ✅ #191 (PR #262)
+- [x] T055 Merge PR after review and verify staging deployment ✅ #192 (PR #262 merged)
 
 ---
 

@@ -85,12 +85,16 @@ test.describe('Authentication Flow', () => {
 
       await nameInput.fill('홍길동');
       await page.locator('input[type="email"]').fill('test@example.com');
+      // Select a role first (required field)
+      await page.locator('select[name="role"]').selectOption('lawyer');
       await page.locator('input[type="password"]').fill('short');
 
       await page.getByRole('button', { name: /무료 체험 시작/i }).click();
 
-      // Wait for error message
-      await expect(page.getByText(/비밀번호는 8자 이상/i)).toBeVisible({ timeout: 5000 });
+      // Wait for response and error message
+      await page.waitForTimeout(3000);
+      await expect(page.getByTestId('error-message')).toBeVisible({ timeout: 10000 });
+      await expect(page.getByTestId('error-message')).toContainText(/비밀번호는 8자 이상/i);
     });
 
     test('should signup and redirect to /cases @real-api', async ({ page, request }) => {
@@ -122,13 +126,12 @@ test.describe('Authentication Flow', () => {
 
       await page.getByRole('button', { name: /무료 체험 시작/i }).click();
 
-      // Wait for response
-      await page.waitForTimeout(3000);
+      // Wait for redirect to /lawyer/dashboard
+      await page.waitForURL('**/lawyer/dashboard', { timeout: 10000 });
 
-      // Check result - either redirect or error
+      // Check result - should be redirected to /lawyer/dashboard on success
       const url = page.url();
-      const hasError = await page.locator('text=/오류|실패/i').count() > 0;
-      expect(url.includes('/cases') || hasError).toBeTruthy();
+      expect(url).toContain('/lawyer/dashboard');
     });
 
     test('should show error when terms not accepted', async ({ page }) => {
@@ -140,15 +143,19 @@ test.describe('Authentication Flow', () => {
 
       await nameInput.fill('홍길동');
       await page.locator('input[type="email"]').fill('test@example.com');
+      // Select a role first (required field)
+      await page.locator('select[name="role"]').selectOption('lawyer');
       await page.locator('input[type="password"]').fill('password123');
       // Do NOT check accept-terms
 
       await page.getByRole('button', { name: /무료 체험 시작/i }).click();
 
-      // Wait for error message
-      await expect(page.getByText(/이용약관에 동의해주세요/i)).toBeVisible({ timeout: 5000 });
+      // Wait for response and error message
+      await page.waitForTimeout(3000);
+      await expect(page.getByTestId('error-message')).toBeVisible({ timeout: 10000 });
+      await expect(page.getByTestId('error-message')).toContainText(/이용약관에 동의해주세요/i);
     });
-  });
+  }); // Corrected closing brace for Signup Page test.describe
 
   test.describe('Navigation Guard', () => {
     test('should handle unauthenticated access to /cases', async ({ page }) => {

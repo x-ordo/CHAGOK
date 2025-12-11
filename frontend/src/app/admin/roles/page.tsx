@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -36,7 +37,7 @@ export default function AdminRolesPage() {
         setRoles(mappedRoles);
       }
     } catch (err) {
-      console.error('Failed to fetch roles:', err);
+      logger.error('Failed to fetch roles:', err);
       setError('권한 목록을 불러오는데 실패했습니다.');
       setRoles([]);
     } finally {
@@ -80,7 +81,7 @@ export default function AdminRolesPage() {
         setTimeout(() => setSaveMessage(''), 3000);
       }
     } catch (err) {
-      console.error('Failed to update permissions:', err);
+      logger.error('Failed to update permissions:', err);
       // Revert on error
       setRoles((prev) =>
         prev.map((r) =>

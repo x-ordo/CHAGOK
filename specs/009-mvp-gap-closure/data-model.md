@@ -1,270 +1,218 @@
 # Data Model: MVP 구현 갭 해소
 
+**Date**: 2025-12-11
 **Feature**: 009-mvp-gap-closure
-**Date**: 2025-12-09
-**Status**: Complete
 
 ## Overview
 
-This feature uses existing data models. No new entities are required.
-This document serves as reference for the key entities involved.
+This document defines the data entities required for MVP production readiness. Entities are grouped by storage layer.
 
 ---
 
-## 1. Evidence (DynamoDB)
+## PostgreSQL (RDS) Entities
 
-### Storage
-- **Table**: `leh_evidence_{env}` (e.g., `leh_evidence_dev`)
-- **Partition Key**: `case_id`
-- **Sort Key**: `evidence_id`
+### AuditLog
 
-### Schema
+Immutable audit trail for all system actions (Constitution Principle I).
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | UUID | PK, auto | Unique identifier |
+| user_id | UUID | FK → users, NOT NULL | Acting user |
+| action | VARCHAR(50) | NOT NULL | Action type: CREATE, READ, UPDATE, DELETE, ACCESS_DENIED |
+| resource_type | VARCHAR(50) | NOT NULL | Entity type: case, evidence, draft, user |
+| resource_id | UUID | NOT NULL | Target entity ID |
+| ip_address | VARCHAR(45) | NULLABLE | Client IP (IPv4/IPv6) |
+| user_agent | VARCHAR(255) | NULLABLE | Browser/client info |
+| metadata | JSONB | NULLABLE | Additional context (e.g., old values on UPDATE) |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() | Action timestamp |
+
+**Indexes**:
+- `idx_audit_user_id` on (user_id)
+- `idx_audit_resource` on (resource_type, resource_id)
+- `idx_audit_created_at` on (created_at DESC)
+
+**Validation Rules**:
+- action must be one of: CREATE, READ, UPDATE, DELETE, ACCESS_DENIED
+- resource_type must be one of: case, evidence, draft, user, case_member
+- created_at is immutable (no updates allowed)
+
+---
+
+### CaseMember
+
+Maps users to cases with role-based permissions.
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| id | UUID | PK, auto | Unique identifier |
+| case_id | UUID | FK → cases, NOT NULL | Case reference |
+| user_id | UUID | FK → users, NOT NULL | User reference |
+| role | ENUM | NOT NULL | OWNER (full access), MEMBER (read/write), VIEWER (read only) |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() | Membership start |
+| updated_at | TIMESTAMP | NOT NULL | Last modification |
+
+**Indexes**:
+- `idx_case_member_unique` UNIQUE on (case_id, user_id)
+- `idx_case_member_user` on (user_id)
+
+**Validation Rules**:
+- Each case MUST have at least one OWNER
+- role hierarchy: OWNER > MEMBER > VIEWER
+- user_id + case_id must be unique (no duplicate memberships)
+
+**State Transitions**:
+```
+VIEWER → MEMBER → OWNER (promotion)
+OWNER → MEMBER → VIEWER (demotion)
+Any → (deleted) (removal from case)
+```
+
+---
+
+## DynamoDB Entities
+
+### Evidence (leh_evidence table)
+
+Stores evidence metadata after AI Worker analysis.
+
+| Field | Type | Key | Description |
+|-------|------|-----|-------------|
+| case_id | String | PK (Partition) | Case identifier |
+| evidence_id | String | SK (Sort) | Unique evidence ID, format: `EV-{uuid[:8]}` |
+| type | String | - | File type: image, audio, video, text, pdf |
+| original_filename | String | - | Original uploaded filename |
+| s3_key | String | - | S3 object key: `cases/{case_id}/raw/{evidence_id}_{filename}` |
+| file_size | Number | - | File size in bytes |
+| sha256_hash | String | - | SHA-256 hash for integrity verification |
+| timestamp | String | GSI | ISO8601 timestamp of evidence (from content or upload) |
+| speaker | String | - | 원고, 피고, 제3자, 불명 |
+| ai_summary | String | - | AI-generated summary (max 500 chars) |
+| labels | List[String] | - | Article 840 tags: 폭언, 불륜, 유책사유, etc. |
+| evidence_score | Number | - | AI confidence score (0-100) |
+| qdrant_id | String | - | Qdrant point ID for RAG search |
+| status | String | GSI | pending, processing, completed, failed |
+| created_at | String | - | ISO8601 upload timestamp |
+| updated_at | String | - | ISO8601 last update timestamp |
+
+**GSI**:
+- `case_status_index`: PK=case_id, SK=status (filter by status)
+- `case_timestamp_index`: PK=case_id, SK=timestamp (timeline view)
+
+**Validation Rules**:
+- evidence_id format: `EV-` prefix + 8 hex chars
+- type must be one of: image, audio, video, text, pdf
+- status must be one of: pending, processing, completed, failed
+- sha256_hash must be 64 hex characters
+
+---
+
+## Qdrant Collections
+
+### case_rag_{case_id}
+
+Per-case vector collection for RAG search (Constitution Principle II).
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `case_id` | String | Parent case identifier (FK) |
-| `evidence_id` | String | Unique evidence identifier |
-| `type` | Enum | `image`, `audio`, `video`, `text`, `pdf` |
-| `file_name` | String | Original file name |
-| `s3_key` | String | S3 object path |
-| `sha256` | String | File content hash for integrity |
-| `timestamp` | ISO8601 | Evidence collection timestamp |
-| `speaker` | String | `원고`, `피고`, `제3자` |
-| `ai_summary` | String | AI-generated summary |
-| `labels` | List[String] | `폭언`, `불륜`, `유책사유` etc. |
-| `article_840_tags` | Object | Legal article tagging results |
-| `evidence_score` | Float | AI-assigned evidence strength (0-1) |
-| `qdrant_id` | String | Vector ID in Qdrant |
-| `status` | Enum | `pending`, `processing`, `completed`, `failed` |
-| `created_at` | ISO8601 | Record creation time |
-| `updated_at` | ISO8601 | Last update time |
+| id | UUID | Qdrant point ID (matches DynamoDB qdrant_id) |
+| vector | Float[1536] | OpenAI text-embedding-3-small output |
+| payload.evidence_id | String | Reference to DynamoDB evidence |
+| payload.case_id | String | Case identifier for validation |
+| payload.content_chunk | String | Text chunk (max 1000 tokens) |
+| payload.chunk_index | Number | Position in document (0-indexed) |
+| payload.timestamp | String | Evidence timestamp for filtering |
+| payload.speaker | String | Speaker attribution |
+| payload.labels | List[String] | Article 840 tags |
 
-### GSI (Global Secondary Index)
-- **GSI1**: `type-timestamp-index` (Query by type)
-- **GSI2**: `status-created_at-index` (Query pending items)
+**Collection Settings**:
+- Distance: Cosine
+- Vector size: 1536
+- On-disk: true (for cost efficiency)
 
-### Validation Rules
-- `case_id` must exist in RDS cases table
-- `sha256` computed on upload, immutable
-- `status` transitions: `pending` → `processing` → `completed|failed`
+**Lifecycle**:
+- Created: When first evidence uploaded to case
+- Deleted: When case is closed (soft-delete in DynamoDB, hard-delete in Qdrant)
 
 ---
 
-## 2. AuditLog (PostgreSQL/RDS)
+## API Response Models
 
-### Location
-- **Table**: `audit_logs`
-- **Database**: PostgreSQL (RDS)
+### EvidenceSearchResult
 
-### Schema
+Returned from RAG search endpoint.
 
 ```python
-class AuditLog(Base):
-    __tablename__ = "audit_logs"
-    
-    id = Column(UUID, primary_key=True, default=uuid4)
-    user_id = Column(UUID, ForeignKey("users.id"), nullable=False, index=True)
-    action = Column(String(50), nullable=False, index=True)
-    resource_type = Column(String(50), nullable=False, index=True)
-    resource_id = Column(String(100), nullable=True)
-    ip_address = Column(String(45), nullable=True)  # IPv6 support
-    user_agent = Column(String(500), nullable=True)
-    details = Column(JSON, nullable=True)  # Additional context
-    success = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=func.now(), nullable=False, index=True)
+class EvidenceSearchResult(BaseModel):
+    evidence_id: str           # EV-xxxxxxxx
+    score: float               # Relevance score (0-1)
+    content_preview: str       # First 200 chars of matching chunk
+    timestamp: datetime
+    speaker: str
+    labels: List[str]
+    s3_url: Optional[str]      # Presigned URL if requested
 ```
 
-### Action Types (AuditAction Enum)
+### DraftPreviewResponse
 
-| Action | Description | Resource Type |
-|--------|-------------|---------------|
-| `VIEW_CASE` | User viewed case | `case` |
-| `CREATE_CASE` | User created case | `case` |
-| `UPDATE_CASE` | User modified case | `case` |
-| `DELETE_CASE` | User deleted case | `case` |
-| `VIEW_EVIDENCE` | User viewed evidence | `evidence` |
-| `UPLOAD_EVIDENCE` | User uploaded evidence | `evidence` |
-| `GENERATE_DRAFT` | User requested draft | `draft` |
-| `EXPORT_DRAFT` | User exported draft | `draft` |
-| `ACCESS_DENIED` | Unauthorized access attempt | `*` |
-| `LOGIN` | User logged in | `auth` |
-| `LOGOUT` | User logged out | `auth` |
-
-### Indexes
-- `ix_audit_logs_user_id` - Query by user
-- `ix_audit_logs_action` - Query by action type
-- `ix_audit_logs_resource_type` - Query by resource
-- `ix_audit_logs_created_at` - Time-range queries
-
-### Compliance Notes
-- **Immutable**: No UPDATE or DELETE operations allowed
-- **Retention**: 7 years minimum for legal compliance
-- **IP Logging**: For evidence chain of custody
-
----
-
-## 3. CaseMember (PostgreSQL/RDS)
-
-### Location
-- **Table**: `case_members`
-- **Database**: PostgreSQL (RDS)
-
-### Schema
+Returned from draft generation endpoint.
 
 ```python
-class CaseMember(Base):
-    __tablename__ = "case_members"
-    
-    id = Column(UUID, primary_key=True, default=uuid4)
-    case_id = Column(UUID, ForeignKey("cases.id"), nullable=False, index=True)
-    user_id = Column(UUID, ForeignKey("users.id"), nullable=False, index=True)
-    role = Column(Enum(CaseMemberRole), nullable=False)
-    added_by = Column(UUID, ForeignKey("users.id"), nullable=True)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
-    # Relationships
-    case = relationship("Case", back_populates="members")
-    user = relationship("User", foreign_keys=[user_id])
+class DraftPreviewResponse(BaseModel):
+    draft_id: str              # Temporary ID for this preview
+    content: str               # Markdown draft with [EV-xxx] citations
+    citations: List[Citation]  # Structured citation references
+    generated_at: datetime
+    model: str                 # gpt-4o
+    token_count: int
+
+class Citation(BaseModel):
+    evidence_id: str           # EV-xxxxxxxx
+    quote: str                 # Cited text snippet
+    relevance: str             # How it supports the argument
 ```
-
-### Role Types (CaseMemberRole Enum)
-
-| Role | Permissions | Description |
-|------|-------------|-------------|
-| `OWNER` | Full access | Case creator, can delete |
-| `MEMBER` | Read/Write | Can edit evidence, drafts |
-| `VIEWER` | Read only | Can only view |
-
-### Unique Constraint
-- `(case_id, user_id)` - User can only have one role per case
-
-### Business Rules
-- Every case must have at least one `OWNER`
-- `OWNER` cannot demote themselves if only owner
-- Case access requires membership (403 otherwise)
-
----
-
-## 4. Qdrant Vector Collection
-
-### Naming Convention
-- **Pattern**: `case_rag_{case_id}`
-- **Example**: `case_rag_550e8400-e29b-41d4-a716-446655440000`
-
-### Vector Schema
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Unique vector ID |
-| `vector` | Float[1536] | OpenAI text-embedding-3-small |
-| `payload.evidence_id` | String | Source evidence ID |
-| `payload.case_id` | String | Parent case ID |
-| `payload.chunk_text` | String | Text chunk (max 8000 chars) |
-| `payload.chunk_index` | Integer | Position in document |
-| `payload.file_name` | String | Source file name |
-| `payload.timestamp` | ISO8601 | Evidence timestamp |
-| `payload.speaker` | String | Speaker attribution |
-| `payload.labels` | List[String] | Evidence labels |
-
-### Payload Indexes (for filtering)
-- `evidence_id` - Text index
-- `speaker` - Keyword index
-- `labels` - Keyword list index
-- `timestamp` - Integer index (unix epoch)
-
-### Collection Lifecycle
-1. **Created**: When first evidence uploaded to case
-2. **Updated**: On each evidence analysis completion
-3. **Deleted**: On case closure (soft delete in RDS triggers)
 
 ---
 
 ## Entity Relationships
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                         PostgreSQL (RDS)                         │
-├──────────────────────────────────────────────────────────────────┤
-│  ┌─────────┐     ┌─────────────┐     ┌────────────┐              │
-│  │  User   │────▶│ CaseMember  │◀────│    Case    │              │
-│  └─────────┘     └─────────────┘     └────────────┘              │
-│       │                                     │                     │
-│       │                                     │                     │
-│       ▼                                     │                     │
-│  ┌──────────┐                               │                     │
-│  │ AuditLog │◀──────────────────────────────┘                     │
-│  └──────────┘                                                     │
-└──────────────────────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────────────────────┐
-│                           DynamoDB                               │
-├──────────────────────────────────────────────────────────────────┤
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │ Evidence (PK: case_id, SK: evidence_id)                  │    │
-│  │   - Metadata, AI analysis results, status                │    │
-│  └──────────────────────────────────────────────────────────┘    │
-└──────────────────────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────────────────────┐
-│                         Qdrant Cloud                             │
-├──────────────────────────────────────────────────────────────────┤
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │ case_rag_{case_id}                                       │    │
-│  │   - Embedding vectors + payload metadata                 │    │
-│  └──────────────────────────────────────────────────────────┘    │
-└──────────────────────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────────────────────┐
-│                            AWS S3                                │
-├──────────────────────────────────────────────────────────────────┤
-│  s3://leh-evidence-{env}/                                        │
-│    └── cases/{case_id}/                                          │
-│        └── raw/{evidence_id}_{filename}                          │
-└──────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## State Transitions
-
-### Evidence Processing States
-
-```
-┌─────────┐     ┌────────────┐     ┌───────────┐
-│ pending │────▶│ processing │────▶│ completed │
-└─────────┘     └────────────┘     └───────────┘
-                      │
-                      ▼
-                ┌──────────┐
-                │  failed  │
-                └──────────┘
-```
-
-### Case Status States
-
-```
-┌──────┐     ┌─────────────┐     ┌────────┐
-│ open │────▶│ in_progress │────▶│ closed │
-└──────┘     └─────────────┘     └────────┘
+┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+│    User     │──1:N──│ CaseMember  │──N:1──│    Case     │
+└─────────────┘      └─────────────┘      └─────────────┘
+                                                 │
+                                                1:N
+                                                 │
+                                          ┌─────────────┐
+                                          │  Evidence   │
+                                          │ (DynamoDB)  │
+                                          └─────────────┘
+                                                 │
+                                                1:N
+                                                 │
+                                          ┌─────────────┐
+                                          │   Qdrant    │
+                                          │   Vectors   │
+                                          └─────────────┘
+                                          
+┌─────────────┐
+│  AuditLog   │  (references all entities via resource_type + resource_id)
+└─────────────┘
 ```
 
 ---
 
 ## Migration Notes
 
-No database migrations required for this feature. All entities already exist.
+### New Tables (Alembic)
+1. `audit_logs` - Create if not exists
+2. `case_members` - Already exists, verify role enum includes OWNER/MEMBER/VIEWER
 
-### Verification Queries
+### DynamoDB
+- Table `leh_evidence` - Already exists
+- Add GSI `case_status_index` if not present
+- Add GSI `case_timestamp_index` if not present
 
-```sql
--- Verify AuditLog table exists
-SELECT column_name, data_type FROM information_schema.columns 
-WHERE table_name = 'audit_logs';
-
--- Verify CaseMember roles
-SELECT DISTINCT role FROM case_members;
-
--- Count existing audit logs
-SELECT COUNT(*) FROM audit_logs;
-```
+### Qdrant
+- Collections created dynamically per case
+- No migration needed
