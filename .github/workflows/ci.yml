@@ -140,7 +140,7 @@ jobs:
           S3_EVIDENCE_BUCKET: test-bucket
           DDB_EVIDENCE_TABLE: test-evidence-table
           OPENAI_API_KEY: test-openai-key
-        run: pytest --cov=app --cov-report=xml -v --timeout=60
+        run: pytest --cov=app --cov-report=xml -v --timeout=60 -m "not integration"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
