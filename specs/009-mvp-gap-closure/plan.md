@@ -47,10 +47,12 @@ specs/009-mvp-gap-closure/
 ├── data-model.md        # Phase 1 output
 ├── quickstart.md        # Phase 1 output
 ├── contracts/           # Phase 1 output (OpenAPI specs)
-│   ├── signup-api.yaml
-│   ├── client-portal-api.yaml
+│   ├── audit-api.yaml
 │   ├── detective-portal-api.yaml
-│   └── evidence-review-api.yaml
+│   ├── draft-api.yaml
+│   ├── evidence-review-api.yaml
+│   ├── search-api.yaml
+│   └── signup-role-api.yaml
 └── tasks.md             # Phase 2 output (/speckit.tasks command)
 ```
 

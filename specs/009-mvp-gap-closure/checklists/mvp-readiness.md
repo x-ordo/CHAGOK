@@ -52,6 +52,45 @@
 - [ ] CHK023 - Is the rollback procedure documented? [Gap, Spec §FR-019]
 - [ ] CHK024 - Are deployment approval requirements (manual for prod) specified? [Completeness, Spec §FR-018]
 
+### US7 - 법적 고지 및 약관 (P2)
+
+- [ ] CHK064 - Is copyright footer text explicitly specified? [Completeness, Spec §FR-020]
+- [ ] CHK065 - Are ToS and Privacy checkbox requirements distinct (separate checkboxes)? [Completeness, Spec §FR-021,022]
+- [ ] CHK066 - Is Terms of Service content defined or referenced? [Gap, Spec §FR-023]
+- [ ] CHK067 - Is Privacy Policy PIPA compliance requirements listed? [Completeness, Spec §FR-024]
+- [ ] CHK068 - Is user_agreements schema specified (user_id, agreement_type, version, agreed_at)? [Completeness, Spec §FR-025]
+- [ ] CHK069 - Are agreement re-consent requirements on policy version change defined? [Gap]
+
+### US8 - 정보 구조(IA) 개선 (P3)
+
+- [ ] CHK070 - Are specific features required in main navigation 1-depth? [Completeness, Spec §FR-026]
+- [ ] CHK071 - Is "1-click access" measurable (which elements, from which views)? [Clarity, Spec §FR-027]
+- [ ] CHK072 - Are back/home button behaviors defined for each page type? [Gap, Spec §FR-028]
+
+### US9 - 회원가입 역할 선택 (P2)
+
+- [ ] CHK073 - Are available roles for self-signup explicitly enumerated? [Completeness, Spec §FR-029]
+- [ ] CHK074 - Is role parameter format and validation specified? [Completeness, Spec §FR-030]
+- [ ] CHK075 - Are role-to-dashboard path mappings documented? [Completeness, Spec §FR-031]
+- [ ] CHK076 - Is error message for missing role selection specified? [Completeness, Spec §FR-032]
+
+### US10 - 의뢰인(Client) 포털 (P2)
+
+- [ ] CHK077 - Is "assigned cases" definition clear (via case_members table)? [Clarity, Spec §FR-033]
+- [ ] CHK078 - Is evidence review status enum defined (pending_review, approved, rejected)? [Completeness, Spec §FR-034,035]
+- [ ] CHK079 - Are review workflow permissions specified (who can approve/reject)? [Completeness]
+- [ ] CHK080 - Is client-to-lawyer messaging scope defined (1:1 per case)? [Gap, Spec §FR-036]
+- [ ] CHK081 - Are 403 scenarios for unauthorized case access documented? [Completeness]
+
+### US11 - 탐정(Detective) 포털 (P2)
+
+- [ ] CHK082 - Is detective case assignment mechanism defined? [Gap, Spec §FR-037]
+- [ ] CHK083 - Are supported EXIF fields listed (GPS, datetime, etc.)? [Completeness, Spec §FR-038]
+- [ ] CHK084 - Is EXIF extraction failure handling specified? [Gap]
+- [ ] CHK085 - Are earnings data fields defined (amount, status, dates)? [Completeness, Spec §FR-039]
+- [ ] CHK086 - Is detective_earnings table schema specified? [Completeness, Spec §FR-040]
+- [ ] CHK087 - Are earnings status transitions defined (pending → paid)? [Completeness]
+
 ---
 
 ## Requirement Clarity
@@ -151,7 +190,7 @@
 
 | Category | Items | Coverage |
 |----------|-------|----------|
-| Requirement Completeness | 24 | US1-US6 |
+| Requirement Completeness | 48 | US1-US11 |
 | Requirement Clarity | 6 | Performance metrics, UX terms |
 | Requirement Consistency | 5 | Cross-module alignment |
 | Acceptance Criteria Quality | 4 | Measurability |
@@ -159,7 +198,7 @@
 | Non-Functional Requirements | 6 | Performance, Security, A11y |
 | Dependencies & Assumptions | 4 | External dependencies |
 | Constitution Compliance | 5 | NON-NEGOTIABLE principles |
-| **Total** | **63** | |
+| **Total** | **87** | |
 
 ---
 
