@@ -82,7 +82,7 @@
 - [ ] T017 [US2] Verify `POST /cases/{id}/draft-preview` generates draft with citations in `backend/app/api/drafts.py`
 - [ ] T018 [US2] Verify `GET /cases/{id}/draft-export` generates DOCX/PDF in `backend/app/services/draft_service.py`
 - [ ] T019 [US2] Test draft generation with real case data (requires US1 complete)
-- [ ] T019a [US2] Integrate TipTap editor for draft editing in `frontend/src/components/draft/DraftEditor.tsx` (FR-007a)
+- [x] T019a [US2] Integrate TipTap editor for draft editing in `frontend/src/components/draft/DraftEditor.tsx` (FR-007a) ✅ 2025-12-10
 - [ ] T020 [US2] Add smoke test for RAG search in `backend/tests/integration/test_search_smoke.py`
 
 **Checkpoint**: RAG search and Draft generation work with AI Worker processed data
@@ -206,16 +206,16 @@
 
 ### Implementation for User Story 7
 
-- [ ] T060 [P] [US7] Add copyright footer component in `frontend/src/components/shared/Footer.tsx`
-- [ ] T061 [P] [US7] Create Terms of Service page at `frontend/src/app/terms/page.tsx`
-- [ ] T062 [P] [US7] Create Privacy Policy page at `frontend/src/app/privacy/page.tsx`
-- [ ] T063 [US7] Add terms/privacy agreement checkboxes to signup form in `frontend/src/app/signup/page.tsx`
+- [x] T060 [P] [US7] Add copyright footer component in `frontend/src/components/common/Footer.tsx` ✅ 2025-12-10
+- [x] T061 [P] [US7] Create Terms of Service page at `frontend/src/app/terms/page.tsx` ✅ 2025-12-10
+- [x] T062 [P] [US7] Create Privacy Policy page at `frontend/src/app/privacy/page.tsx` ✅ 2025-12-10
+- [x] T063 [US7] Add terms/privacy agreement checkboxes to signup form in `frontend/src/app/signup/page.tsx` ✅ 2025-12-10
 - [ ] T064 [US7] Create `user_agreements` table migration in `backend/alembic/versions/`
 - [ ] T065 [US7] Create UserAgreement model in `backend/app/db/models.py`
 - [ ] T066 [US7] Update signup API to record agreement in `backend/app/api/auth.py`
 - [ ] T067 [US7] Add agreement validation - block signup without consent
-- [ ] T068 [US7] Draft Terms of Service content (Korean) in `frontend/public/legal/terms-ko.md`
-- [ ] T069 [US7] Draft Privacy Policy content (PIPA compliant) in `frontend/public/legal/privacy-ko.md`
+- [x] T068 [US7] Draft Terms of Service content (Korean) - embedded in `/terms` page ✅ 2025-12-10
+- [x] T069 [US7] Draft Privacy Policy content (PIPA compliant) - embedded in `/privacy` page ✅ 2025-12-10
 
 **Checkpoint**: Signup requires terms agreement, footer shows copyright, legal pages accessible
 
@@ -229,11 +229,11 @@
 
 ### Implementation for User Story 8
 
-- [ ] T070 [P] [US8] Audit current navigation structure in `frontend/src/components/layout/`
-- [ ] T071 [US8] Update main navigation to 1-depth for key features in `frontend/src/components/layout/Sidebar.tsx`
-- [ ] T072 [US8] Add tab/sidebar navigation to case detail page in `frontend/src/app/lawyer/cases/[id]/page.tsx`
-- [ ] T073 [US8] Ensure consistent back/home button behavior across all pages
-- [ ] T074 [US8] Create IA documentation in `docs/guides/INFORMATION_ARCHITECTURE.md`
+- [x] T070 [P] [US8] Audit current navigation structure in `frontend/src/components/layout/` ✅ 2025-12-10
+- [x] T071 [US8] Update main navigation to 1-depth for key features in `frontend/src/components/lawyer/LawyerNav.tsx` ✅ 2025-12-10
+- [x] T072 [US8] Add tab/sidebar navigation to case detail page in `frontend/src/app/lawyer/cases/[id]/page.tsx` ✅ (already implemented)
+- [x] T073 [US8] Ensure consistent back/home button behavior across all pages ✅ 2025-12-10
+- [x] T074 [US8] Create IA documentation in `docs/guides/INFORMATION_ARCHITECTURE.md` ✅ 2025-12-10
 
 **Checkpoint**: 3-click access to all major features verified, consistent navigation
 
@@ -247,12 +247,12 @@
 
 ### Implementation for User Story 9
 
-- [ ] T082 [P] [US9] Add role dropdown to signup form in `frontend/src/app/signup/page.tsx`
-- [ ] T083 [P] [US9] Update signup API call to include role parameter in `frontend/src/lib/api/auth.ts`
+- [x] T082 [P] [US9] Add role dropdown to signup form in `frontend/src/app/signup/page.tsx` ✅ 2025-12-11
+- [x] T083 [P] [US9] Update signup API call to include role parameter in `frontend/src/lib/api/auth.ts` ✅ 2025-12-11
 - [ ] T084 [US9] Verify backend accepts role in `POST /auth/signup` in `backend/app/api/auth.py`
-- [ ] T085 [US9] Implement role-based redirect in middleware `frontend/src/middleware.ts`
-- [ ] T086 [US9] Add validation - block signup without role selection
-- [ ] T087 [US9] Test signup → login → redirect flow for each role (lawyer, client, detective)
+- [x] T085 [US9] Implement role-based redirect in signup page `frontend/src/app/signup/page.tsx` ✅ 2025-12-11
+- [x] T086 [US9] Add validation - block signup without role selection (HTML5 required) ✅ 2025-12-11
+- [x] T087 [US9] Test signup → login → redirect flow for each role (12 tests) ✅ 2025-12-11
 
 **Checkpoint**: Users can register with role selection and land on role-specific dashboard
 
@@ -270,8 +270,8 @@
 - [ ] T089 [P] [US10] Add `review_status` field to evidence upload response in `backend/app/api/evidence.py`
 - [ ] T090 [US10] Update evidence upload to set `pending_review` for client uploads in `backend/app/services/evidence_service.py`
 - [ ] T091 [US10] Create evidence review endpoint `PATCH /cases/{id}/evidence/{eid}/review` in `backend/app/api/evidence.py`
-- [ ] T092 [US10] Add evidence review UI for lawyers in `frontend/src/components/lawyer/EvidenceReviewCard.tsx`
-- [ ] T093 [P] [US10] Update client evidence list to show review status in `frontend/src/app/client/cases/[id]/page.tsx`
+- [x] T092 [US10] Add evidence review UI for lawyers in `frontend/src/components/lawyer/EvidenceReviewCard.tsx` ✅ 2025-12-11
+- [x] T093 [P] [US10] Update client evidence list to show review status in `frontend/src/app/client/cases/[id]/page.tsx` ✅ 2025-12-11
 - [ ] T094 [US10] Add contract test for client evidence upload in `backend/tests/contract/test_client_evidence.py`
 - [ ] T095 [US10] Verify 403 for client accessing non-assigned cases
 
@@ -293,8 +293,8 @@
 - [ ] T099 [US11] Create DetectiveEarningsRepository in `backend/app/repositories/detective_earnings_repository.py`
 - [ ] T100 [US11] Create earnings API endpoints in `backend/app/api/detective_portal.py`
 - [ ] T101 [US11] Extract EXIF on evidence upload for image files in `backend/app/services/evidence_service.py`
-- [ ] T102 [P] [US11] Update detective earnings page to show data in `frontend/src/app/detective/earnings/page.tsx`
-- [ ] T103 [P] [US11] Add EXIF metadata display to evidence detail in `frontend/src/components/detective/EvidenceMetadata.tsx`
+- [x] T102 [P] [US11] Update detective earnings page to show data in `frontend/src/app/detective/earnings/page.tsx` ✅ 2025-12-11 (already connected)
+- [x] T103 [P] [US11] Add EXIF metadata display to evidence detail in `frontend/src/components/detective/EvidenceMetadata.tsx` ✅ 2025-12-11
 - [ ] T104 [US11] Add contract test for EXIF extraction in `backend/tests/contract/test_exif_extraction.py`
 - [ ] T105 [US11] Verify 403 for detective accessing non-assigned cases
 
