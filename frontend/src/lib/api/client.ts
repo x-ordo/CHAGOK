@@ -18,6 +18,9 @@ import toast from 'react-hot-toast';
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
+// API prefix for all endpoints (matches backend router prefix)
+const API_PREFIX = '/api';
+
 export interface ApiResponse<T> {
   data?: T;
   error?: string;
@@ -37,7 +40,8 @@ export async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    const url = `${API_BASE_URL}${endpoint}`;
+    // Add /api prefix to all endpoints (backend routes are prefixed with /api)
+    const url = `${API_BASE_URL}${API_PREFIX}${endpoint}`;
 
     const response = await fetch(url, {
       ...options,
@@ -72,7 +76,7 @@ export async function apiRequest<T>(
         // Don't redirect if:
         // 1. We're checking auth status (/auth/me) - 401 is expected for unauthenticated users
         // 2. We're already on the login/signup page
-        const isAuthCheck = endpoint === '/auth/me';
+        const isAuthCheck = endpoint === '/auth/me' || endpoint === '/api/auth/me';
         const isAuthPage = window.location.pathname.startsWith('/login') ||
                            window.location.pathname.startsWith('/signup');
         if (!isAuthCheck && !isAuthPage) {

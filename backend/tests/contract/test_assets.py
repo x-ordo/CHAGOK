@@ -13,12 +13,13 @@ from app.main import app
 from app.db.session import get_db
 from app.db.models import User, Case, CaseMember, Asset, AssetCategory, AssetOwnership, AssetNature
 from app.core.security import hash_password, create_access_token
+from tests.conftest import APITestClient
 
 
 @pytest.fixture
 def test_client():
-    """Create test client"""
-    return TestClient(app)
+    """Create test client with /api prefix wrapper"""
+    return APITestClient(TestClient(app))
 
 
 @pytest.fixture

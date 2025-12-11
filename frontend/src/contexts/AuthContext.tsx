@@ -45,6 +45,8 @@ interface AuthProviderProps {
 }
 
 const USER_CACHE_KEY = 'userCache';
+const ACCESS_TOKEN_KEY = 'accessToken';
+const JUST_LOGGED_IN_KEY = 'justLoggedIn';
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
@@ -106,6 +108,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Initialize auth state
   useEffect(() => {
+    // Skip checkAuth if user just logged in (avoid race condition)
+    // This flag is set in sessionStorage to survive page navigation
+    if (typeof window !== 'undefined') {
+      const justLoggedIn = sessionStorage.getItem(JUST_LOGGED_IN_KEY);
+      if (justLoggedIn === 'true') {
+        // Clear the flag and load user from cache
+        sessionStorage.removeItem(JUST_LOGGED_IN_KEY);
+        const cachedUser = localStorage.getItem(USER_CACHE_KEY);
+        if (cachedUser) {
+          try {
+            setUser(JSON.parse(cachedUser));
+            setIsLoading(false);
+            return;
+          } catch {
+            // Invalid cache, proceed with checkAuth
+          }
+        }
+      }
+    }
     checkAuth();
   }, [checkAuth]);
 
@@ -140,7 +161,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
           };
 
           setUser(userData);
+          // Set flag to prevent checkAuth race condition after redirect
+          sessionStorage.setItem(JUST_LOGGED_IN_KEY, 'true');
           localStorage.setItem(USER_CACHE_KEY, JSON.stringify(userData));
+          // Store access token for Authorization header (cross-origin support)
+          if (response.data.access_token) {
+            localStorage.setItem(ACCESS_TOKEN_KEY, response.data.access_token);
+          }
 
           // Set user_data cookie for middleware
           const userDisplayData = {

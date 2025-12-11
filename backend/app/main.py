@@ -200,75 +200,79 @@ async def health_check():
 # Router Registration (API Endpoints)
 # ============================================
 # API 엔드포인트는 app/api/ 디렉토리에 위치 (BACKEND_SERVICE_REPOSITORY_GUIDE.md 기준)
+# 모든 API 엔드포인트는 /api prefix를 가짐 (CloudFront 라우팅용)
+
+# API prefix 상수
+API_PREFIX = "/api"
 
 # 인증 라우터
-app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(auth.router, prefix=f"{API_PREFIX}/auth", tags=["Authentication"])
 
 # 사건 라우터
-app.include_router(cases.router, prefix="/cases", tags=["Cases"])
+app.include_router(cases.router, prefix=f"{API_PREFIX}/cases", tags=["Cases"])
 
 # 재산분할 라우터 (US2 - Asset Division)
-app.include_router(assets.router, prefix="/cases/{case_id}/assets", tags=["Assets"])
+app.include_router(assets.router, prefix=f"{API_PREFIX}/cases/{{case_id}}/assets", tags=["Assets"])
 
 # 절차 단계 라우터 (US3 - Procedure Stage Tracking)
-app.include_router(procedure.router, tags=["Procedure"])
-app.include_router(procedure.deadlines_router, tags=["Procedure"])
+app.include_router(procedure.router, prefix=API_PREFIX, tags=["Procedure"])
+app.include_router(procedure.deadlines_router, prefix=API_PREFIX, tags=["Procedure"])
 
 # 증거 라우터
-app.include_router(evidence.router, prefix="/evidence", tags=["Evidence"])
+app.include_router(evidence.router, prefix=f"{API_PREFIX}/evidence", tags=["Evidence"])
 
 # 초안 라우터 (케이스별 초안 CRUD)
-app.include_router(drafts.router, prefix="/cases/{case_id}/drafts", tags=["Drafts"])
+app.include_router(drafts.router, prefix=f"{API_PREFIX}/cases/{{case_id}}/drafts", tags=["Drafts"])
 
 # 변호사/스태프 포털 라우터
-app.include_router(lawyer_portal.router, prefix="/lawyer", tags=["Lawyer Portal"])
-app.include_router(staff_progress.router, tags=["Staff Progress"])
+app.include_router(lawyer_portal.router, prefix=f"{API_PREFIX}/lawyer", tags=["Lawyer Portal"])
+app.include_router(staff_progress.router, prefix=API_PREFIX, tags=["Staff Progress"])
 
 # 변호사 고객 관리 라우터 (005-lawyer-portal-pages US2)
-app.include_router(lawyer_clients.router, tags=["Lawyer Clients"])
+app.include_router(lawyer_clients.router, prefix=API_PREFIX, tags=["Lawyer Clients"])
 
 # 변호사 탐정 관리 라우터 (005-lawyer-portal-pages US3)
-app.include_router(lawyer_investigators.router, tags=["Lawyer Investigators"])
+app.include_router(lawyer_investigators.router, prefix=API_PREFIX, tags=["Lawyer Investigators"])
 
 # 의뢰인/탐정 포털 라우터
-app.include_router(client_portal.router, tags=["Client Portal"])
-app.include_router(detective_portal.router, tags=["Detective Portal"])
+app.include_router(client_portal.router, prefix=API_PREFIX, tags=["Client Portal"])
+app.include_router(detective_portal.router, prefix=API_PREFIX, tags=["Detective Portal"])
 
 # 재산분할 라우터 (Phase 1: Property Division)
-app.include_router(properties.router, tags=["Properties"])
+app.include_router(properties.router, prefix=API_PREFIX, tags=["Properties"])
 
 # 사용자 설정 라우터
-app.include_router(settings_router.router, tags=["Settings"])
+app.include_router(settings_router.router, prefix=API_PREFIX, tags=["Settings"])
 
 # 007-lawyer-portal-v1: Party Graph 라우터
-app.include_router(party.router, tags=["Party Graph"])
-app.include_router(party.graph_router, tags=["Party Graph"])
-app.include_router(relationships.router, tags=["Party Relationships"])
+app.include_router(party.router, prefix=API_PREFIX, tags=["Party Graph"])
+app.include_router(party.graph_router, prefix=API_PREFIX, tags=["Party Graph"])
+app.include_router(relationships.router, prefix=API_PREFIX, tags=["Party Relationships"])
 
 # 007-lawyer-portal-v1: Evidence Links 라우터 (US4)
-app.include_router(evidence_links.router, tags=["Evidence Links"])
+app.include_router(evidence_links.router, prefix=API_PREFIX, tags=["Evidence Links"])
 
 # 007-lawyer-portal-v1: Global Search 라우터 (US6)
-app.include_router(search.router, tags=["Search"])
+app.include_router(search.router, prefix=API_PREFIX, tags=["Search"])
 
 # 007-lawyer-portal-v1: Dashboard (Today View - US7)
-app.include_router(dashboard.router, tags=["Dashboard"])
+app.include_router(dashboard.router, prefix=API_PREFIX, tags=["Dashboard"])
 
 # 메시지 라우터
-app.include_router(messages.router, prefix="/messages", tags=["Messages"])
+app.include_router(messages.router, prefix=f"{API_PREFIX}/messages", tags=["Messages"])
 
 # 청구/결제 라우터
-app.include_router(billing.router, tags=["Billing"])
-app.include_router(billing.client_router, tags=["Client Billing"])
+app.include_router(billing.router, prefix=API_PREFIX, tags=["Billing"])
+app.include_router(billing.client_router, prefix=API_PREFIX, tags=["Client Billing"])
 
 # Calendar 라우터
-app.include_router(calendar.router, tags=["Calendar"])
+app.include_router(calendar.router, prefix=API_PREFIX, tags=["Calendar"])
 
 # Summary 라우터 (US8 - Progress Summary Cards)
-app.include_router(summary.router, tags=["Summary"])
+app.include_router(summary.router, prefix=API_PREFIX, tags=["Summary"])
 
 # Admin 라우터 (User Management & Audit Log)
-app.include_router(admin.router, tags=["Admin"])
+app.include_router(admin.router, prefix=API_PREFIX, tags=["Admin"])
 # L-work Demo API (테스트 후 제거 가능)
 try:
     from app.api.l_demo import router as l_demo_router

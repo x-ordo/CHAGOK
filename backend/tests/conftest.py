@@ -200,19 +200,60 @@ def test_env():
             pass
 
 
+class APITestClient:
+    """
+    Wrapper for TestClient that automatically adds /api prefix to all requests.
+    This ensures tests work correctly with the /api prefix added to all backend routes.
+    """
+    def __init__(self, client: TestClient):
+        self._client = client
+
+    def _add_prefix(self, url: str) -> str:
+        """Add /api prefix if not already present"""
+        if url.startswith("/api") or url.startswith("http"):
+            return url
+        return f"/api{url}"
+
+    def get(self, url: str, **kwargs):
+        return self._client.get(self._add_prefix(url), **kwargs)
+
+    def post(self, url: str, **kwargs):
+        return self._client.post(self._add_prefix(url), **kwargs)
+
+    def put(self, url: str, **kwargs):
+        return self._client.put(self._add_prefix(url), **kwargs)
+
+    def patch(self, url: str, **kwargs):
+        return self._client.patch(self._add_prefix(url), **kwargs)
+
+    def delete(self, url: str, **kwargs):
+        return self._client.delete(self._add_prefix(url), **kwargs)
+
+    def options(self, url: str, **kwargs):
+        return self._client.options(self._add_prefix(url), **kwargs)
+
+    def head(self, url: str, **kwargs):
+        return self._client.head(self._add_prefix(url), **kwargs)
+
+    # Pass through other attributes to the underlying client
+    def __getattr__(self, name):
+        return getattr(self._client, name)
+
+
 @pytest.fixture(scope="function")
 def client(test_env):
     """
-    FastAPI TestClient fixture
+    FastAPI TestClient fixture with automatic /api prefix
 
     Creates a fresh TestClient for each test function.
     Automatically uses test environment variables.
+    All requests are prefixed with /api to match backend route configuration.
     """
     # Import here to ensure test_env is loaded first
     from app.main import app
 
     with TestClient(app) as test_client:
-        yield test_client
+        yield APITestClient(test_client)
 
 
 @pytest.fixture(scope="function")

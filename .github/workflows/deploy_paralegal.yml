@@ -4,7 +4,7 @@ name: Deploy LEH to AWS
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main, dev, 011-production-bug-fixes ]
   workflow_dispatch:
     inputs:
       environment:

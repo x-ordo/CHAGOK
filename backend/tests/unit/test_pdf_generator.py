@@ -4,9 +4,7 @@ TDD - Improving test coverage for pdf_generator.py
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
 from datetime import datetime
-from io import BytesIO
 
 from app.utils.pdf_generator import (
     PdfGenerator,

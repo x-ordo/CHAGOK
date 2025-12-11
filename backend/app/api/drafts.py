@@ -23,7 +23,6 @@ from app.db.schemas import (
 )
 from app.services.draft_service import DraftService
 from app.core.dependencies import (
-    get_current_user_id,
     verify_case_read_access,
     verify_case_write_access
 )
