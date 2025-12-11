@@ -972,7 +972,6 @@ class TestCreateDraft:
         mock_case = MagicMock()
 
         from app.db.schemas import DraftCreate, DraftDocumentType
-        from app.db.models import DocumentType, DraftStatus
 
         mock_draft_data = MagicMock(spec=DraftCreate)
         mock_draft_data.title = "새 초안"
@@ -1103,7 +1102,7 @@ class TestUpdateDraft:
             mock_query.first.return_value = mock_draft
             mock_db.query.return_value = mock_query
 
-            result = service.update_draft("case-123", "draft-123", mock_update_data, "user-123")
+            service.update_draft("case-123", "draft-123", mock_update_data, "user-123")
 
             mock_db.commit.assert_called_once()
             assert mock_draft.title == "수정된 제목"

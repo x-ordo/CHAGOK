@@ -2,11 +2,9 @@
 Unit tests for Latency Logging Middleware
 """
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from fastapi import FastAPI, Request
+from unittest.mock import patch
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from starlette.responses import Response
 
 from app.middleware.latency import (
     LatencyLoggingMiddleware,

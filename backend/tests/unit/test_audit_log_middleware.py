@@ -4,7 +4,7 @@ Tests ACCESS_DENIED (403) logging functionality
 """
 
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 from starlette.requests import Request
 
 from app.middleware.audit_log import AuditLogMiddleware, extract_object_id

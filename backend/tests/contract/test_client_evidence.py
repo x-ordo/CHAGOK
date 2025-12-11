@@ -8,7 +8,6 @@ Tests for:
 3. Review action is logged in audit_logs
 """
 
-import pytest
 from fastapi import status
 from app.core.security import create_access_token
 from app.db.models import UserRole, CaseMemberRole
@@ -76,7 +75,7 @@ class TestEvidenceReviewEndpoint:
         """
         # Given: Create client user
         from app.db.session import get_db
-        from app.db.models import User, Case, CaseMember
+        from app.db.models import User
         from app.core.security import hash_password
         import uuid
 
@@ -191,7 +190,7 @@ class TestClientNonAssignedCaseAccess:
         Then: Returns 403 Forbidden
         """
         from app.db.session import get_db
-        from app.db.models import User, Case, CaseMember, CaseMemberRole
+        from app.db.models import User, Case, CaseMember
         from app.core.security import hash_password
         import uuid
 
@@ -304,7 +303,7 @@ class TestClientNonAssignedCaseAccess:
         Then: Returns 403 Forbidden
         """
         from app.db.session import get_db
-        from app.db.models import User, Case, CaseMember, CaseMemberRole
+        from app.db.models import User, Case, CaseMember
         from app.core.security import hash_password
         import uuid
 
@@ -417,7 +416,7 @@ class TestClientNonAssignedCaseAccess:
         Then: Returns 200 OK
         """
         from app.db.session import get_db
-        from app.db.models import User, Case, CaseMember, CaseMemberRole
+        from app.db.models import User, Case, CaseMember
         from app.core.security import hash_password
         import uuid
 

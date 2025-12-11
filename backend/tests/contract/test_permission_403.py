@@ -10,10 +10,8 @@ Tests that unauthorized access scenarios:
 Checkpoint: Unauthorized access returns 403 and is logged in audit_logs table
 """
 
-import pytest
 import uuid
 from fastapi import status
-from unittest.mock import patch, MagicMock
 
 from app.core.security import create_access_token
 from app.db.models import UserRole, CaseMemberRole, AuditLog

@@ -5,7 +5,6 @@ Unit tests for Qdrant utilities
 
 import pytest
 from unittest.mock import MagicMock, patch
-from typing import Dict, List
 
 
 class TestGetCollectionName:
@@ -132,7 +131,7 @@ class TestSearchEvidenceBySemantic:
         mock_client.return_value = client
 
         # Search with filters
-        result = search_evidence_by_semantic(
+        search_evidence_by_semantic(
             "case_123",
             "테스트 쿼리",
             filters={"labels": ["폭언", "불륜"]}

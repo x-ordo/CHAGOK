@@ -6,7 +6,7 @@ Business logic for detective portal operations.
 """
 
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.db.models import (

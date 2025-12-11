@@ -19,8 +19,7 @@ Usage:
         ...
 """
 
-from functools import lru_cache
-from typing import Callable, Optional
+from typing import Optional
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.core.dependencies import get_current_user_id, get_db, get_current_user

@@ -3,9 +3,7 @@ Unit tests for Search Service
 009-mvp-gap-closure: US4 - CI 테스트 커버리지 정상화
 """
 
-import pytest
-from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from app.services.search_service import SearchService, SearchResult
 
