@@ -7,7 +7,7 @@ Tests the following endpoints:
 """
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from app.db.schemas import Article840Category
 
 
@@ -54,33 +54,12 @@ class TestArticle840Tags:
             "status": "pending",
         }
 
-    @pytest.fixture
-    def mock_case_member_access(self):
-        """Mock case member access check"""
-        with patch("app.services.evidence_service.CaseMemberRepository") as mock_repo:
-            mock_instance = Mock()
-            mock_instance.has_access.return_value = True
-            mock_repo.return_value = mock_instance
-            yield mock_instance
-
-    @pytest.fixture
-    def mock_case_exists(self):
-        """Mock case existence check"""
-        with patch("app.services.evidence_service.CaseRepository") as mock_repo:
-            mock_instance = Mock()
-            mock_case = Mock()
-            mock_case.id = "case_abc"
-            mock_case.title = "Test Case"
-            mock_instance.get_by_id.return_value = mock_case
-            mock_repo.return_value = mock_instance
-            yield mock_instance
-
     def test_get_evidence_detail_with_article_840_tags(
         self,
         client,
         auth_headers,
+        test_case,
         sample_evidence_with_tags,
-        mock_case_member_access,
     ):
         """
         Test GET /evidence/{evidence_id} returns article_840_tags field
@@ -89,6 +68,8 @@ class TestArticle840Tags:
         When: GET /evidence/{evidence_id}
         Then: Response includes article_840_tags with categories, confidence, matched_keywords
         """
+        # Update sample data with actual case_id
+        sample_evidence_with_tags["case_id"] = test_case.id
         evidence_id = sample_evidence_with_tags["id"]
 
         # Mock DynamoDB get_evidence_by_id (patch where it's used, not where it's defined)
@@ -134,8 +115,8 @@ class TestArticle840Tags:
         self,
         client,
         auth_headers,
+        test_case,
         sample_evidence_without_tags,
-        mock_case_member_access,
     ):
         """
         Test GET /evidence/{evidence_id} handles evidence without tags gracefully
@@ -144,6 +125,8 @@ class TestArticle840Tags:
         When: GET /evidence/{evidence_id}
         Then: Response includes article_840_tags as null
         """
+        # Update sample data with actual case_id
+        sample_evidence_without_tags["case_id"] = test_case.id
         evidence_id = sample_evidence_without_tags["id"]
 
         # Mock DynamoDB get_evidence_by_id (patch where it's used, not where it's defined)
@@ -168,10 +151,9 @@ class TestArticle840Tags:
         self,
         client,
         auth_headers,
+        test_case,
         sample_evidence_with_tags,
         sample_evidence_without_tags,
-        mock_case_exists,
-        mock_case_member_access,
     ):
         """
         Test GET /cases/{case_id}/evidence returns article_840_tags for each item
@@ -180,7 +162,11 @@ class TestArticle840Tags:
         When: GET /cases/{case_id}/evidence
         Then: Each item includes article_840_tags field
         """
-        case_id = "case_abc"
+        case_id = test_case.id
+
+        # Update sample data with actual case_id
+        sample_evidence_with_tags["case_id"] = case_id
+        sample_evidence_without_tags["case_id"] = case_id
 
         # Mock DynamoDB get_evidence_by_case (patch where it's used, not where it's defined)
         with patch("app.services.evidence_service.get_evidence_by_case") as mock_get_evidence:
@@ -216,8 +202,7 @@ class TestArticle840Tags:
         self,
         client,
         auth_headers,
-        mock_case_exists,
-        mock_case_member_access,
+        test_case,
     ):
         """
         Test GET /cases/{case_id}/evidence?categories=adultery filters correctly
@@ -226,7 +211,7 @@ class TestArticle840Tags:
         When: GET /cases/{case_id}/evidence?categories=adultery
         Then: Only returns evidence tagged with "adultery"
         """
-        case_id = "case_abc"
+        case_id = test_case.id
 
         # Create evidence with different categories
         evidence_list = [
@@ -299,8 +284,7 @@ class TestArticle840Tags:
         self,
         client,
         auth_headers,
-        mock_case_exists,
-        mock_case_member_access,
+        test_case,
     ):
         """
         Test GET /cases/{case_id}/evidence with multiple categories filter
@@ -309,7 +293,7 @@ class TestArticle840Tags:
         When: GET /cases/{case_id}/evidence?categories=adultery&categories=desertion
         Then: Returns evidence tagged with either "adultery" OR "desertion"
         """
-        case_id = "case_abc"
+        case_id = test_case.id
 
         # Create evidence with different categories
         evidence_list = [
@@ -382,8 +366,7 @@ class TestArticle840Tags:
         self,
         client,
         auth_headers,
-        mock_case_exists,
-        mock_case_member_access,
+        test_case,
     ):
         """
         Test categories filter excludes evidence without tags
@@ -392,7 +375,7 @@ class TestArticle840Tags:
         When: GET /cases/{case_id}/evidence?categories=adultery
         Then: Only returns evidence with tags (excludes pending/no-tags items)
         """
-        case_id = "case_abc"
+        case_id = test_case.id
 
         # Create evidence with and without tags
         evidence_list = [

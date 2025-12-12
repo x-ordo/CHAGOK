@@ -6,9 +6,9 @@ Service for client portal operations including dashboard, case viewing, and evid
 """
 
 from datetime import datetime
-from typing import Optional, List
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from typing import List, Optional
+from sqlalchemy import and_, func
+from sqlalchemy.orm import Session, joinedload
 
 from app.db.models import User, Case, CaseMember, Evidence, AuditLog
 from app.schemas.client_portal import (
@@ -82,7 +82,7 @@ class ClientPortalService:
         )
 
     def get_case_list(self, user_id: str) -> ClientCaseListResponse:
-        """Get list of client's cases"""
+        """Get list of client's cases (N+1 optimized)"""
         # Get cases where user is a member
         case_memberships = (
             self.db.query(CaseMember)
@@ -92,22 +92,28 @@ class ClientPortalService:
 
         case_ids = [m.case_id for m in case_memberships]
 
+        if not case_ids:
+            return ClientCaseListResponse(items=[], total=0)
+
+        # Eager load owner and members to avoid N+1 queries
         cases = (
             self.db.query(Case)
+            .options(
+                joinedload(Case.owner),
+                joinedload(Case.members).joinedload(CaseMember.user),
+            )
             .filter(Case.id.in_(case_ids))
             .order_by(Case.updated_at.desc())
             .all()
         )
 
+        # Batch fetch evidence counts (single query instead of N)
+        evidence_counts = self._get_batch_evidence_counts(case_ids)
+
         items = []
         for case in cases:
-            evidence_count = (
-                self.db.query(Evidence)
-                .filter(Evidence.case_id == case.id)
-                .count()
-            )
-
-            lawyer = self._get_case_lawyer(case)
+            # Get lawyer from eagerly loaded data (no extra query)
+            lawyer = self._get_lawyer_from_loaded_case(case)
 
             items.append(
                 ClientCaseListItem(
@@ -115,7 +121,7 @@ class ClientPortalService:
                     title=case.title,
                     status=case.status,
                     progress_percent=self._calculate_progress(case),
-                    evidence_count=evidence_count,
+                    evidence_count=evidence_counts.get(case.id, 0),
                     lawyer_name=lawyer.name if lawyer else None,
                     created_at=case.created_at,
                     updated_at=case.updated_at,
@@ -396,6 +402,35 @@ class ClientPortalService:
             phone=None,  # Could be added to User model
             email=lawyer.email,
         )
+
+    def _get_batch_evidence_counts(self, case_ids: List[str]) -> dict[str, int]:
+        """Get evidence counts for multiple cases in a single query (N+1 fix)"""
+        if not case_ids:
+            return {}
+
+        counts = (
+            self.db.query(
+                Evidence.case_id,
+                func.count(Evidence.id).label("count"),
+            )
+            .filter(Evidence.case_id.in_(case_ids))
+            .group_by(Evidence.case_id)
+            .all()
+        )
+        return {row.case_id: row.count for row in counts}
+
+    def _get_lawyer_from_loaded_case(self, case: Case) -> Optional[User]:
+        """Get lawyer from eagerly loaded case data (no extra queries)"""
+        # First check owner (eagerly loaded)
+        if case.owner and case.owner.role == "lawyer":
+            return case.owner
+
+        # Check case members (eagerly loaded)
+        for member in case.members:
+            if member.user and member.user.role == "lawyer":
+                return member.user
+
+        return None
 
     def _get_case_lawyer(self, case: Case) -> Optional[User]:
         """Get the lawyer assigned to a case"""

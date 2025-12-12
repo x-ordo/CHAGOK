@@ -170,14 +170,14 @@ class TestLatencyLoggingMiddleware:
 class TestLatencyMiddlewareIntegration:
     """Integration tests with the main app"""
 
-    def test_middleware_registered_in_app(self, client):
+    def test_middleware_registered_in_app(self, raw_client):
         """Middleware is properly registered in the app"""
-        response = client.get("/health")
+        response = raw_client.get("/health")
 
         assert response.status_code == 200
         assert "X-Response-Time" in response.headers
 
-    def test_latency_header_on_all_endpoints(self, client, auth_headers):
+    def test_latency_header_on_all_endpoints(self, raw_client):
         """All endpoints include latency header"""
         endpoints = [
             ("/", "GET"),
@@ -186,8 +186,8 @@ class TestLatencyMiddlewareIntegration:
 
         for path, method in endpoints:
             if method == "GET":
-                response = client.get(path)
+                response = raw_client.get(path)
             else:
-                response = client.post(path)
+                response = raw_client.post(path)
 
             assert "X-Response-Time" in response.headers, f"Missing header for {method} {path}"

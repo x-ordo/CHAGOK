@@ -3,6 +3,7 @@ Unit tests for DocumentRenderer Service
 TDD - Improving test coverage for document_renderer.py
 """
 
+import pytest
 from app.services.document_renderer import DocumentRenderer
 
 

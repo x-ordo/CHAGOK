@@ -5,9 +5,10 @@ Task T094 - US5 Implementation
 Business logic for detective portal operations.
 """
 
-from typing import Optional, List
+from typing import List, Optional
 from datetime import datetime
-from sqlalchemy.orm import Session
+from sqlalchemy import func
+from sqlalchemy.orm import Session, joinedload
 
 from app.db.models import (
     User, Case, CaseMember, InvestigationRecord
@@ -69,11 +70,12 @@ class DetectivePortalService:
         page: int = 1,
         limit: int = 20
     ) -> CaseListResponse:
-        """Get detective's case list with optional filtering"""
-        # Get cases where detective is a member
+        """Get detective's case list with optional filtering (N+1 optimized)"""
+        # Get cases where detective is a member with eager loading
         query = (
             self.db.query(Case)
             .join(CaseMember, Case.id == CaseMember.case_id)
+            .options(joinedload(Case.members).joinedload(CaseMember.user))
             .filter(CaseMember.user_id == detective_id)
         )
 
@@ -83,18 +85,21 @@ class DetectivePortalService:
         total = query.count()
         cases = query.offset((page - 1) * limit).limit(limit).all()
 
+        # Batch fetch record counts for all cases (single query instead of N)
+        case_ids = [case.id for case in cases]
+        record_counts = self._get_batch_record_counts(case_ids, detective_id)
+
         items = []
         for case in cases:
-            # Get lawyer info
-            lawyer = self._get_case_lawyer(case.id)
-            record_count = self._get_case_record_count(case.id, detective_id)
+            # Get lawyer from eagerly loaded members (no extra query)
+            lawyer = self._get_lawyer_from_members(case.members)
 
             items.append(CaseListItem(
                 id=case.id,
                 title=case.title,
                 status=self._map_case_status(case.status),
                 lawyer_name=lawyer.name if lawyer else None,
-                record_count=record_count,
+                record_count=record_counts.get(case.id, 0),
                 created_at=case.created_at,
                 updated_at=case.updated_at
             ))
@@ -386,10 +391,11 @@ class DetectivePortalService:
         )
 
     def _get_active_investigations(self, detective_id: str) -> List[InvestigationSummary]:
-        """Get active investigations for dashboard"""
+        """Get active investigations for dashboard (N+1 optimized)"""
         cases = (
             self.db.query(Case)
             .join(CaseMember, Case.id == CaseMember.case_id)
+            .options(joinedload(Case.members).joinedload(CaseMember.user))
             .filter(
                 CaseMember.user_id == detective_id,
                 Case.status.in_(["active", "pending", "review"])
@@ -398,17 +404,20 @@ class DetectivePortalService:
             .all()
         )
 
+        # Batch fetch record counts (single query instead of N)
+        case_ids = [case.id for case in cases]
+        record_counts = self._get_batch_record_counts(case_ids, detective_id)
+
         result = []
         for case in cases:
-            lawyer = self._get_case_lawyer(case.id)
-            record_count = self._get_case_record_count(case.id, detective_id)
+            lawyer = self._get_lawyer_from_members(case.members)
 
             result.append(InvestigationSummary(
                 id=case.id,
                 title=case.title,
                 lawyer_name=lawyer.name if lawyer else None,
                 status=self._map_case_status(case.status),
-                record_count=record_count
+                record_count=record_counts.get(case.id, 0)
             ))
 
         return result
@@ -456,6 +465,34 @@ class DetectivePortalService:
             )
             .count()
         )
+
+    def _get_batch_record_counts(
+        self, case_ids: List[str], detective_id: str
+    ) -> dict[str, int]:
+        """Get record counts for multiple cases in a single query (N+1 fix)"""
+        if not case_ids:
+            return {}
+
+        counts = (
+            self.db.query(
+                InvestigationRecord.case_id,
+                func.count(InvestigationRecord.id).label("count"),
+            )
+            .filter(
+                InvestigationRecord.case_id.in_(case_ids),
+                InvestigationRecord.detective_id == detective_id,
+            )
+            .group_by(InvestigationRecord.case_id)
+            .all()
+        )
+        return {row.case_id: row.count for row in counts}
+
+    def _get_lawyer_from_members(self, members: List[CaseMember]) -> Optional[User]:
+        """Get lawyer (owner) from eagerly loaded case members"""
+        for member in members:
+            if member.role == "owner" and member.user:
+                return member.user
+        return None
 
     def _get_case_records(self, case_id: str, detective_id: str) -> List[FieldRecordResponse]:
         """Get records for a case"""

@@ -257,6 +257,20 @@ def client(test_env):
 
 
 @pytest.fixture(scope="function")
+def raw_client(test_env):
+    """
+    FastAPI TestClient fixture WITHOUT /api prefix
+
+    Use this for testing root endpoints like /, /health, /docs
+    that are not under the /api prefix.
+    """
+    from app.main import app
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture(scope="function")
 def mock_settings(test_env):
     """
     Mock settings object for unit tests

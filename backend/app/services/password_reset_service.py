@@ -19,6 +19,29 @@ logger = logging.getLogger(__name__)
 TOKEN_EXPIRY_HOURS = 1
 
 
+def _mask_email(email: str) -> str:
+    """
+    Mask email address for secure logging.
+
+    Args:
+        email: Email address to mask
+
+    Returns:
+        Masked email (e.g., "ex***@domain.com")
+    """
+    if not email or "@" not in email:
+        return "***"
+    try:
+        local, domain = email.split("@", 1)
+        if len(local) <= 2:
+            masked_local = local[0] + "***" if local else "***"
+        else:
+            masked_local = local[:2] + "***"
+        return f"{masked_local}@{domain}"
+    except (ValueError, IndexError):
+        return "***"
+
+
 class PasswordResetService:
     """Service for password reset functionality"""
 
@@ -40,7 +63,8 @@ class PasswordResetService:
 
         if not user:
             # Don't reveal if user exists (prevent enumeration)
-            logger.info(f"Password reset requested for non-existent email: {email}")
+            # Use masked email in logs to prevent PII exposure
+            logger.info(f"Password reset requested for non-existent email: {_mask_email(email)}")
             return True
 
         # Invalidate any existing tokens for this user
@@ -63,9 +87,9 @@ class PasswordResetService:
         email_sent = email_service.send_password_reset_email(email, token)
 
         if email_sent:
-            logger.info(f"Password reset email sent to {email}")
+            logger.info(f"Password reset email sent to {_mask_email(email)}")
         else:
-            logger.error(f"Failed to send password reset email to {email}")
+            logger.error(f"Failed to send password reset email to {_mask_email(email)}")
 
         return email_sent
 
@@ -113,7 +137,7 @@ class PasswordResetService:
 
         self.db.commit()
 
-        logger.info(f"Password reset successful for user {user.email}")
+        logger.info(f"Password reset successful for user {_mask_email(user.email)}")
         return True
 
     def _generate_token(self) -> str:

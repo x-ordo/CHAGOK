@@ -4,8 +4,9 @@ TDD - Improving test coverage for docx_generator.py
 """
 
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from datetime import datetime
+from io import BytesIO
 
 from app.utils.docx_generator import (
     DocxGenerator,
@@ -29,6 +30,7 @@ class TestDocxGeneratorInit:
         """Raises DocxGeneratorError when python-docx is not installed"""
         with patch('app.utils.docx_generator.DOCX_AVAILABLE', False):
             # Need to reimport to pick up the patched value
+            from importlib import reload
             import app.utils.docx_generator as module
 
             original = module.DOCX_AVAILABLE

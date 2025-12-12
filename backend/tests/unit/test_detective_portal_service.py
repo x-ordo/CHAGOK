@@ -18,9 +18,10 @@ class TestGetCases:
         """Returns empty list when no cases"""
         mock_db = MagicMock()
 
-        # Mock query chain for empty result
+        # Mock query chain for empty result (with eager loading support)
         mock_query = MagicMock()
         mock_query.join.return_value = mock_query
+        mock_query.options.return_value = mock_query
         mock_query.filter.return_value = mock_query
         mock_query.count.return_value = 0
         mock_query.offset.return_value = mock_query
@@ -31,6 +32,8 @@ class TestGetCases:
         with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
             service = DetectivePortalService(mock_db)
             service.db = mock_db
+            # Mock the batch helper method
+            service._get_batch_record_counts = MagicMock(return_value={})
 
             result = service.get_cases("detective-123")
 
@@ -367,9 +370,10 @@ class TestGetCasesWithStatusFilter:
         """Returns cases filtered by status"""
         mock_db = MagicMock()
 
-        # Mock query chain for filtered result
+        # Mock query chain for filtered result (with eager loading support)
         mock_query = MagicMock()
         mock_query.join.return_value = mock_query
+        mock_query.options.return_value = mock_query
         mock_query.filter.return_value = mock_query
         mock_query.count.return_value = 0
         mock_query.offset.return_value = mock_query
@@ -380,6 +384,8 @@ class TestGetCasesWithStatusFilter:
         with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
             service = DetectivePortalService(mock_db)
             service.db = mock_db
+            # Mock the batch helper method
+            service._get_batch_record_counts = MagicMock(return_value={})
 
             result = service.get_cases("detective-123", status="active")
 
@@ -436,17 +442,27 @@ class TestGetCasesWithCases:
 
         mock_db = MagicMock()
 
-        # Create mock cases
+        # Create mock lawyer and member for eager loaded data
+        mock_lawyer = MagicMock()
+        mock_lawyer.name = "Test Lawyer"
+
+        mock_member = MagicMock()
+        mock_member.role = "owner"
+        mock_member.user = mock_lawyer
+
+        # Create mock case with members
         mock_case = MagicMock()
         mock_case.id = "case-123"
         mock_case.title = "Test Case"
         mock_case.status = CaseStatus.OPEN
         mock_case.created_at = datetime.now(timezone.utc)
         mock_case.updated_at = datetime.now(timezone.utc)
+        mock_case.members = [mock_member]
 
-        # Mock query chain
+        # Mock query chain (with eager loading support)
         mock_query = MagicMock()
         mock_query.join.return_value = mock_query
+        mock_query.options.return_value = mock_query
         mock_query.filter.return_value = mock_query
         mock_query.count.return_value = 1
         mock_query.offset.return_value = mock_query
@@ -458,11 +474,8 @@ class TestGetCasesWithCases:
             service = DetectivePortalService(mock_db)
             service.db = mock_db
 
-            # Mock helper methods
-            mock_lawyer = MagicMock()
-            mock_lawyer.name = "Test Lawyer"
-            service._get_case_lawyer = MagicMock(return_value=mock_lawyer)
-            service._get_case_record_count = MagicMock(return_value=5)
+            # Mock batch record counts
+            service._get_batch_record_counts = MagicMock(return_value={"case-123": 5})
 
             result = service.get_cases("detective-123")
 
@@ -656,15 +669,25 @@ class TestGetActiveInvestigations:
 
         mock_db = MagicMock()
 
-        # Create mock case
+        # Create mock lawyer and member for eager loaded data
+        mock_lawyer = MagicMock()
+        mock_lawyer.name = "Active Lawyer"
+
+        mock_member = MagicMock()
+        mock_member.role = "owner"
+        mock_member.user = mock_lawyer
+
+        # Create mock case with members
         mock_case = MagicMock()
         mock_case.id = "case-456"
         mock_case.title = "Active Case"
         mock_case.status = CaseStatus.OPEN
+        mock_case.members = [mock_member]
 
-        # Mock query chain
+        # Mock query chain (with eager loading support)
         mock_query = MagicMock()
         mock_query.join.return_value = mock_query
+        mock_query.options.return_value = mock_query
         mock_query.filter.return_value = mock_query
         mock_query.limit.return_value = mock_query
         mock_query.all.return_value = [mock_case]
@@ -674,11 +697,8 @@ class TestGetActiveInvestigations:
             service = DetectivePortalService(mock_db)
             service.db = mock_db
 
-            # Mock helper methods
-            mock_lawyer = MagicMock()
-            mock_lawyer.name = "Active Lawyer"
-            service._get_case_lawyer = MagicMock(return_value=mock_lawyer)
-            service._get_case_record_count = MagicMock(return_value=3)
+            # Mock batch record counts
+            service._get_batch_record_counts = MagicMock(return_value={"case-456": 3})
 
             result = service._get_active_investigations("detective-123")
 

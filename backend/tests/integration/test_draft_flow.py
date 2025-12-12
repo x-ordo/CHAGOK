@@ -14,7 +14,7 @@ but tests the actual integration between backend components.
 """
 
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from fastapi import status
 
 

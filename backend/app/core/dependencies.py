@@ -6,7 +6,7 @@ Supports both:
 2. HTTP-only cookies (access_token) - for browser clients
 """
 
-from fastapi import Depends, Header, Cookie
+from fastapi import Depends, Header, Cookie, HTTPException
 from typing import Optional
 from sqlalchemy.orm import Session
 from app.core.security import decode_access_token
@@ -373,14 +373,22 @@ def verify_internal_api_key(
 
     Raises:
         AuthenticationError: Invalid or missing API key
+        HTTPException(500): INTERNAL_API_KEY not set in production
 
     Security Note:
         - API key should be a strong random string (minimum 32 characters)
-        - In production, ensure INTERNAL_API_KEY is set and secure
+        - In production, INTERNAL_API_KEY must be set (fails with 500 if not)
         - In development/testing, empty key will skip validation
     """
+    # Production requires INTERNAL_API_KEY to be set
+    if settings.APP_ENV in ("production", "prod"):
+        if not settings.INTERNAL_API_KEY:
+            raise HTTPException(
+                status_code=500,
+                detail="INTERNAL_API_KEY must be configured in production environment"
+            )
     # In development/testing with empty key, allow all (for easier local testing)
-    if not settings.INTERNAL_API_KEY:
+    elif not settings.INTERNAL_API_KEY:
         return True
 
     if not x_internal_api_key:

@@ -10,7 +10,7 @@ Tests for POST /cases/{case_id}/draft-preview endpoint:
 """
 
 from fastapi import status
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 
 class TestDraftPreviewAuth:

@@ -284,18 +284,28 @@ except ImportError:
 # ============================================
 # TEMPORARY: Database Debug Endpoints
 # Remove after migration is complete
+# SECURITY: Admin authentication required
 # ============================================
+from app.core.dependencies import require_admin
+from fastapi import Depends as FastAPIDepends
+from app.db.models import User
+
+
 @app.get("/admin/check-roles", tags=["Admin"])
-async def check_roles():
-    """Check current role values in database and enum type definition."""
+async def check_roles(current_user: User = FastAPIDepends(require_admin)):
+    """
+    Check current role values in database and enum type definition.
+
+    Requires admin authentication.
+    """
     from app.db.session import get_db
     from sqlalchemy import text
 
     db = next(get_db())
     try:
-        # Check users
+        # Check users (mask email for security)
         result = db.execute(text("SELECT id, email, role::text as role FROM users"))
-        users = [{"id": r[0], "email": r[1], "role": r[2]} for r in result.fetchall()]
+        users = [{"id": r[0], "email": r[1][:3] + "***", "role": r[2]} for r in result.fetchall()]
 
         # Check enum type definition
         enum_result = db.execute(text("""
@@ -316,10 +326,12 @@ async def check_roles():
 
 
 @app.post("/admin/migrate-enums", tags=["Admin"])
-async def migrate_enums_to_lowercase():
+async def migrate_enums_to_lowercase(current_user: User = FastAPIDepends(require_admin)):
     """
     Migrate all enum values from uppercase to lowercase.
     Handles: userrole, userstatus, and other enums.
+
+    Requires admin authentication.
     """
     from app.db.session import get_db
     from sqlalchemy import text
@@ -375,9 +387,13 @@ async def migrate_enums_to_lowercase():
 
 # Keep old endpoint for backwards compatibility
 @app.post("/admin/migrate-roles", tags=["Admin"])
-async def migrate_roles_redirect():
-    """Redirects to migrate-enums endpoint."""
-    return await migrate_enums_to_lowercase()
+async def migrate_roles_redirect(current_user: User = FastAPIDepends(require_admin)):
+    """
+    Redirects to migrate-enums endpoint.
+
+    Requires admin authentication.
+    """
+    return await migrate_enums_to_lowercase(current_user)
 
 
 # Note: Timeline router removed (002-evidence-timeline feature incomplete)

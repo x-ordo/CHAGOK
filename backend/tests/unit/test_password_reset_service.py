@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 from unittest.mock import patch
 import uuid
 
-from app.services.password_reset_service import PasswordResetService
+from app.services.password_reset_service import PasswordResetService, _mask_email
 from app.db.models import User, PasswordResetToken
 from app.middleware.error_handler import ValidationError
 
@@ -407,3 +407,40 @@ class TestHelperMethods:
         db.delete(user)
         db.commit()
         db.close()
+
+
+class TestMaskEmail:
+    """Unit tests for _mask_email helper function (PII protection)"""
+
+    def test_mask_normal_email(self):
+        """Standard email addresses are properly masked"""
+        assert _mask_email("john.doe@example.com") == "jo***@example.com"
+        assert _mask_email("test@domain.org") == "te***@domain.org"
+
+    def test_mask_short_local_part(self):
+        """Short local parts (1-2 chars) are handled - shows first char only"""
+        assert _mask_email("a@test.com") == "a***@test.com"
+        # For 2-char local parts, shows first char + *** (per implementation)
+        assert _mask_email("ab@test.com") == "a***@test.com"
+
+    def test_mask_empty_string(self):
+        """Empty string returns masked placeholder"""
+        assert _mask_email("") == "***"
+
+    def test_mask_none_value(self):
+        """None value returns masked placeholder"""
+        assert _mask_email(None) == "***"
+
+    def test_mask_invalid_email_no_at(self):
+        """Invalid email without @ returns masked placeholder"""
+        assert _mask_email("notanemail") == "***"
+
+    def test_mask_email_with_subdomain(self):
+        """Emails with subdomains are properly masked"""
+        assert _mask_email("user@mail.example.com") == "us***@mail.example.com"
+
+    def test_mask_email_preserves_domain(self):
+        """Domain part is fully preserved for debugging"""
+        result = _mask_email("admin@company.co.kr")
+        assert "company.co.kr" in result
+        assert "@" in result
