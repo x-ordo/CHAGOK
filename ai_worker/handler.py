@@ -224,12 +224,12 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         # Initialize metadata store for idempotency checks
         metadata_store = MetadataStore()
 
-        # Check 1: Has this evidence_id already been processed?
+        # Check 1: Has this evidence_id already been completed?
         backend_evidence_id = _extract_evidence_id_from_s3_key(object_key)
         if backend_evidence_id:
             existing_record = metadata_store.get_evidence(backend_evidence_id)
-            if existing_record and existing_record.get('status') == 'processed':
-                tracker.record_error(ErrorType.DUPLICATE, f"Evidence already processed: {backend_evidence_id}")
+            if existing_record and existing_record.get('status') == 'completed':
+                tracker.record_error(ErrorType.DUPLICATE, f"Evidence already completed: {backend_evidence_id}")
                 tracker.log_summary()
                 return {
                     "status": "skipped",
@@ -239,7 +239,7 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                     "job_id": tracker.context.job_id
                 }
 
-        # Check 2: Has this file hash already been processed?
+        # Check 2: Has this file hash already been completed?
         # Calculate hash first
         with tracker.stage(ProcessingStage.HASH) as stage:
             file_hash = calculate_file_hash(local_path)
@@ -247,8 +247,8 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
             stage.add_metadata(hash_prefix=file_hash[:16])
 
         existing_by_hash = metadata_store.check_hash_exists(file_hash)
-        if existing_by_hash and existing_by_hash.get('status') == 'processed':
-            tracker.record_error(ErrorType.DUPLICATE, f"Hash already processed: {file_hash}")
+        if existing_by_hash and existing_by_hash.get('status') == 'completed':
+            tracker.record_error(ErrorType.DUPLICATE, f"Hash already completed: {file_hash}")
             tracker.log_summary()
             return {
                 "status": "skipped",
@@ -258,10 +258,10 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                 "job_id": tracker.context.job_id
             }
 
-        # Check 3: Has this S3 key already been processed?
+        # Check 3: Has this S3 key already been completed?
         existing_by_s3_key = metadata_store.check_s3_key_exists(object_key)
-        if existing_by_s3_key and existing_by_s3_key.get('status') == 'processed':
-            tracker.record_error(ErrorType.DUPLICATE, f"S3 key already processed: {existing_by_s3_key.get('evidence_id')}")
+        if existing_by_s3_key and existing_by_s3_key.get('status') == 'completed':
+            tracker.record_error(ErrorType.DUPLICATE, f"S3 key already completed: {existing_by_s3_key.get('evidence_id')}")
             tracker.log_summary()
             return {
                 "status": "skipped",
@@ -482,7 +482,7 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
             updated = metadata_store.update_evidence_with_hash(
                 evidence_id=backend_evidence_id,
                 file_hash=file_hash,
-                status="processed",
+                status="completed",
                 ai_summary=ai_summary,
                 article_840_tags=article_840_tags,
                 qdrant_id=chunk_ids[0] if chunk_ids else None,
@@ -491,10 +491,10 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                 s3_key=object_key,
                 file_type=source_type,
                 content=full_content,
-                skip_if_processed=True  # Idempotency: skip if already processed
+                skip_if_processed=True  # Idempotency: skip if already completed
             )
             if updated:
-                tracker.log(f"Updated Backend evidence: {backend_evidence_id} → processed")
+                tracker.log(f"Updated Backend evidence: {backend_evidence_id} → completed")
             else:
                 tracker.record_error(ErrorType.DUPLICATE, f"Evidence {backend_evidence_id} already processed (concurrent)")
                 tracker.log_summary()
@@ -541,7 +541,7 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         tracker.log_summary()
 
         return {
-            "status": "processed",
+            "status": "completed",
             "file": object_key,
             "parser_type": parser.__class__.__name__,
             "bucket": bucket_name,

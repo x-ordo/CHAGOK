@@ -236,7 +236,7 @@ class TestIdempotencyMetadataStore:
         result = metadata_store.update_evidence_with_hash(
             evidence_id="ev_123",
             file_hash="hash456",
-            status="processed",
+            status="completed",
             ai_summary="Test summary",
             skip_if_processed=True
         )
@@ -256,7 +256,7 @@ class TestIdempotencyMetadataStore:
         result = metadata_store.update_evidence_with_hash(
             evidence_id="ev_123",
             file_hash="hash456",
-            status="processed",
+            status="completed",
             skip_if_processed=True
         )
 
@@ -267,7 +267,7 @@ class TestIdempotencyMetadataStore:
         result = metadata_store.update_evidence_with_hash(
             evidence_id="ev_123",
             file_hash="hash456",
-            status="processed",
+            status="completed",
             skip_if_processed=False  # Force update
         )
 

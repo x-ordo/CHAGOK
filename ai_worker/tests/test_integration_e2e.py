@@ -113,7 +113,7 @@ class TestPDFProcessingE2E:
         assert len(result_body["results"]) == 1
 
         processing_result = result_body["results"][0]
-        assert processing_result["status"] == "processed"
+        assert processing_result["status"] == "completed"
         assert processing_result["file"] == "cases/case123/document.pdf"
         assert "parser_type" in processing_result  # parser_type 존재 확인
         assert processing_result["file_id"].startswith("file_")
@@ -251,7 +251,7 @@ class TestKakaoTalkProcessingE2E:
         assert len(result_body["results"]) == 1
 
         processing_result = result_body["results"][0]
-        assert processing_result["status"] == "processed"
+        assert processing_result["status"] == "completed"
         assert processing_result["file"] == "cases/case456/chat.txt"
         assert "parser_type" in processing_result  # parser_type 존재 확인
         assert processing_result["file_id"].startswith("file_")
@@ -373,7 +373,7 @@ class TestImageProcessingE2E:
         assert len(result_body["results"]) == 1
 
         processing_result = result_body["results"][0]
-        assert processing_result["status"] == "processed"
+        assert processing_result["status"] == "completed"
         assert processing_result["file"] == "cases/case789/evidence.jpg"
         assert "parser_type" in processing_result  # parser_type 존재 확인
         assert processing_result["file_id"].startswith("file_")
@@ -499,7 +499,7 @@ class TestMultiFileProcessingE2E:
 
         # 각 파일이 독립적으로 처리되었는지 확인
         for i, res in enumerate(result_body["results"], 1):
-            assert res["status"] == "processed"
+            assert res["status"] == "completed"
             assert res["file_id"].startswith("file_")
 
         # 각 컴포넌트가 3번씩 호출되었는지 검증

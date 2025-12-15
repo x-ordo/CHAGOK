@@ -161,7 +161,7 @@ class MetadataStore:
     def update_evidence_status(
         self,
         evidence_id: str,
-        status: str = "processed",
+        status: str = "completed",
         ai_summary: Optional[str] = None,
         article_840_tags: Optional[dict] = None,
         qdrant_id: Optional[str] = None,
@@ -176,13 +176,13 @@ class MetadataStore:
 
         AI Worker가 파일 처리 완료 후 Backend 레코드를 UPDATE합니다.
         Backend보다 AI Worker가 먼저 실행될 수 있으므로, 필수 필드도 함께 저장합니다.
-        - status: pending → processed
+        - status: pending → completed
         - 분석 결과 필드 추가 (ai_summary, article_840_tags, qdrant_id)
         - 필수 필드 추가 (case_id, filename, s3_key) - Backend가 늦게 저장해도 조회 가능
 
         Args:
             evidence_id: Backend에서 생성한 evidence ID (예: ev_abc123)
-            status: 새 상태 (기본값: "processed")
+            status: 새 상태 (기본값: "completed")
             ai_summary: AI 생성 요약
             article_840_tags: 민법 840조 태그 딕셔너리
             qdrant_id: Qdrant에 저장된 벡터 ID
@@ -430,7 +430,7 @@ class MetadataStore:
         self,
         evidence_id: str,
         file_hash: str,
-        status: str = "processed",
+        status: str = "completed",
         ai_summary: Optional[str] = None,
         article_840_tags: Optional[dict] = None,
         qdrant_id: Optional[str] = None,
@@ -515,10 +515,10 @@ class MetadataStore:
                 "ExpressionAttributeValues": expression_values
             }
 
-            # Add condition to skip if already processed
+            # Add condition to skip if already completed
             if skip_if_processed:
-                update_kwargs["ConditionExpression"] = "#status <> :processed_status"
-                expression_values[":processed_status"] = {"S": "processed"}
+                update_kwargs["ConditionExpression"] = "#status <> :completed_status"
+                expression_values[":completed_status"] = {"S": "completed"}
 
             self.client.update_item(**update_kwargs)
             logger.info(f"Updated evidence: {evidence_id} → {status} (hash: {file_hash[:16]}...)")

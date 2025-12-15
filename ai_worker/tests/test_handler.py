@@ -45,7 +45,7 @@ class TestS3EventParsing:
 
         # When
         with patch('handler.route_and_process') as mock_process:
-            mock_process.return_value = {"status": "processed"}
+            mock_process.return_value = {"status": "completed"}
             result = handle(event, context)
 
         # Then
@@ -76,7 +76,7 @@ class TestS3EventParsing:
 
         # When
         with patch('handler.route_and_process') as mock_process:
-            mock_process.return_value = {"status": "processed"}
+            mock_process.return_value = {"status": "completed"}
             handle(event, context)
 
         # Then: URL 디코딩된 키로 호출되어야 함 (+ → 공백)
@@ -104,7 +104,7 @@ class TestS3EventParsing:
 
         # When
         with patch('handler.route_and_process') as mock_process:
-            mock_process.return_value = {"status": "processed"}
+            mock_process.return_value = {"status": "completed"}
             handle(event, context)
 
         # Then: URL 디코딩된 키로 호출되어야 함 (%20 → 공백)
@@ -155,7 +155,7 @@ class TestS3EventParsing:
 
         # When
         with patch('handler.route_and_process') as mock_process:
-            mock_process.return_value = {"status": "processed"}
+            mock_process.return_value = {"status": "completed"}
             result = handle(event, context)
 
         # Then
@@ -333,7 +333,7 @@ class TestFileProcessing:
         # Then: 파서가 실행되었는지 확인
         mock_parser_instance.parse.assert_called_once()
         # 파싱 결과가 반환에 포함되는지 확인
-        assert result["status"] == "processed"
+        assert result["status"] == "completed"
 
 
 class TestErrorHandling:
@@ -476,7 +476,7 @@ class TestStorageAndAnalysisIntegration:
         # mock_metadata_instance.save_file_if_not_exists.assert_called_once()
         # file_id는 동적으로 생성되므로 패턴만 확인
         assert result["file_id"].startswith("file_")
-        assert result["status"] == "processed"
+        assert result["status"] == "completed"
 
     def test_index_all_chunks_to_vector_store(self):
         """
@@ -567,7 +567,7 @@ class TestStorageAndAnalysisIntegration:
             # Then
             assert mock_vector_instance.add_chunk_with_metadata.call_count == 3
             assert result["file_id"].startswith("file_")
-            assert result["status"] == "processed"
+            assert result["status"] == "completed"
 
     @patch('handler.boto3')
     @patch('handler.MetadataStore')
@@ -749,7 +749,7 @@ class TestStorageAndAnalysisIntegration:
                     result = route_and_process("complete-bucket", "complete.pdf")
 
         # Then
-        assert result["status"] == "processed"
+        assert result["status"] == "completed"
         assert result["file"] == "complete.pdf"
         assert result["file_id"].startswith("file_")
         assert result["chunks_indexed"] == 2
