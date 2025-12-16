@@ -531,6 +531,32 @@ class MetadataStore:
             logger.error(f"DynamoDB update_item error for {evidence_id}: {e}")
             raise
 
+    def get_evidence(self, evidence_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Evidence ID로 레코드 조회 (raw dict 반환)
+
+        Args:
+            evidence_id: Evidence ID
+
+        Returns:
+            Dict with evidence data or None if not found
+        """
+        try:
+            response = self.client.get_item(
+                TableName=self.table_name,
+                Key={'evidence_id': {'S': evidence_id}}
+            )
+
+            item = response.get('Item')
+            if not item:
+                return None
+
+            return self._deserialize_item(item)
+
+        except ClientError as e:
+            logger.error(f"DynamoDB get_item error for evidence {evidence_id}: {e}")
+            return None
+
     def get_file(self, file_id: str) -> Optional[EvidenceFile]:
         """
         파일 ID로 조회
