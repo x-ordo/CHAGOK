@@ -131,6 +131,147 @@ class PdfGenerator:
         # Generate PDF
         return self._generate_pdf(html_content, css_content)
 
+    def generate_from_lines(
+        self,
+        lines: List[Dict[str, Any]],
+        case_title: Optional[str] = None
+    ) -> bytes:
+        """
+        Generate PDF from line-based template with precise formatting.
+
+        Args:
+            lines: List of line dictionaries with structure:
+                {
+                    "line": int,          # Line number
+                    "text": str,          # Text content
+                    "section": str,       # Optional section name
+                    "format": {
+                        "align": "left|center|right",
+                        "indent": int,    # Characters to indent
+                        "bold": bool,
+                        "font_size": int,
+                        "spacing_before": int,
+                        "spacing_after": int
+                    }
+                }
+            case_title: Optional case title for document header
+
+        Returns:
+            bytes: PDF file content
+        """
+        html_content = self._render_lines_to_html(lines, case_title)
+        css_content = self._get_lines_css()
+        return self._generate_pdf(html_content, css_content)
+
+    def _render_lines_to_html(
+        self,
+        lines: List[Dict[str, Any]],
+        case_title: Optional[str] = None
+    ) -> str:
+        """Render line-based template to HTML."""
+        lines_html = ""
+
+        for line_data in lines:
+            text = line_data.get("text", "")
+            fmt = line_data.get("format", {})
+
+            # Build inline styles
+            styles = []
+
+            # Alignment
+            align = fmt.get("align", "left")
+            styles.append(f"text-align: {align}")
+
+            # Indent (convert characters to approximate em)
+            indent = fmt.get("indent", 0)
+            if indent > 0:
+                styles.append(f"padding-left: {indent * 0.6}em")
+
+            # Font size
+            font_size = fmt.get("font_size", 12)
+            styles.append(f"font-size: {font_size}pt")
+
+            # Bold
+            if fmt.get("bold", False):
+                styles.append("font-weight: bold")
+
+            # Spacing
+            spacing_before = fmt.get("spacing_before", 0)
+            spacing_after = fmt.get("spacing_after", 0)
+            if spacing_before > 0:
+                styles.append(f"margin-top: {spacing_before}em")
+            if spacing_after > 0:
+                styles.append(f"margin-bottom: {spacing_after}em")
+
+            style_str = "; ".join(styles)
+
+            # Handle empty lines
+            if not text:
+                lines_html += f'<p style="{style_str}">&nbsp;</p>\n'
+            else:
+                # Escape HTML characters
+                escaped_text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                lines_html += f'<p style="{style_str}">{escaped_text}</p>\n'
+
+        case_title_html = ""
+        if case_title:
+            case_title_html = f'<div class="case-title">사건: {case_title}</div>'
+
+        return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>법률 문서 초안</title>
+</head>
+<body>
+    {case_title_html}
+    <div class="content">
+        {lines_html}
+    </div>
+    <div class="disclaimer">
+        ※ 본 문서는 AI가 생성한 초안이며, 변호사의 검토 및 수정이 필요합니다.
+    </div>
+</body>
+</html>"""
+
+    def _get_lines_css(self) -> str:
+        """Get CSS for line-based PDF generation."""
+        return """
+@page {
+    size: A4 portrait;
+    margin: 25mm 20mm;
+
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-size: 9pt;
+    }
+}
+
+body {
+    font-family: 'Noto Serif CJK KR', 'Batang', serif;
+    font-size: 12pt;
+    line-height: 1.6;
+}
+
+.case-title {
+    text-align: right;
+    font-size: 10pt;
+    margin-bottom: 15mm;
+}
+
+.content p {
+    margin: 0;
+    padding: 0;
+}
+
+.disclaimer {
+    margin-top: 30mm;
+    text-align: center;
+    font-style: italic;
+    font-size: 9pt;
+}
+"""
+
     def generate_from_draft_text(
         self,
         draft_text: str,
@@ -411,3 +552,21 @@ def generate_pdf_from_text(
     return generator.generate_from_draft_text(
         draft_text, case_title, citations, generated_at
     )
+
+
+def generate_pdf_from_lines(
+    lines: List[Dict[str, Any]],
+    case_title: Optional[str] = None
+) -> bytes:
+    """
+    Convenience function to generate PDF from line-based template.
+
+    Args:
+        lines: List of line dictionaries with text and format info
+        case_title: Optional case title
+
+    Returns:
+        bytes: PDF file content
+    """
+    generator = PdfGenerator()
+    return generator.generate_from_lines(lines, case_title)

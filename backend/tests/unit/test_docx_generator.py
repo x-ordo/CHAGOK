@@ -492,3 +492,163 @@ class TestDocxGeneratorError:
         error = DocxGeneratorError("test error")
         assert isinstance(error, Exception)
         assert str(error) == "test error"
+
+
+@pytest.mark.skipif(not DOCX_AVAILABLE, reason="python-docx not installed")
+class TestGenerateFromLines:
+    """Unit tests for generate_from_lines method (line-based template)"""
+
+    def test_generate_from_lines_basic(self):
+        """Generates DOCX from basic line-based template"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "소    장", "format": {"align": "center", "bold": True, "font_size": 18}},
+            {"line": 2, "text": ""},
+            {"line": 3, "text": "원    고  김영희", "format": {"indent": 0}},
+        ]
+
+        result = generator.generate_from_lines(lines)
+
+        assert isinstance(result, bytes)
+        assert len(result) > 0
+        assert result[:2] == b'PK'  # Valid DOCX
+
+    def test_generate_from_lines_with_alignment(self):
+        """Applies text alignment from format"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "가운데 정렬", "format": {"align": "center"}},
+            {"line": 2, "text": "왼쪽 정렬", "format": {"align": "left"}},
+            {"line": 3, "text": "오른쪽 정렬", "format": {"align": "right"}},
+        ]
+
+        result = generator.generate_from_lines(lines)
+
+        assert isinstance(result, bytes)
+        assert len(result) > 0
+
+    def test_generate_from_lines_with_indent(self):
+        """Applies indentation from format"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "들여쓰기 없음", "format": {"indent": 0}},
+            {"line": 2, "text": "10칸 들여쓰기", "format": {"indent": 10}},
+            {"line": 3, "text": "20칸 들여쓰기", "format": {"indent": 20}},
+        ]
+
+        result = generator.generate_from_lines(lines)
+
+        assert isinstance(result, bytes)
+        assert len(result) > 0
+
+    def test_generate_from_lines_with_bold(self):
+        """Applies bold formatting"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "굵은 글씨", "format": {"bold": True}},
+            {"line": 2, "text": "일반 글씨", "format": {"bold": False}},
+            {"line": 3, "text": "기본값 (굵지 않음)"},
+        ]
+
+        result = generator.generate_from_lines(lines)
+
+        assert isinstance(result, bytes)
+
+    def test_generate_from_lines_with_font_size(self):
+        """Applies font size from format"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "제목 (18pt)", "format": {"font_size": 18}},
+            {"line": 2, "text": "본문 (12pt)", "format": {"font_size": 12}},
+            {"line": 3, "text": "작은 글씨 (10pt)", "format": {"font_size": 10}},
+        ]
+
+        result = generator.generate_from_lines(lines)
+
+        assert isinstance(result, bytes)
+
+    def test_generate_from_lines_with_spacing(self):
+        """Applies spacing before/after from format"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "첫 줄", "format": {"spacing_after": 2}},
+            {"line": 2, "text": "두 번째 줄", "format": {"spacing_before": 1, "spacing_after": 1}},
+            {"line": 3, "text": "세 번째 줄", "format": {"spacing_before": 2}},
+        ]
+
+        result = generator.generate_from_lines(lines)
+
+        assert isinstance(result, bytes)
+
+    def test_generate_from_lines_empty_lines(self):
+        """Handles empty text lines (for spacing)"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "첫 줄"},
+            {"line": 2, "text": ""},  # Empty line for spacing
+            {"line": 3, "text": ""},  # Another empty line
+            {"line": 4, "text": "세 번째 줄"},
+        ]
+
+        result = generator.generate_from_lines(lines)
+
+        assert isinstance(result, bytes)
+
+    def test_generate_from_lines_with_case_title(self):
+        """Includes case title in document"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "소    장", "format": {"align": "center", "bold": True}},
+        ]
+
+        result = generator.generate_from_lines(lines, case_title="2025드단12345 이혼")
+
+        assert isinstance(result, bytes)
+
+    def test_generate_from_lines_full_petition(self):
+        """Generates complete petition from line-based template"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "소    장", "section": "header", "format": {"align": "center", "bold": True, "font_size": 18}},
+            {"line": 2, "text": "", "format": {"spacing_after": 2}},
+            {"line": 3, "text": "원    고  김영희", "section": "parties", "format": {"indent": 0}},
+            {"line": 4, "text": "         서울특별시 강남구 테헤란로 123", "section": "parties", "format": {"indent": 10}},
+            {"line": 5, "text": "", "format": {"spacing_after": 1}},
+            {"line": 6, "text": "피    고  이철수", "section": "parties", "format": {"indent": 0}},
+            {"line": 7, "text": "", "format": {"spacing_after": 2}},
+            {"line": 8, "text": "청  구  취  지", "section": "claims", "format": {"align": "center", "bold": True}},
+            {"line": 9, "text": "1. 원고와 피고는 이혼한다.", "section": "claims", "format": {"indent": 0}},
+            {"line": 10, "text": "", "format": {"spacing_after": 2}},
+            {"line": 11, "text": "위와 같이 청구합니다.", "section": "footer", "format": {"align": "right"}},
+        ]
+
+        result = generator.generate_from_lines(lines, case_title="이혼소송")
+
+        assert isinstance(result, bytes)
+        assert len(result) > 0
+
+    def test_generate_from_lines_no_format(self):
+        """Handles lines without format field"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "포맷 없는 줄 1"},
+            {"line": 2, "text": "포맷 없는 줄 2"},
+        ]
+
+        result = generator.generate_from_lines(lines)
+
+        assert isinstance(result, bytes)
+
+    def test_generate_from_lines_mixed_format(self):
+        """Handles mix of formatted and unformatted lines"""
+        generator = DocxGenerator()
+        lines = [
+            {"line": 1, "text": "제목", "format": {"align": "center", "bold": True, "font_size": 18}},
+            {"line": 2, "text": "포맷 없음"},
+            {"line": 3, "text": "일부 포맷", "format": {"bold": True}},
+            {"line": 4, "text": ""},
+        ]
+
+        result = generator.generate_from_lines(lines)
+
+        assert isinstance(result, bytes)

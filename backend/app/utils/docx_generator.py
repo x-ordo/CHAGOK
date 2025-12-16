@@ -127,6 +127,111 @@ class DocxGenerator:
         buffer.seek(0)
         return buffer.getvalue()
 
+    def generate_from_lines(
+        self,
+        lines: List[Dict[str, Any]],
+        case_title: Optional[str] = None
+    ) -> bytes:
+        """
+        Generate DOCX from line-based template with precise formatting.
+
+        Args:
+            lines: List of line dictionaries with structure:
+                {
+                    "line": int,          # Line number
+                    "text": str,          # Text content
+                    "section": str,       # Optional section name
+                    "format": {
+                        "align": "left|center|right",
+                        "indent": int,    # Characters to indent
+                        "bold": bool,
+                        "font_size": int,
+                        "spacing_before": int,
+                        "spacing_after": int
+                    }
+                }
+            case_title: Optional case title for document header
+
+        Returns:
+            bytes: DOCX file content
+        """
+        self.doc = Document()
+        self._setup_page_format()
+        self._setup_styles()
+
+        # Add case title if provided
+        if case_title:
+            p = self.doc.add_paragraph()
+            p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            run = p.add_run(f"사건: {case_title}")
+            run.font.size = Pt(10)
+            self._set_run_korean_font(run)
+            self.doc.add_paragraph()
+
+        # Process each line
+        for line_data in lines:
+            text = line_data.get("text", "")
+            fmt = line_data.get("format", {})
+
+            # Create paragraph
+            p = self.doc.add_paragraph()
+
+            # Apply alignment
+            align = fmt.get("align", "left")
+            if align == "center":
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            elif align == "right":
+                p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            else:
+                p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+            # Apply indent (convert character count to approximate points)
+            indent = fmt.get("indent", 0)
+            if indent > 0:
+                # Approximate: 1 character = 12pt width (for Korean monospace)
+                p.paragraph_format.left_indent = Pt(indent * 6)
+
+            # Apply spacing
+            spacing_before = fmt.get("spacing_before", 0)
+            spacing_after = fmt.get("spacing_after", 0)
+            if spacing_before > 0:
+                p.paragraph_format.space_before = Pt(spacing_before * 12)
+            if spacing_after > 0:
+                p.paragraph_format.space_after = Pt(spacing_after * 12)
+
+            # Add text with formatting
+            if text:
+                run = p.add_run(text)
+
+                # Apply bold
+                if fmt.get("bold", False):
+                    run.bold = True
+
+                # Apply font size
+                font_size = fmt.get("font_size", self.FONT_SIZE_BODY)
+                run.font.size = Pt(font_size)
+
+                # Set Korean font
+                self._set_run_korean_font(run)
+
+        # Add disclaimer at the end
+        self.doc.add_paragraph()
+        disclaimer = self.doc.add_paragraph(
+            "※ 본 문서는 AI가 생성한 초안이며, "
+            "변호사의 검토 및 수정이 필요합니다."
+        )
+        disclaimer.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        for run in disclaimer.runs:
+            run.italic = True
+            run.font.size = Pt(9)
+            self._set_run_korean_font(run)
+
+        # Save to bytes
+        buffer = BytesIO()
+        self.doc.save(buffer)
+        buffer.seek(0)
+        return buffer.getvalue()
+
     def generate_from_draft_text(
         self,
         draft_text: str,
@@ -418,3 +523,21 @@ def generate_docx_from_text(
     return generator.generate_from_draft_text(
         draft_text, case_title, citations, generated_at
     )
+
+
+def generate_docx_from_lines(
+    lines: List[Dict[str, Any]],
+    case_title: Optional[str] = None
+) -> bytes:
+    """
+    Convenience function to generate DOCX from line-based template.
+
+    Args:
+        lines: List of line dictionaries with text and format info
+        case_title: Optional case title
+
+    Returns:
+        bytes: DOCX file content
+    """
+    generator = DocxGenerator()
+    return generator.generate_from_lines(lines, case_title)
