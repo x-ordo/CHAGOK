@@ -21,7 +21,7 @@ import {
 } from '@/lib/api/evidence';
 import { getCase, Case, ApiCase } from '@/lib/api/cases';
 import EditCaseModal from '@/components/cases/EditCaseModal';
-import { generateDraftPreview, DraftCitation as ApiDraftCitation } from '@/lib/api/draft';
+import { generateDraftPreview, generateLineBasedDraftPreview, DraftCitation as ApiDraftCitation } from '@/lib/api/draft';
 import { mapApiEvidenceToEvidence, mapApiEvidenceListToEvidence } from '@/lib/utils/evidenceMapper';
 
 /**
@@ -302,6 +302,23 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
         setDraftError(null);
 
         try {
+            // 먼저 라인 기반 API 시도 (법원 공식 양식)
+            const lineBasedResponse = await generateLineBasedDraftPreview(caseId, {
+                template_type: '이혼소장_라인',
+                case_data: {},
+            });
+
+            if (lineBasedResponse.data) {
+                // 라인 기반 API 성공 - text_preview 사용
+                setDraftContent(lineBasedResponse.data.text_preview);
+                setDraftCitations([]); // 라인 기반에서는 별도 citation 처리
+                setHasGeneratedDraft(true);
+                logger.info('Line-based draft generated successfully');
+                return;
+            }
+
+            // 라인 기반 실패 시 기존 API로 fallback
+            logger.info('Falling back to hierarchical draft API');
             const response = await generateDraftPreview(caseId, {
                 sections: ['청구취지', '청구원인'],
             });
