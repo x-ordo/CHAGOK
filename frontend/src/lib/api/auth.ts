@@ -134,3 +134,14 @@ export async function getCurrentUser(): Promise<ApiResponse<UserInfo>> {
     method: 'GET',
   });
 }
+
+/**
+ * Refresh access token using refresh token from HTTP-only cookie
+ * Backend /auth/refresh endpoint reads refresh_token cookie and issues new access_token
+ * (#311: Auto token refresh implementation)
+ */
+export async function refreshAccessToken(): Promise<ApiResponse<LoginResponse>> {
+  return apiRequest<LoginResponse>('/auth/refresh', {
+    method: 'POST',
+  });
+}

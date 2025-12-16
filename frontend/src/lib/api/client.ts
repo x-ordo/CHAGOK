@@ -21,6 +21,20 @@ export const API_BASE_URL =
 // API prefix for all endpoints (matches backend router prefix)
 const API_PREFIX = '/api';
 
+// #311: Token refresh state management
+// Prevents multiple simultaneous refresh attempts
+let isRefreshing = false;
+let refreshSubscribers: ((success: boolean) => void)[] = [];
+
+function subscribeTokenRefresh(cb: (success: boolean) => void) {
+  refreshSubscribers.push(cb);
+}
+
+function onRefreshComplete(success: boolean) {
+  refreshSubscribers.forEach(cb => cb(success));
+  refreshSubscribers = [];
+}
+
 export interface ApiResponse<T> {
   data?: T;
   error?: string;
@@ -71,23 +85,63 @@ export async function apiRequest<T>(
       const errorData = data as { error?: { message?: string }; detail?: string } | undefined;
       const errorMessage = errorData?.error?.message || errorData?.detail || 'An error occurred';
 
-      // Handle 401 Unauthorized - redirect to login
+      // Handle 401 Unauthorized - attempt token refresh first (#311)
       if (response.status === 401 && typeof window !== 'undefined') {
-        // Clear tokens
+        const isAuthCheck = endpoint.includes('/auth/me');
+        const isAuthPage = window.location.pathname.startsWith('/login') ||
+                           window.location.pathname.startsWith('/signup');
+        const isLandingPage = window.location.pathname === '/';
+        const isRefreshEndpoint = endpoint.includes('/auth/refresh');
+
+        // Attempt token refresh for protected endpoints (not auth check, auth pages, landing, or refresh itself)
+        if (!isAuthCheck && !isAuthPage && !isLandingPage && !isRefreshEndpoint) {
+          // If already refreshing, wait for the result
+          if (isRefreshing) {
+            return new Promise<ApiResponse<T>>((resolve) => {
+              subscribeTokenRefresh(async (success) => {
+                if (success) {
+                  // Retry original request after successful refresh
+                  resolve(apiRequest<T>(endpoint, options));
+                } else {
+                  resolve({ error: errorMessage, status: 401 });
+                }
+              });
+            });
+          }
+
+          // Start refresh process
+          isRefreshing = true;
+
+          try {
+            // Call /auth/refresh directly to avoid circular import
+            const refreshUrl = `${API_BASE_URL}${API_PREFIX}/auth/refresh`;
+            const refreshResponse = await fetch(refreshUrl, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (refreshResponse.ok) {
+              isRefreshing = false;
+              onRefreshComplete(true);
+              // Retry original request with new token
+              return apiRequest<T>(endpoint, options);
+            }
+          } catch {
+            // Refresh failed, fall through to logout
+          }
+
+          isRefreshing = false;
+          onRefreshComplete(false);
+        }
+
+        // Clear cached data
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('userCache');
-        
-        // Don't redirect if:
-        // 1. Auth check (/auth/me)
-        // 2. Already on auth pages
-        // 3. On Landing Page (Root)
-        const isAuthCheck = endpoint.includes('/auth/me');
-        const isAuthPage = window.location.pathname.startsWith('/login') || 
-                           window.location.pathname.startsWith('/signup');
-        const isLandingPage = window.location.pathname === '/';
 
+        // Redirect to login if not on excluded pages
         if (!isAuthCheck && !isAuthPage && !isLandingPage) {
           window.location.href = '/login?expired=true';
         }
