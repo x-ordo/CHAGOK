@@ -214,13 +214,21 @@ export default function LawyerDashboardPage() {
           </div>
           <div className="divide-y divide-gray-200 dark:divide-neutral-700">
             {data?.recent_cases && data.recent_cases.length > 0 ? (
-              data.recent_cases.map((caseItem) => (
-                <RecentCaseItem
-                  key={caseItem.id}
-                  {...caseItem}
-                  onClick={() => router.push(getCaseDetailPath('lawyer', caseItem.id))}
-                />
-              ))
+              data.recent_cases.map((caseItem, idx) => {
+                // Debug: log if id is missing
+                if (!caseItem.id) {
+                  console.error(`[Dashboard] recent_cases[${idx}] missing id:`, caseItem);
+                }
+                const targetPath = getCaseDetailPath('lawyer', caseItem.id);
+                console.log(`[Dashboard] Case "${caseItem.title}" -> ${targetPath}`);
+                return (
+                  <RecentCaseItem
+                    key={caseItem.id || idx}
+                    {...caseItem}
+                    onClick={() => router.push(targetPath)}
+                  />
+                );
+              })
             ) : (
               <p className="text-center text-gray-500 dark:text-gray-400 py-8">
                 최근 케이스가 없습니다.

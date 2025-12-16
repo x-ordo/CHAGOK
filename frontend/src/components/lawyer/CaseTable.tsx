@@ -141,9 +141,11 @@ export function CaseTable({
           </tr>
         </thead>
         <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
-          {cases.map((caseItem) => (
+          {cases.map((caseItem, idx) => {
+            const detailPath = getLawyerCasePath('detail', caseItem.id);
+            return (
             <tr
-              key={caseItem.id}
+              key={caseItem.id || idx}
               className={`hover:bg-gray-50 dark:hover:bg-neutral-700 ${selectedIds.includes(caseItem.id) ? 'bg-blue-50 dark:bg-neutral-700' : ''}`}
             >
               <td className="px-4 py-3">
@@ -156,7 +158,8 @@ export function CaseTable({
               </td>
               <td className="px-4 py-3">
                 <Link
-                  href={getLawyerCasePath('detail', caseItem.id)}
+                  href={detailPath}
+                  prefetch={false}
                   className="font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
                 >
                   {caseItem.title}
@@ -196,6 +199,7 @@ export function CaseTable({
                 <div className="flex items-center gap-1">
                   <Link
                     href={getLawyerCasePath('procedure', caseItem.id)}
+                    prefetch={false}
                     className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-neutral-700 rounded transition-colors"
                     title="절차 진행"
                   >
@@ -205,6 +209,7 @@ export function CaseTable({
                   </Link>
                   <Link
                     href={getLawyerCasePath('assets', caseItem.id)}
+                    prefetch={false}
                     className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-neutral-700 rounded transition-colors"
                     title="재산분할"
                   >
@@ -227,7 +232,8 @@ export function CaseTable({
                 </div>
               </td>
             </tr>
-          ))}
+          );
+          })}
           {cases.length === 0 && (
             <tr>
               <td colSpan={9} className="px-4 py-8 text-center text-[var(--color-text-secondary)]">

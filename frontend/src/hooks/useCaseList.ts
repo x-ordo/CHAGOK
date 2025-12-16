@@ -188,21 +188,27 @@ export function useCaseList(): UseCaseListReturn {
       const data = response.data;
 
       // Map API response to frontend format
-      const mappedCases: CaseItem[] = data.items.map((item) => ({
-        id: item.id,
-        title: item.title,
-        clientName: item.client_name,
-        status: item.status,
-        description: item.description,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at,
-        evidenceCount: item.evidence_count || 0,
-        memberCount: item.member_count || 0,
-        progress: item.progress || 0,
-        daysSinceUpdate: item.days_since_update || 0,
-        ownerName: item.owner_name,
-        lastActivity: item.last_activity,
-      }));
+      const mappedCases: CaseItem[] = data.items.map((item) => {
+        // Debug: log if id is missing from API response
+        if (!item.id) {
+          console.error('[useCaseList] API returned item without id:', item);
+        }
+        return {
+          id: item.id,
+          title: item.title,
+          clientName: item.client_name,
+          status: item.status,
+          description: item.description,
+          createdAt: item.created_at,
+          updatedAt: item.updated_at,
+          evidenceCount: item.evidence_count || 0,
+          memberCount: item.member_count || 0,
+          progress: item.progress || 0,
+          daysSinceUpdate: item.days_since_update || 0,
+          ownerName: item.owner_name,
+          lastActivity: item.last_activity,
+        };
+      });
 
       setCases(mappedCases);
       setPagination((prev) => ({

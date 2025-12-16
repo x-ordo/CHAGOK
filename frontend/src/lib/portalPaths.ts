@@ -36,6 +36,14 @@ function buildCasePath(
 ): string {
   const basePath =
     SECTION_BASE_PATH[role][section] ?? SECTION_BASE_PATH[role].detail ?? '/lawyer/cases/detail';
+
+  // Validate caseId to prevent invalid URLs
+  if (!caseId || caseId === 'undefined' || caseId === 'null') {
+    console.error('[portalPaths] Invalid caseId:', caseId);
+    // Return base path without query params to trigger the error state in detail page
+    return basePath;
+  }
+
   const params = new URLSearchParams();
   params.set('caseId', caseId);
 

@@ -49,6 +49,11 @@ export function CaseCard({
   onSelect,
   onAction,
 }: CaseCardProps) {
+  // Debug: log if id is missing
+  if (!id) {
+    console.error('[CaseCard] Missing id for case:', title);
+  }
+
   const statusColor = statusColors[status] || statusColors.active;
   const statusLabel = statusLabels[status] || status;
 

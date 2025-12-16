@@ -1,14 +1,36 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import CaseDetailClient from '@/components/case/CaseDetailClient';
 
 function LawyerCaseDetailContent() {
   const searchParams = useSearchParams();
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Wait for hydration to complete before checking caseId
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   const caseId = searchParams.get('caseId');
   const returnUrl = searchParams.get('returnUrl');
+
+  // Show loading while hydrating (prevents flash of error message)
+  if (!isHydrated) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+
+  // Debug log to help identify the issue
+  if (!caseId) {
+    console.error('[CaseDetailPage] caseId is null. URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
+    console.error('[CaseDetailPage] searchParams:', searchParams.toString());
+  }
 
   if (!caseId) {
     return (
