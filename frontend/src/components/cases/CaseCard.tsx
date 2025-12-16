@@ -97,7 +97,7 @@ export default function CaseCard({ caseData, href, onStatusChange, onDelete }: C
   const resolvedHref = href ?? getCaseDetailPath('lawyer', caseData.id);
 
   return (
-    <Link href={resolvedHref}>
+    <Link href={resolvedHref} prefetch={false}>
       <div className="card p-6 h-full flex flex-col justify-between group cursor-pointer bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary" style={{ position: 'relative', zIndex: 1 }}>
 
         {/* Content wrapper */}
