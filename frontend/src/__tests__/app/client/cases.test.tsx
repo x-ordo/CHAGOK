@@ -160,14 +160,10 @@ describe('Client Cases Page', () => {
     test('should render case cards as links', async () => {
       render(<ClientCasesPage />);
 
-      // Dynamic route pattern: /client/cases/{id} (not /client/cases/detail?caseId=xxx)
+      // Query parameter pattern: /client/cases/detail?caseId=xxx
       await waitFor(() => {
-        const links = document.querySelectorAll('a[href^="/client/cases/"]');
-        // Filter out any non-case links (e.g., /client/cases/detail or /client/cases/)
-        const caseLinks = Array.from(links).filter(
-          (link) => link.getAttribute('href')?.match(/^\/client\/cases\/[^/]+$/)
-        );
-        expect(caseLinks.length).toBe(3);
+        const links = document.querySelectorAll('a[href^="/client/cases/detail?caseId="]');
+        expect(links.length).toBe(3);
       });
     });
 

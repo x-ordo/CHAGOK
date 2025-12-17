@@ -13,23 +13,23 @@ interface CasePathOptions {
 }
 
 /**
- * Dynamic route patterns for case pages.
- * Uses /cases/{id} format instead of /cases/detail?caseId=xxx
- * to work properly with CloudFront static hosting.
+ * Base paths for case pages using query parameters.
+ * Static hosting (CloudFront + S3) requires pre-built pages,
+ * so we use /cases/detail?caseId=xxx format instead of /cases/{id}
  */
-const SECTION_PATTERNS: Record<PortalRole, Partial<Record<CaseSection, string>>> = {
+const SECTION_BASE_PATH: Record<PortalRole, Partial<Record<CaseSection, string>>> = {
   lawyer: {
-    detail: '/lawyer/cases/:id',
-    procedure: '/lawyer/cases/:id/procedure',
-    assets: '/lawyer/cases/:id/assets',
-    relations: '/lawyer/cases/:id/relations',
-    relationship: '/lawyer/cases/:id/relationship',
+    detail: '/lawyer/cases/detail',
+    procedure: '/lawyer/cases/procedure',
+    assets: '/lawyer/cases/assets',
+    relations: '/lawyer/cases/relations',
+    relationship: '/lawyer/cases/relationship',
   },
   client: {
-    detail: '/client/cases/:id',
+    detail: '/client/cases/detail',
   },
   detective: {
-    detail: '/detective/cases/:id',
+    detail: '/detective/cases/detail',
   },
 };
 
@@ -39,29 +39,27 @@ function buildCasePath(
   caseId: string,
   options: CasePathOptions = {}
 ): string {
-  const pattern =
-    SECTION_PATTERNS[role][section] ?? SECTION_PATTERNS[role].detail ?? '/lawyer/cases/:id';
+  const basePath =
+    SECTION_BASE_PATH[role][section] ?? SECTION_BASE_PATH[role].detail ?? '/lawyer/cases/detail';
 
   // Validate caseId to prevent invalid URLs
   if (!caseId || caseId === 'undefined' || caseId === 'null') {
     console.error('[portalPaths] Invalid caseId:', caseId);
-    // Return fallback path
-    return `/${role}/cases`;
+    // Return base path without query params to trigger the error state in detail page
+    return basePath;
   }
 
-  // Replace :id placeholder with actual caseId
-  const basePath = pattern.replace(':id', caseId);
-
-  // Build query string for optional params (tab, returnUrl, etc.)
   const params = new URLSearchParams();
+  params.set('caseId', caseId);
+
+  // Preserve optional params (e.g., tab, returnUrl, view mode)
   Object.entries(options).forEach(([key, value]) => {
     if (value) {
       params.set(key, value);
     }
   });
 
-  const query = params.toString();
-  return query ? `${basePath}?${query}` : basePath;
+  return `${basePath}?${params.toString()}`;
 }
 
 /**
