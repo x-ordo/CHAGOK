@@ -1,0 +1,5 @@
+/**
+ * Copyright (c) 2024-2025 Legal Evidence Hub. All Rights Reserved.
+ * PROPRIETARY AND CONFIDENTIAL - Unauthorized copying prohibited.
+ * This file contains trade secrets and is protected by law.
+ */
