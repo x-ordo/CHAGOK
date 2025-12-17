@@ -37,6 +37,7 @@ from app.api import (  # noqa: E402
     lawyer_portal,
     lawyer_clients,
     lawyer_investigators,
+    license,
     messages,
     notifications,
     party,
@@ -285,6 +286,9 @@ app.include_router(precedent.router, prefix=API_PREFIX, tags=["Precedent"])
 
 # Admin 라우터 (User Management & Audit Log)
 app.include_router(admin.router, prefix=API_PREFIX, tags=["Admin"])
+
+# License & Code Tracking 라우터 (저작권 및 추적)
+app.include_router(license.router, prefix=API_PREFIX, tags=["License & Tracking"])
 
 # Notification 라우터 (Issue #295 - FR-007)
 app.include_router(notifications.router, prefix=API_PREFIX, tags=["Notifications"])

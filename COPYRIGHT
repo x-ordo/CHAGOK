@@ -1,0 +1,156 @@
+================================================================================
+                        COPYRIGHT NOTICE
+                     Legal Evidence Hub (LEH)
+================================================================================
+
+Copyright (c) 2024-2025 Legal Evidence Hub
+All Rights Reserved.
+
+================================================================================
+                        INTELLECTUAL PROPERTY
+================================================================================
+
+This software and associated documentation files (the "Software") are the
+exclusive intellectual property of Legal Evidence Hub.
+
+The Software includes, but is not limited to:
+- Source code (Python, TypeScript, JavaScript)
+- Configuration files
+- Database schemas and migrations
+- AI/ML models and prompts
+- API specifications and designs
+- User interface designs and components
+- Documentation and technical specifications
+
+================================================================================
+                        LEGAL PROTECTION
+================================================================================
+
+This Software is protected by:
+
+1. Copyright Law (Republic of Korea)
+   - Copyright Act (저작권법)
+   - Computer Programs Protection Act (컴퓨터프로그램보호법)
+
+2. International Copyright Treaties
+   - Berne Convention for the Protection of Literary and Artistic Works
+   - WIPO Copyright Treaty (WCT)
+   - Agreement on Trade-Related Aspects of Intellectual Property Rights (TRIPS)
+
+3. Trade Secret Law
+   - Unfair Competition Prevention and Trade Secret Protection Act
+     (부정경쟁방지 및 영업비밀보호에 관한 법률)
+
+================================================================================
+                        PROHIBITED ACTIONS
+================================================================================
+
+The following actions are STRICTLY PROHIBITED without express written consent:
+
+1. Unauthorized Copying
+   - Reproducing any portion of the source code
+   - Creating derivative works
+   - Storing copies on unauthorized systems
+
+2. Unauthorized Distribution
+   - Sharing source code or binaries
+   - Publishing any portion online
+   - Transferring to third parties
+
+3. Unauthorized Use
+   - Commercial deployment without license
+   - Integration into other products
+   - Use for competitive analysis
+
+4. Reverse Engineering
+   - Decompiling compiled code
+   - Analyzing system architecture
+   - Extracting algorithms or logic
+
+================================================================================
+                        CODE TRACKING NOTICE
+================================================================================
+
+THIS SOFTWARE CONTAINS EMBEDDED TRACKING AND IDENTIFICATION MECHANISMS
+
+1. Digital Watermarks
+   - Invisible markers embedded in source code
+   - Build-time fingerprints in compiled assets
+   - Runtime telemetry for deployment verification
+
+2. Fingerprint Technology
+   - Unique identifiers per authorized deployment
+   - Hash-based code signature verification
+   - Deployment environment fingerprinting
+
+3. Tracking Endpoints
+   - License validation API calls
+   - Usage analytics for compliance monitoring
+   - Unauthorized access detection
+
+4. Detection Capabilities
+   - Unauthorized copy detection
+   - Code tampering identification
+   - Geographic deployment tracking
+
+Any unauthorized copy or derivative work can be traced back to the source of
+the leak. Legal action will be pursued to the fullest extent of the law.
+
+================================================================================
+                        ENFORCEMENT
+================================================================================
+
+Legal Evidence Hub actively monitors for unauthorized use of its software.
+Violations will result in:
+
+1. Immediate legal action including:
+   - Civil lawsuits for damages
+   - Criminal prosecution where applicable
+   - Injunctive relief
+
+2. Damages sought may include:
+   - Actual damages and lost profits
+   - Statutory damages (up to 500,000,000 KRW per infringement)
+   - Attorney fees and court costs
+   - Disgorgement of profits
+
+3. Criminal penalties may include:
+   - Imprisonment up to 5 years
+   - Fines up to 50,000,000 KRW
+
+================================================================================
+                        CONTACT INFORMATION
+================================================================================
+
+For licensing inquiries:
+Email: legal@legalevidence.hub
+
+To report unauthorized use:
+Email: security@legalevidence.hub
+
+================================================================================
+                        ACKNOWLEDGMENTS
+================================================================================
+
+Legal Evidence Hub acknowledges the use of the following open-source components,
+which are licensed separately under their respective licenses:
+
+- FastAPI (MIT License)
+- Next.js (MIT License)
+- React (MIT License)
+- SQLAlchemy (MIT License)
+- boto3 (Apache License 2.0)
+- OpenAI Python SDK (MIT License)
+- Qdrant Client (Apache License 2.0)
+
+Full license texts for these dependencies are available in:
+- backend/THIRD_PARTY_LICENSES.md
+- frontend/THIRD_PARTY_LICENSES.md
+- ai_worker/THIRD_PARTY_LICENSES.md
+
+================================================================================
+
+Last Updated: December 2025
+Document Version: 1.0
+
+================================================================================
