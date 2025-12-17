@@ -111,8 +111,8 @@ class TestDraftGenerationFlow:
         evidence = case_with_evidence["evidence"]
 
         with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
-             patch('app.services.draft_service.search_evidence_by_semantic') as mock_qdrant_evidence, \
-             patch('app.services.draft_service.search_legal_knowledge') as mock_qdrant_legal, \
+             patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant_evidence, \
+             patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_qdrant_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
@@ -251,8 +251,8 @@ class TestDraftGenerationFlow:
         evidence = case_with_evidence["evidence"]
 
         with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
-             patch('app.services.draft_service.search_evidence_by_semantic') as mock_qdrant_evidence, \
-             patch('app.services.draft_service.search_legal_knowledge') as mock_qdrant_legal, \
+             patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant_evidence, \
+             patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_qdrant_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 

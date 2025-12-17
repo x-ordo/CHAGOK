@@ -45,7 +45,7 @@ class TestDraftPreview:
 
         # When: POST /cases/{case_id}/draft-preview with mocked DynamoDB and RAG
         with patch("app.services.draft_service.get_evidence_by_case") as mock_get_evidence, \
-             patch("app.services.draft_service.search_evidence_by_semantic") as mock_search, \
+             patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic") as mock_search, \
              patch("app.services.draft_service.generate_chat_completion") as mock_gpt:
             mock_get_evidence.return_value = mock_evidence
             mock_search.return_value = mock_evidence
@@ -119,7 +119,7 @@ class TestDraftPreview:
 
         # When: POST with empty request body with mocked services
         with patch("app.services.draft_service.get_evidence_by_case") as mock_get_evidence, \
-             patch("app.services.draft_service.search_evidence_by_semantic") as mock_search, \
+             patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic") as mock_search, \
              patch("app.services.draft_service.generate_chat_completion") as mock_gpt:
             mock_get_evidence.return_value = mock_evidence
             mock_search.return_value = mock_evidence

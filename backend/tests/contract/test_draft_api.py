@@ -125,8 +125,8 @@ class TestDraftPreviewPermissions:
 
         # Mock the external services (Qdrant, OpenAI, DynamoDB)
         with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
-             patch('app.services.draft_service.search_evidence_by_semantic') as mock_qdrant, \
-             patch('app.services.draft_service.search_legal_knowledge') as mock_legal, \
+             patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
+             patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
@@ -164,8 +164,8 @@ class TestDraftPreviewRequest:
             - Request is accepted (uses default sections)
         """
         with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
-             patch('app.services.draft_service.search_evidence_by_semantic') as mock_qdrant, \
-             patch('app.services.draft_service.search_legal_knowledge') as mock_legal, \
+             patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
+             patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
@@ -194,8 +194,8 @@ class TestDraftPreviewRequest:
             - Request is accepted
         """
         with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
-             patch('app.services.draft_service.search_evidence_by_semantic') as mock_qdrant, \
-             patch('app.services.draft_service.search_legal_knowledge') as mock_legal, \
+             patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
+             patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
@@ -231,8 +231,8 @@ class TestDraftPreviewResponse:
             - Response contains preview_disclaimer (FR-007 clarification)
         """
         with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
-             patch('app.services.draft_service.search_evidence_by_semantic') as mock_qdrant, \
-             patch('app.services.draft_service.search_legal_knowledge') as mock_legal, \
+             patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
+             patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
@@ -280,8 +280,8 @@ class TestDraftPreviewResponse:
             - Each citation has labels list
         """
         with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
-             patch('app.services.draft_service.search_evidence_by_semantic') as mock_qdrant, \
-             patch('app.services.draft_service.search_legal_knowledge') as mock_legal, \
+             patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
+             patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
@@ -384,8 +384,8 @@ class TestDraftPreviewInlineCitations:
         not that GPT-4o always produces them (that's model behavior)
         """
         with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
-             patch('app.services.draft_service.search_evidence_by_semantic') as mock_qdrant, \
-             patch('app.services.draft_service.search_legal_knowledge') as mock_legal, \
+             patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
+             patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 

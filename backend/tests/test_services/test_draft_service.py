@@ -88,7 +88,7 @@ class TestDraftServicePreview:
     """Tests for generate_draft_preview method"""
 
     @patch("app.services.draft_service.generate_chat_completion")
-    @patch("app.services.draft_service.search_evidence_by_semantic")
+    @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     @patch("app.services.draft_service.get_evidence_by_case")
     def test_generate_draft_preview_success(
         self,
@@ -182,7 +182,7 @@ class TestDraftServicePreview:
 class TestDraftServiceRagSearch:
     """Tests for _perform_rag_search method"""
 
-    @patch("app.services.draft_service.search_evidence_by_semantic")
+    @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     def test_rag_search_with_claim_section(
         self, mock_search, draft_service
     ):
@@ -201,7 +201,7 @@ class TestDraftServiceRagSearch:
         assert "귀책사유" in call_args.kwargs.get("query", call_args[1].get("query", ""))
         assert call_args.kwargs.get("top_k", call_args[1].get("top_k")) == 10
 
-    @patch("app.services.draft_service.search_evidence_by_semantic")
+    @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     def test_rag_search_general_sections(
         self, mock_search, draft_service
     ):
@@ -311,9 +311,8 @@ class TestDraftServiceExport:
     """Tests for export_draft method"""
 
     @patch.object(DraftService, "generate_draft_preview")
-    @patch.object(DraftService, "_generate_docx")
     def test_export_draft_docx_success(
-        self, mock_generate_docx, mock_preview, draft_service, sample_case
+        self, mock_preview, draft_service, sample_case
     ):
         """Test successful DOCX export"""
         # Arrange
@@ -330,18 +329,19 @@ class TestDraftServiceExport:
             generated_at=datetime.now(timezone.utc)
         )
 
-        mock_generate_docx.return_value = (
+        # Mock the document_exporter.generate_docx method on the instance
+        draft_service.document_exporter.generate_docx = MagicMock(return_value=(
             BytesIO(b"docx content"),
             "draft_test.docx",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
+        ))
 
         # Act
         result = draft_service.export_draft(case_id, user_id, DraftExportFormat.DOCX)
 
         # Assert
         assert result[1].endswith(".docx")
-        mock_generate_docx.assert_called_once()
+        draft_service.document_exporter.generate_docx.assert_called_once()
 
     def test_export_draft_case_not_found(self, draft_service):
         """Test export with non-existent case"""
@@ -372,8 +372,8 @@ class TestDraftServiceExport:
 class TestDraftServiceDocxGeneration:
     """Tests for _generate_docx method"""
 
-    @patch("app.services.draft_service.DOCX_AVAILABLE", True)
-    @patch("app.services.draft_service.Document")
+    @patch("app.services.draft.document_exporter.DOCX_AVAILABLE", True)
+    @patch("app.services.draft.document_exporter.Document")
     def test_generate_docx_creates_document(
         self, mock_document_class, draft_service, sample_case
     ):
@@ -404,7 +404,7 @@ class TestDraftServiceDocxGeneration:
         mock_doc.save.assert_called_once()
         assert result[1].endswith(".docx")
 
-    @patch("app.services.draft_service.DOCX_AVAILABLE", False)
+    @patch("app.services.draft.document_exporter.DOCX_AVAILABLE", False)
     def test_generate_docx_not_available(self, draft_service, sample_case):
         """Test DOCX generation raises error when python-docx not installed"""
         # Arrange

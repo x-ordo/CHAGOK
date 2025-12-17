@@ -134,8 +134,8 @@ class TestDraftPreviewSmoke:
     """
 
     @patch('app.services.draft_service.get_evidence_by_case')
-    @patch('app.services.draft_service.search_evidence_by_semantic')
-    @patch('app.services.draft_service.search_legal_knowledge')
+    @patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic')
+    @patch('app.services.draft.rag_orchestrator.search_legal_knowledge')
     @patch('app.services.draft_service.get_template_by_type')
     @patch('app.services.draft_service.generate_chat_completion')
     def test_draft_preview_endpoint_responds(

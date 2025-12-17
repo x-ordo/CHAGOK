@@ -142,12 +142,16 @@ app.add_middleware(AuditLogMiddleware)
 # 5. CORS (Must be after security headers and audit log)
 # Note: For cross-origin cookie authentication, allow_credentials=True is required
 # API Gateway also has CORS config - they should match
+# Security: Production uses explicit methods/headers, dev uses wildcard for convenience
+_cors_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"] if settings.APP_ENV in ("prod", "production") else ["*"]
+_cors_headers = ["Content-Type", "Authorization", "Cookie", "X-Request-ID"] if settings.APP_ENV in ("prod", "production") else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=_cors_methods,
+    allow_headers=_cors_headers,
     expose_headers=["X-Request-ID", "Set-Cookie"]
 )
 
