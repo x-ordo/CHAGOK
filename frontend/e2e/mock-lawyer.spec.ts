@@ -104,6 +104,7 @@ test.describe('Lawyer Flow (Mocked)', () => {
     await context.addCookies([{
       name: 'user_data',
       value: userData,
+      domain: 'localhost',
       path: '/'
     }]);
 

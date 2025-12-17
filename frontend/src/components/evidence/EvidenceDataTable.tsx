@@ -45,7 +45,7 @@ function AISummaryModal({
       <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 p-6 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <Sparkles className="w-5 h-5 text-accent" />
+            <Sparkles className="w-5 h-5 text-primary" />
             <h3 className="text-lg font-bold text-gray-900">AI 요약</h3>
           </div>
           <button
@@ -249,7 +249,7 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
             id="type-filter"
             value={typeFilter}
             onChange={(e) => handleTypeFilterChange(e.target.value)}
-            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all"
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all"
           >
             <option value="all">전체</option>
             <option value="text">텍스트</option>
@@ -268,7 +268,7 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
             id="date-filter"
             value={dateFilter}
             onChange={(e) => handleDateFilterChange(e.target.value)}
-            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all"
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all"
           >
             <option value="all">전체</option>
             <option value="today">오늘</option>
@@ -285,7 +285,11 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
       {/* DataTable - Shadcn/ui style */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200" aria-label="증거 자료 목록">
+            <caption className="sr-only">
+              증거 자료 목록. 유형, 파일명, AI 요약, 업로드 날짜, 상태 열이 있습니다.
+              파일명과 업로드 날짜는 정렬 가능합니다.
+            </caption>
             <thead className="bg-gray-50">
               <tr>
                 <th
@@ -297,14 +301,22 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  aria-sort={
+                    table.getColumn('filename')?.getIsSorted() === 'asc'
+                      ? 'ascending'
+                      : table.getColumn('filename')?.getIsSorted() === 'desc'
+                        ? 'descending'
+                        : 'none'
+                  }
                 >
                   <button
                     type="button"
                     onClick={() => table.getColumn('filename')?.toggleSorting()}
-                    className="flex items-center space-x-1 hover:text-secondary transition-colors"
+                    className="flex items-center space-x-1 hover:text-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                    aria-label="파일명으로 정렬"
                   >
                     <span>파일명</span>
-                    <ArrowUpDown className="w-4 h-4" />
+                    <ArrowUpDown className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </th>
                 <th
@@ -316,14 +328,22 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  aria-sort={
+                    table.getColumn('uploadDate')?.getIsSorted() === 'asc'
+                      ? 'ascending'
+                      : table.getColumn('uploadDate')?.getIsSorted() === 'desc'
+                        ? 'descending'
+                        : 'none'
+                  }
                 >
                   <button
                     type="button"
                     onClick={() => table.getColumn('uploadDate')?.toggleSorting()}
-                    className="flex items-center space-x-1 hover:text-secondary transition-colors"
+                    className="flex items-center space-x-1 hover:text-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                    aria-label="업로드 날짜로 정렬"
                   >
                     <span>업로드 날짜</span>
-                    <ArrowUpDown className="w-4 h-4" />
+                    <ArrowUpDown className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </th>
                 <th
@@ -345,15 +365,15 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
                 return (
                   <tr
                     key={evidence.id}
-                    className={`group transition-colors ${zebraBackground} hover:bg-accent/5`}
+                    className={`group transition-colors ${zebraBackground} hover:bg-primary-light/50`}
                   >
                     {/* Type Icon - 클릭하면 원문 보기 */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleOpenContent(evidence)}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-                        title="원문 보기"
+                        className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                        aria-label={`${evidence.filename} 원문 보기`}
                       >
                         <EvidenceTypeIcon type={evidence.type} />
                       </button>
@@ -378,7 +398,7 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
                         <button
                           type="button"
                           onClick={() => handleOpenSummary(evidence)}
-                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 rounded-lg transition-colors"
+                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-sm font-medium text-primary bg-primary-light hover:bg-primary-light/80 rounded-lg transition-colors"
                         >
                           <Sparkles className="w-4 h-4" />
                           <span>요약 보기</span>

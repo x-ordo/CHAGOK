@@ -35,7 +35,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
           onChange={(e) => {
             table.setPageSize(Number(e.target.value));
           }}
-          className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {[10, 20, 30, 50].map((pageSize) => (
             <option key={pageSize} value={pageSize}>

@@ -170,7 +170,7 @@ describe('LawyerCasesPage', () => {
   });
 
   describe('Empty State', () => {
-    it('shows empty state when no cases', () => {
+    it('shows empty state when no cases (new user)', () => {
       mockUseCaseList.mockReturnValue({
         ...defaultHookReturn,
         cases: [],
@@ -179,8 +179,9 @@ describe('LawyerCasesPage', () => {
 
       render(<LawyerCasesPage />);
 
-      expect(screen.getByText('케이스 없음')).toBeInTheDocument();
-      expect(screen.getByText('검색 조건에 맞는 케이스가 없습니다.')).toBeInTheDocument();
+      // CasesEmptyState with isNewUser=true shows onboarding message
+      expect(screen.getByText('환영합니다! 첫 번째 사건을 시작해보세요')).toBeInTheDocument();
+      expect(screen.getByText(/사건을 추가하고 증거를 관리하세요/)).toBeInTheDocument();
     });
   });
 

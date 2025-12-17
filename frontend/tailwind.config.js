@@ -65,8 +65,14 @@ module.exports = {
 
         // ========================================
         // LEGACY ALIASES (backward compatibility)
-        // These map old color names to new semantic system
-        // Can be removed once all components are migrated
+        // @deprecated These map old color names to new semantic system
+        //
+        // Migration Status (US1 - Design System Consistency):
+        // ✅ Lawyer Portal: Fully migrated (cases, evidence, draft, relationship, shared, auth, primitives)
+        // ❌ Landing Pages: Still using legacy aliases
+        // ❌ Client Portal: Still using legacy aliases
+        //
+        // Remove these aliases after landing/client portal migration is complete
         // ========================================
         accent: {
           DEFAULT: 'var(--color-primary)',

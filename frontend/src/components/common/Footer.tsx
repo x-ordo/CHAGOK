@@ -22,7 +22,7 @@ const Footer = () => {
             문의하기
           </a>
         </div>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        <p className="text-xs text-neutral-600 dark:text-neutral-400">
           © {currentYear} Legal Evidence Hub. All Rights Reserved. 무단 활용 금지.
         </p>
       </div>

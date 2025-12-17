@@ -23,6 +23,9 @@ import { getCase, Case, ApiCase } from '@/lib/api/cases';
 import EditCaseModal from '@/components/cases/EditCaseModal';
 import { generateDraftPreview, generateLineBasedDraftPreview, DraftCitation as ApiDraftCitation } from '@/lib/api/draft';
 import { mapApiEvidenceToEvidence, mapApiEvidenceListToEvidence } from '@/lib/utils/evidenceMapper';
+import { EvidenceEmptyState } from '@/components/evidence/EvidenceEmptyState';
+import { ErrorState } from '@/components/shared/EmptyState';
+import { DraftsEmptyState } from '@/components/draft/DraftsEmptyState';
 
 /**
  * Convert API draft citation to component DraftCitation type
@@ -424,7 +427,7 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
                                 aria-selected={isActive}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex flex-col rounded-xl border px-4 py-3 text-left transition-all ${
-                                    isActive ? 'border-accent bg-accent/10 text-secondary shadow-sm' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                                    isActive ? 'border-primary bg-primary-light text-secondary shadow-sm' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
                                 }`}
                             >
                                 <span className="text-sm font-semibold">{tab.label}</span>
@@ -443,7 +446,7 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
                                     <p className="text-sm text-gray-500">파일을 드래그하거나 클릭하여 업로드할 수 있습니다.</p>
                                 </div>
                                 <span className="text-xs text-gray-500 flex items-center">
-                                    <Sparkles className="w-4 h-4 text-accent mr-1" /> Whisper · OCR 자동 적용
+                                    <Sparkles className="w-4 h-4 text-primary mr-1" /> Whisper · OCR 자동 적용
                                 </span>
                             </div>
                             <EvidenceUpload onUpload={handleUpload} disabled={uploadStatus.isUploading} />
@@ -474,14 +477,14 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
                                     aria-live="polite"
                                     className={`flex items-start space-x-2 rounded-lg px-4 py-3 text-sm ${
                                         uploadFeedback.tone === 'success'
-                                            ? 'bg-accent/10 text-secondary'
+                                            ? 'bg-primary-light text-secondary'
                                             : uploadFeedback.tone === 'error'
                                             ? 'bg-red-50 text-red-700 border border-red-200'
                                             : 'bg-gray-100 text-neutral-700'
                                     }`}
                                 >
                                     <CheckCircle2 className={`w-4 h-4 mt-0.5 ${
-                                        uploadFeedback.tone === 'error' ? 'text-red-500' : 'text-accent'
+                                        uploadFeedback.tone === 'error' ? 'text-red-500' : 'text-primary'
                                     }`} />
                                     <p>{uploadFeedback.message}</p>
                                 </div>
@@ -513,29 +516,24 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
                             </div>
                             {isLoadingEvidence && (
                                 <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="w-6 h-6 text-accent animate-spin" />
+                                    <Loader2 className="w-6 h-6 text-primary animate-spin" />
                                     <span className="ml-2 text-gray-500">증거 목록을 불러오는 중...</span>
                                 </div>
                             )}
                             {evidenceError && !isLoadingEvidence && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
-                                    <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
-                                    <div>
-                                        <p className="text-sm font-medium text-red-700">{evidenceError}</p>
-                                        <button
-                                            onClick={fetchEvidence}
-                                            className="text-sm text-red-600 hover:text-red-800 underline mt-1"
-                                        >
-                                            다시 시도
-                                        </button>
-                                    </div>
-                                </div>
+                                <ErrorState
+                                    title="증거 목록을 불러올 수 없습니다"
+                                    message={evidenceError}
+                                    onRetry={fetchEvidence}
+                                    retryText="다시 시도"
+                                    size="sm"
+                                />
                             )}
                             {!isLoadingEvidence && !evidenceError && evidenceList.length === 0 && (
-                                <div className="text-center py-8">
-                                    <p className="text-gray-500">등록된 증거가 없습니다.</p>
-                                    <p className="text-sm text-gray-400 mt-1">위 영역에 파일을 업로드하여 증거를 추가하세요.</p>
-                                </div>
+                                <EvidenceEmptyState
+                                    caseTitle={caseData?.title}
+                                    size="sm"
+                                />
                             )}
                             {!isLoadingEvidence && !evidenceError && evidenceList.length > 0 && (
                                 <EvidenceTable items={evidenceList} />
@@ -560,7 +558,7 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
                         <p className="text-sm text-gray-500">AI가 추출한 주요 사건들을 시간순으로 정리합니다. 증거 탭에서 "AI 요약"이 쌓일수록 타임라인의 정확도가 향상됩니다.</p>
                         {isLoadingEvidence ? (
                             <div className="flex items-center justify-center py-8">
-                                <Loader2 className="w-6 h-6 text-accent animate-spin" />
+                                <Loader2 className="w-6 h-6 text-primary animate-spin" />
                                 <span className="ml-2 text-gray-500">타임라인을 불러오는 중...</span>
                             </div>
                         ) : evidenceList.length === 0 ? (
@@ -570,7 +568,7 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
                         ) : (
                             <ul className="space-y-3">
                                 {evidenceList.map((item) => (
-                                    <li key={item.id} className="flex items-start space-x-3 border-l-2 border-accent pl-3">
+                                    <li key={item.id} className="flex items-start space-x-3 border-l-2 border-primary pl-3">
                                         <div className="text-xs text-gray-400">{new Date(item.uploadDate).toLocaleDateString()}</div>
                                         <div>
                                             <p className="text-sm font-semibold text-gray-800">{item.filename}</p>
@@ -587,7 +585,7 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
                     <section className="space-y-4" role="tabpanel" aria-label="Draft 탭">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
                             <div className="flex items-start space-x-3">
-                                <CheckCircle2 className="w-5 h-5 text-accent mt-0.5" />
+                                <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
                                 <div>
                                     <p className="text-sm font-semibold text-gray-900">이 문서는 AI가 생성한 초안이며, 최종 법적 책임은 검토한 변호사에게 있습니다.</p>
                                     <p className="text-xs text-gray-500">중요한 문장은 증거 탭에서 원본을 다시 확인하고, 필요한 경우 직접 수정하세요.</p>
@@ -595,9 +593,13 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
                             </div>
                         </div>
                         {draftError && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
-                                <p>{draftError}</p>
-                            </div>
+                            <ErrorState
+                                title="초안 생성 실패"
+                                message={draftError}
+                                onRetry={openDraftModal}
+                                retryText="다시 생성"
+                                size="sm"
+                            />
                         )}
                         <DraftPreviewPanel
                             caseId={caseId}

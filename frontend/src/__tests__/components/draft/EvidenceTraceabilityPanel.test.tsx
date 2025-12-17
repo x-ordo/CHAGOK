@@ -313,9 +313,9 @@ describe('Plan 3.17 - AI Traceability Panel', () => {
                 />
             );
 
-            // Header에서 Deep Trust Blue 색상 확인
+            // Header에서 secondary 색상 확인 (semantic token - migrated from deep-trust-blue)
             const header = container.querySelector('header');
-            expect(header).toHaveClass('bg-deep-trust-blue');
+            expect(header).toHaveClass('bg-secondary');
 
             // Section headings에서 Deep Trust Blue 텍스트 색상 확인
             const sectionHeadings = container.querySelectorAll('h3');

@@ -16,6 +16,8 @@ import { CaseCard } from '@/components/lawyer/CaseCard';
 import { CaseTable } from '@/components/lawyer/CaseTable';
 import { BulkActionBar } from '@/components/lawyer/BulkActionBar';
 import AddCaseModal from '@/components/cases/AddCaseModal';
+import { CasesEmptyState } from '@/components/cases/CasesEmptyState';
+import { ErrorState } from '@/components/shared/EmptyState';
 
 type ViewMode = 'grid' | 'table';
 
@@ -156,9 +158,12 @@ export default function LawyerCasesPage() {
 
       {/* Error State */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
+        <ErrorState
+          title="사건 목록을 불러올 수 없습니다"
+          message={error}
+          onRetry={refresh}
+          retryText="다시 불러오기"
+        />
       )}
 
       {/* Loading State */}
@@ -227,26 +232,16 @@ export default function LawyerCasesPage() {
           )}
 
           {/* Empty State */}
-          {cases.length === 0 && (
+          {cases.length === 0 && !showClosed && (
+            <CasesEmptyState
+              onCreateCase={() => setIsModalOpen(true)}
+              isNewUser={pagination.total === 0}
+            />
+          )}
+          {cases.length === 0 && showClosed && (
             <div className="text-center py-12">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
-                {showClosed ? '종료된 케이스 없음' : '케이스 없음'}
-              </h3>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {showClosed ? '종료된 케이스가 없습니다.' : '검색 조건에 맞는 케이스가 없습니다.'}
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                종료된 케이스가 없습니다.
               </p>
             </div>
           )}

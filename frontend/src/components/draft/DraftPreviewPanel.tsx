@@ -666,7 +666,7 @@ export default function DraftPreviewPanel({
                     </p>
                 </div>
                 <div className="inline-flex items-center text-xs uppercase tracking-wide text-secondary font-semibold">
-                    <Sparkles className="w-4 h-4 mr-1 text-accent" />
+                    <Sparkles className="w-4 h-4 mr-1 text-primary" />
                     AI Draft
                 </div>
             </div>
@@ -678,7 +678,7 @@ export default function DraftPreviewPanel({
                             type="button"
                             onClick={handleManualSave}
                             disabled={isSaving}
-                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-secondary dark:text-gray-200 hover:border-accent hover:text-accent transition-colors disabled:opacity-60"
+                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-secondary dark:text-gray-200 hover:border-primary hover:text-primary transition-colors disabled:opacity-60"
                         >
                             <Save className="w-4 h-4" />
                             저장
@@ -686,7 +686,7 @@ export default function DraftPreviewPanel({
                         <button
                             type="button"
                             onClick={() => setIsHistoryOpen(true)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-secondary dark:text-gray-200 hover:border-accent hover:text-accent transition-colors"
+                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-secondary dark:text-gray-200 hover:border-primary hover:text-primary transition-colors"
                         >
                             <History className="w-4 h-4" />
                             버전 히스토리
@@ -694,7 +694,7 @@ export default function DraftPreviewPanel({
                         <button
                             type="button"
                             onClick={() => setIsTemplateModalOpen(true)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-secondary dark:text-gray-200 hover:border-accent hover:text-accent transition-colors"
+                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-secondary dark:text-gray-200 hover:border-primary hover:text-primary transition-colors"
                         >
                             <LayoutTemplate className="w-4 h-4" />
                             템플릿 적용
@@ -702,7 +702,7 @@ export default function DraftPreviewPanel({
                         <button
                             type="button"
                             onClick={() => setIsCitationModalOpen(true)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-secondary dark:text-gray-200 hover:border-accent hover:text-accent transition-colors"
+                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-secondary dark:text-gray-200 hover:border-primary hover:text-primary transition-colors"
                         >
                             <Quote className="w-4 h-4" />
                             증거 인용 삽입
@@ -712,14 +712,14 @@ export default function DraftPreviewPanel({
                             onClick={handleTrackChangeToggle}
                             className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
                                 isTrackChangesEnabled
-                                    ? 'border-accent bg-accent/10 text-secondary dark:text-gray-200'
-                                    : 'border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-secondary dark:text-gray-200 hover:border-accent hover:text-accent'
+                                    ? 'border-primary bg-primary-light text-secondary dark:text-gray-200'
+                                    : 'border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-secondary dark:text-gray-200 hover:border-primary hover:text-primary'
                             }`}
                         >
                             <GitBranch className="w-4 h-4" />
                             변경 추적 {isTrackChangesEnabled ? 'ON' : 'OFF'}
                         </button>
-                        {saveMessage && <span className="text-xs text-accent">{saveMessage}</span>}
+                        {saveMessage && <span className="text-xs text-primary">{saveMessage}</span>}
                     </div>
                     <div className="inline-flex flex-col text-xs text-gray-500 dark:text-gray-400 items-end gap-1" data-testid="autosave-indicator">
                         <div className="inline-flex items-center">
@@ -781,7 +781,7 @@ export default function DraftPreviewPanel({
                             type="button"
                             onClick={() => handleDownload('docx')}
                             disabled={isExporting}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isExporting && exportingFormat === 'docx' ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -794,7 +794,7 @@ export default function DraftPreviewPanel({
                             type="button"
                             onClick={() => handleDownload('pdf')}
                             disabled={isExporting}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isExporting && exportingFormat === 'pdf' ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -807,7 +807,7 @@ export default function DraftPreviewPanel({
                             type="button"
                             onClick={() => handleDownload('hwp')}
                             disabled={isExporting}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isExporting && exportingFormat === 'hwp' ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -823,7 +823,7 @@ export default function DraftPreviewPanel({
             <div
                 data-testid="draft-editor-surface"
                 data-zen-mode="true"
-                className="relative rounded-2xl border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-inner focus-within:border-deep-trust-blue transition-colors"
+                className="relative rounded-2xl border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-inner focus-within:border-primary transition-colors"
             >
                 <div
                     ref={editorRef}
@@ -834,7 +834,7 @@ export default function DraftPreviewPanel({
                     onClick={handleEditorClick}
                     onBeforeInput={handleBeforeInput}
                     onInput={handleEditorInput}
-                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 dark:text-gray-200 leading-relaxed focus:outline-none overflow-auto cursor-pointer [&_.evidence-ref]:underline [&_.evidence-ref]:text-secondary [&_.evidence-ref]:cursor-pointer [&_.evidence-ref:hover]:text-accent [&_.evidence-ref]:decoration-dotted"
+                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 dark:text-gray-200 leading-relaxed focus:outline-none overflow-auto cursor-pointer [&_.evidence-ref]:underline [&_.evidence-ref]:text-secondary [&_.evidence-ref]:cursor-pointer [&_.evidence-ref:hover]:text-primary [&_.evidence-ref]:decoration-dotted"
                     dangerouslySetInnerHTML={{ __html: editorHtml }}
                 />
             </div>
@@ -942,7 +942,7 @@ export default function DraftPreviewPanel({
                     </div>
                     <textarea
                         aria-label="코멘트 작성"
-                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="w-full rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         placeholder="선택한 부분에 대한 코멘트를 입력하세요."
                         value={newCommentText}
                         onChange={(event) => setNewCommentText(event.target.value)}
@@ -965,7 +965,7 @@ export default function DraftPreviewPanel({
                                     type="button"
                                     onClick={() => handleToggleCommentResolved(comment.id)}
                                     className={`text-xs font-medium ${
-                                        comment.resolved ? 'text-accent' : 'text-secondary'
+                                        comment.resolved ? 'text-primary' : 'text-secondary'
                                     }`}
                                 >
                                     {comment.resolved ? '해결됨' : '해결 표시'}
@@ -1023,7 +1023,7 @@ export default function DraftPreviewPanel({
                                     key={version.id}
                                     type="button"
                                     onClick={() => handleRestoreVersion(version.id)}
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 p-3 text-left hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
+                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 p-3 text-left hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                                 >
                                     <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatVersionReason(version.reason)}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">{formatTimestamp(version.savedAt)}</p>
@@ -1088,7 +1088,7 @@ export default function DraftPreviewPanel({
                                     key={citation.evidenceId}
                                     type="button"
                                     onClick={() => handleInsertCitation(citation)}
-                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 p-3 text-left hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
+                                    className="w-full rounded-xl border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 p-3 text-left hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                                 >
                                     <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{citation.title}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{citation.quote}</p>

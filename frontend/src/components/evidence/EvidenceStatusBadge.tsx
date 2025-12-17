@@ -23,12 +23,12 @@ export function EvidenceStatusBadge({ status }: EvidenceStatusBadgeProps) {
     completed: {
       icon: <CheckCircle2 className="w-3 h-3 mr-1" />,
       label: '완료',
-      className: 'text-success-green bg-green-50',
+      className: 'text-success bg-green-50',
     },
     processing: {
       icon: <Loader2 className="w-3 h-3 mr-1 animate-spin" />,
       label: '분석 중',
-      className: 'text-accent bg-teal-50',
+      className: 'text-primary bg-teal-50',
     },
     queued: {
       icon: <Clock className="w-3 h-3 mr-1" />,
@@ -43,7 +43,7 @@ export function EvidenceStatusBadge({ status }: EvidenceStatusBadgeProps) {
     failed: {
       icon: <AlertCircle className="w-3 h-3 mr-1" />,
       label: '실패',
-      className: 'text-semantic-error bg-red-50',
+      className: 'text-error bg-red-50',
     },
   };
 

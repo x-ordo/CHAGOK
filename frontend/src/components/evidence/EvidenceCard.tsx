@@ -116,7 +116,7 @@ export function EvidenceCard({
             </div>
             <div className="h-1.5 bg-gray-100 dark:bg-neutral-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-accent rounded-full animate-pulse"
+                className="h-full bg-primary rounded-full animate-pulse"
                 style={{ width: '60%' }}
               />
             </div>
@@ -152,7 +152,7 @@ export function EvidenceCard({
         {/* Analysis preview for completed items */}
         {isCompleted && showAnalysisPreview && evidence.summary && (
           <div className="mb-4">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-accent mb-2">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-primary mb-2">
               <Sparkles className="w-3.5 h-3.5" />
               <span>AI 요약</span>
             </div>
@@ -214,7 +214,7 @@ export function EvidenceCard({
         {onViewAnalysis && isCompleted && (
           <button
             onClick={() => onViewAnalysis(evidence)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-accent bg-accent/10 rounded-lg hover:bg-accent/20 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-primary bg-primary-light rounded-lg hover:bg-primary-light/80 transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             분석 결과

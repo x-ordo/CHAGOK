@@ -104,6 +104,11 @@ export default function LawyerLayout({
 
     return (
       <div className="flex min-h-screen bg-[var(--color-bg-secondary)]">
+      {/* Skip to content link for keyboard users (T043) */}
+      <a href="#main-content" className="skip-to-content">
+        콘텐츠로 건너뛰기
+      </a>
+
       {/* Sidebar */}
       <PortalSidebar
         role={user.role}
@@ -117,7 +122,9 @@ export default function LawyerLayout({
 
       {/* Main Content */}
       <main
+        id="main-content"
         className="flex-1 lg:ml-64 min-h-screen"
+        tabIndex={-1}
       >
         {/* Top Header */}
         <header className="sticky top-0 z-10 h-16 bg-[var(--color-bg-primary)] border-b border-[var(--color-border-default)] flex items-center px-4 lg:px-6">
