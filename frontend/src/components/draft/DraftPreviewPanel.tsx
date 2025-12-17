@@ -100,8 +100,40 @@ const DOCUMENT_TEMPLATES = [
     },
 ];
 
+/**
+ * Convert plain text (with \n newlines) to HTML
+ * - Double newlines become paragraph breaks
+ * - Single newlines become <br>
+ * - Escapes HTML entities
+ */
+const textToHtml = (text: string): string => {
+    if (!text) return '';
+
+    // If it already looks like HTML, return as-is
+    if (text.includes('<p>') || text.includes('<br') || text.includes('<h1>')) {
+        return text;
+    }
+
+    // Escape HTML entities
+    const escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    // Split by double newlines for paragraphs
+    const paragraphs = escaped.split(/\n\n+/);
+
+    // Convert single newlines to <br> within paragraphs
+    const htmlParagraphs = paragraphs.map(p => {
+        const withBreaks = p.replace(/\n/g, '<br>');
+        return `<p>${withBreaks}</p>`;
+    });
+
+    return htmlParagraphs.join('\n');
+};
+
 const sanitizeDraftHtml = (html: string) =>
-    typeof window === 'undefined' ? html : DOMPurify.sanitize(html, SANITIZE_OPTIONS);
+    typeof window === 'undefined' ? html : DOMPurify.sanitize(textToHtml(html), SANITIZE_OPTIONS);
 type IntervalHandle = ReturnType<typeof setInterval> | number;
 type TimeoutHandle = ReturnType<typeof setTimeout> | number;
 const stripHtml = (html: string) => html.replace(/<[^>]+>/g, '').trim();
