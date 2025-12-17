@@ -182,3 +182,98 @@ export function formatKoreanCurrency(amount: number): string {
     return `${amount.toLocaleString()}원`;
   }
 }
+
+// ============================================
+// Backward Compatibility Aliases
+// (Deprecated - use canonical types above)
+// ============================================
+
+/**
+ * @deprecated Use AssetCategory instead
+ * Extended to include legacy values for backward compatibility
+ */
+export type AssetType = AssetCategory | 'financial' | 'business' | 'personal';
+
+/**
+ * @deprecated Use AssetOwnership instead
+ */
+export type OwnershipType = AssetOwnership;
+
+// Legacy Create/Update request types with asset_type field
+export interface CreateAssetRequest {
+  asset_type: AssetType;
+  name: string;
+  description?: string;
+  acquisition_date?: string;
+  current_value: number;
+  ownership: OwnershipType;
+  division_ratio_plaintiff?: number;
+  division_ratio_defendant?: number;
+  notes?: string;
+  evidence_ids?: string[];
+}
+
+export interface UpdateAssetRequest extends Partial<CreateAssetRequest> {
+  id: string;
+}
+
+// Legacy Asset type with asset_type field for backward compatibility
+export interface LegacyAsset {
+  id: string;
+  case_id: string;
+  asset_type: AssetType;
+  name: string;
+  description?: string;
+  acquisition_date?: string;
+  current_value: number;
+  ownership: OwnershipType;
+  division_ratio_plaintiff: number;
+  division_ratio_defendant: number;
+  notes?: string;
+  evidence_ids?: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+// Legacy DivisionSummary for backward compatibility
+export interface LegacyDivisionSummary {
+  total_assets: number;
+  total_debts: number;
+  net_value: number;
+  plaintiff_share: number;
+  defendant_share: number;
+  settlement_needed: number;
+}
+
+// Legacy simulation request
+export interface SimulateDivisionRequest {
+  assets: Array<{
+    id: string;
+    division_ratio_plaintiff: number;
+    division_ratio_defendant: number;
+  }>;
+}
+
+// Legacy config exports with icon support (includes both canonical and legacy values)
+export const ASSET_TYPE_CONFIG: Record<AssetType, { label: string; icon: string }> = {
+  // Canonical values
+  real_estate: { label: '부동산', icon: 'Building' },
+  savings: { label: '예금/적금', icon: 'Wallet' },
+  stocks: { label: '주식/증권', icon: 'TrendingUp' },
+  retirement: { label: '퇴직금/연금', icon: 'Landmark' },
+  vehicle: { label: '차량', icon: 'Car' },
+  insurance: { label: '보험', icon: 'Shield' },
+  debt: { label: '부채', icon: 'CreditCard' },
+  other: { label: '기타', icon: 'Box' },
+  // Legacy values (deprecated)
+  financial: { label: '금융자산', icon: 'Wallet' },
+  business: { label: '사업자산', icon: 'Briefcase' },
+  personal: { label: '개인자산', icon: 'Package' },
+};
+
+export const OWNERSHIP_CONFIG: Record<OwnershipType, { label: string; color: string }> = {
+  plaintiff: { label: '원고 단독', color: '#1ABC9C' },
+  defendant: { label: '피고 단독', color: '#2C3E50' },
+  joint: { label: '공동 소유', color: '#F39C12' },
+  third_party: { label: '제3자 명의', color: '#9B59B6' },
+};

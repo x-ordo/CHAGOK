@@ -10,8 +10,8 @@ import { logger } from '@/lib/logger';
 
 import { useState, useCallback } from 'react';
 import { useAssets } from '@/hooks/useAssets';
-import type { Asset, AssetType, OwnershipType, CreateAssetRequest } from '@/types/assets';
-import { ASSET_TYPE_CONFIG, OWNERSHIP_CONFIG } from '@/types/assets';
+import type { LegacyAsset as Asset, AssetType, OwnershipType, CreateAssetRequest } from '@/types/asset';
+import { ASSET_TYPE_CONFIG, OWNERSHIP_CONFIG } from '@/types/asset';
 
 // Format currency in Korean Won
 function formatCurrency(value: number): string {

@@ -12,10 +12,9 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAssets } from '@/hooks/useAssets';
 import { AssetForm, AssetTable, DivisionSummary } from '@/components/lawyer/assets';
-// Note: Type mismatch between @/types/asset (components) and @/types/assets (hook)
-// Using 'unknown' to bridge the gap until types are unified
+// Types unified from @/types/asset
 import type { Asset as ComponentAsset, DivisionSummary as ComponentDivisionSummary } from '@/types/asset';
-import type { Asset, CreateAssetRequest } from '@/types/assets';
+import type { LegacyAsset as Asset, CreateAssetRequest } from '@/types/asset';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 
 type ViewMode = 'table' | 'form';

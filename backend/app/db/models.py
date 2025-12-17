@@ -109,26 +109,7 @@ class InvoiceStatus(str, enum.Enum):
     CANCELLED = "cancelled"  # 취소
 
 
-class PropertyType(str, enum.Enum):
-    """Property type enum for asset division"""
-    REAL_ESTATE = "real_estate"    # 부동산
-    SAVINGS = "savings"            # 예금/적금
-    STOCKS = "stocks"              # 주식/펀드
-    RETIREMENT = "retirement"      # 퇴직금/연금
-    VEHICLE = "vehicle"            # 자동차
-    INSURANCE = "insurance"        # 보험
-    DEBT = "debt"                  # 부채
-    OTHER = "other"                # 기타
-
-
-class PropertyOwner(str, enum.Enum):
-    """Property owner enum"""
-    PLAINTIFF = "plaintiff"        # 원고(의뢰인)
-    DEFENDANT = "defendant"        # 피고(상대방)
-    JOINT = "joint"                # 공동 소유
-
-
-# Asset-related enums (for US2 - 재산분할표)
+# Asset/Property Category (canonical definition)
 class AssetCategory(str, enum.Enum):
     """Asset category enum for property division"""
     REAL_ESTATE = "real_estate"    # 부동산
@@ -141,11 +122,17 @@ class AssetCategory(str, enum.Enum):
     OTHER = "other"                # 기타
 
 
+# Asset/Property Ownership (canonical definition)
 class AssetOwnership(str, enum.Enum):
     """Asset ownership enum"""
     PLAINTIFF = "plaintiff"        # 원고(의뢰인)
     DEFENDANT = "defendant"        # 피고(상대방)
     JOINT = "joint"                # 공동 소유
+
+
+# Backward compatibility aliases (deprecated - use AssetCategory/AssetOwnership)
+PropertyType = AssetCategory
+PropertyOwner = AssetOwnership
 
 
 class AssetNature(str, enum.Enum):

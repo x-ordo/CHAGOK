@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { logger } from '@/lib/logger';
-import type { Asset, CreateAssetRequest, DivisionSummary, AssetType } from '@/types/assets';
+import type { LegacyAsset as Asset, CreateAssetRequest, LegacyDivisionSummary as DivisionSummary, AssetType } from '@/types/asset';
 import * as assetsApi from '@/lib/api/assets';
 
 interface UseAssetsOptions {
@@ -199,13 +199,19 @@ export function useAssets({ caseId }: UseAssetsOptions) {
   // Group assets by type
   const assetsByType = useMemo(() => {
     const grouped: Record<AssetType, Asset[]> = {
+      // Canonical values
       real_estate: [],
+      savings: [],
+      stocks: [],
+      retirement: [],
       vehicle: [],
+      insurance: [],
+      debt: [],
+      other: [],
+      // Legacy values
       financial: [],
       business: [],
       personal: [],
-      debt: [],
-      other: [],
     };
 
     assets.forEach((asset) => {

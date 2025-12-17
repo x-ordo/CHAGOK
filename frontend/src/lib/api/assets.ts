@@ -5,11 +5,11 @@
 
 import { apiClient } from './client';
 import type {
-  Asset,
+  LegacyAsset as Asset,
   CreateAssetRequest,
-  DivisionSummary,
+  LegacyDivisionSummary as DivisionSummary,
   SimulateDivisionRequest,
-} from '@/types/assets';
+} from '@/types/asset';
 
 // Get all assets for a case
 export async function getAssets(caseId: string): Promise<Asset[]> {
