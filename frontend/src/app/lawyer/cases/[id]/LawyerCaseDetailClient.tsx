@@ -7,9 +7,10 @@
  * Client-side component for case detail view with evidence list and AI summary.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Loader2, RefreshCw, Filter, Sparkles, CheckCircle2 } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import ExplainerCard from '@/components/cases/ExplainerCard';
 import ShareSummaryModal from '@/components/cases/ShareSummaryModal';
@@ -19,6 +20,21 @@ import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 import { PrecedentPanel } from '@/components/precedent';
 import { PartyGraph } from '@/components/party/PartyGraph';
 import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
+// Evidence imports
+import EvidenceUpload from '@/components/evidence/EvidenceUpload';
+import EvidenceTable from '@/components/evidence/EvidenceTable';
+import { Evidence } from '@/types/evidence';
+import {
+  getPresignedUploadUrl,
+  uploadToS3,
+  notifyUploadComplete,
+  getEvidence,
+  UploadProgress
+} from '@/lib/api/evidence';
+import { mapApiEvidenceToEvidence, mapApiEvidenceListToEvidence } from '@/lib/utils/evidenceMapper';
+import { EvidenceEmptyState } from '@/components/evidence/EvidenceEmptyState';
+import { ErrorState } from '@/components/shared/EmptyState';
+import { logger } from '@/lib/logger';
 
 interface CaseDetail {
   id: string;
@@ -76,6 +92,16 @@ interface LawyerCaseDetailClientProps {
   id: string;
 }
 
+// Evidence upload types
+type UploadFeedback = { message: string; tone: 'info' | 'success' | 'error' };
+type UploadStatus = {
+  isUploading: boolean;
+  currentFile: string;
+  progress: number;
+  completed: number;
+  total: number;
+};
+
 export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetailClientProps) {
   const router = useRouter();
 
@@ -97,6 +123,19 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [showEditModal, setShowEditModal] = useState(false);
   // 무한 스피너 방지: ID 대기 타임아웃 상태
   const [idWaitTimedOut, setIdWaitTimedOut] = useState(false);
+
+  // Evidence state
+  const [evidenceList, setEvidenceList] = useState<Evidence[]>([]);
+  const [isLoadingEvidence, setIsLoadingEvidence] = useState(true);
+  const [evidenceError, setEvidenceError] = useState<string | null>(null);
+  const [uploadFeedback, setUploadFeedback] = useState<UploadFeedback | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>({
+    isUploading: false,
+    currentFile: '',
+    progress: 0,
+    completed: 0,
+    total: 0,
+  });
 
   // Race condition 방어를 위한 ID 검증 플래그 (hooks 이후에 위치해야 함)
   const isIdMissing = !id || id.trim() === '';
@@ -178,6 +217,176 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
       isCancelled = true;
     };
   }, [caseId, router]);
+
+  // Fetch evidence list from API
+  const fetchEvidence = useCallback(async () => {
+    if (!caseId) return;
+
+    setIsLoadingEvidence(true);
+    setEvidenceError(null);
+
+    try {
+      const response = await getEvidence(caseId);
+      if (response.error) {
+        setEvidenceError(response.error);
+        setEvidenceList([]);
+      } else if (response.data) {
+        const mappedEvidence = mapApiEvidenceListToEvidence(response.data.evidence);
+        setEvidenceList(mappedEvidence);
+      }
+    } catch (err) {
+      logger.error('Failed to fetch evidence:', err);
+      setEvidenceError('증거 목록을 불러오는데 실패했습니다.');
+      setEvidenceList([]);
+    } finally {
+      setIsLoadingEvidence(false);
+    }
+  }, [caseId]);
+
+  // Load evidence on mount
+  useEffect(() => {
+    fetchEvidence();
+  }, [fetchEvidence]);
+
+  // Auto-polling: silently check for status updates
+  useEffect(() => {
+    const hasProcessingItems = evidenceList.some(
+      e => e.status === 'processing' || e.status === 'queued' || e.status === 'uploading'
+    );
+
+    if (!hasProcessingItems || !caseId) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const result = await getEvidence(caseId);
+        if (result.data) {
+          const newList = result.data.evidence.map(e => mapApiEvidenceToEvidence(e));
+
+          setEvidenceList(prevList => {
+            let hasChanges = false;
+            const updatedList = prevList.map(prevItem => {
+              const newItem = newList.find(n => n.id === prevItem.id);
+              if (newItem && (newItem.status !== prevItem.status || newItem.summary !== prevItem.summary)) {
+                hasChanges = true;
+                return newItem;
+              }
+              return prevItem;
+            });
+
+            const newItems = newList.filter(n => !prevList.some(p => p.id === n.id));
+            if (newItems.length > 0) {
+              hasChanges = true;
+            }
+
+            return hasChanges ? [...updatedList, ...newItems] : prevList;
+          });
+        }
+      } catch {
+        // Silently ignore polling errors
+      }
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [evidenceList, caseId]);
+
+  // Handle file upload
+  const handleUpload = useCallback(async (files: File[]) => {
+    if (files.length === 0 || !caseId) return;
+
+    setUploadStatus({
+      isUploading: true,
+      currentFile: files[0].name,
+      progress: 0,
+      completed: 0,
+      total: files.length,
+    });
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      setUploadStatus(prev => ({
+        ...prev,
+        currentFile: file.name,
+        progress: 0,
+      }));
+
+      try {
+        const presignedResult = await getPresignedUploadUrl(
+          caseId,
+          file.name,
+          file.type || 'application/octet-stream'
+        );
+
+        if (presignedResult.error || !presignedResult.data) {
+          throw new Error(presignedResult.error || 'Failed to get presigned URL');
+        }
+
+        const { upload_url, evidence_temp_id, s3_key } = presignedResult.data;
+
+        const uploadSuccess = await uploadToS3(
+          upload_url,
+          file,
+          (progress: UploadProgress) => {
+            setUploadStatus(prev => ({
+              ...prev,
+              progress: progress.percent,
+            }));
+          }
+        );
+
+        if (!uploadSuccess) {
+          throw new Error('S3 upload failed');
+        }
+
+        const completeResult = await notifyUploadComplete({
+          case_id: caseId,
+          evidence_temp_id,
+          s3_key,
+          file_size: file.size,
+        });
+
+        if (completeResult.error) {
+          throw new Error(completeResult.error || 'Failed to complete upload');
+        }
+
+        successCount++;
+      } catch (error) {
+        logger.error(`Upload failed for ${file.name}:`, error);
+        failCount++;
+      }
+
+      setUploadStatus(prev => ({
+        ...prev,
+        completed: i + 1,
+      }));
+    }
+
+    setUploadStatus(prev => ({ ...prev, isUploading: false }));
+
+    if (failCount === 0) {
+      setUploadFeedback({
+        tone: 'success',
+        message: `${successCount}개 파일 업로드 완료. AI가 증거를 분석 중입니다.`,
+      });
+      fetchEvidence();
+    } else if (successCount > 0) {
+      setUploadFeedback({
+        tone: 'info',
+        message: `${successCount}개 성공, ${failCount}개 실패. 실패한 파일을 다시 업로드해주세요.`,
+      });
+      fetchEvidence();
+    } else {
+      setUploadFeedback({
+        tone: 'error',
+        message: `업로드 실패. 네트워크를 확인하고 다시 시도해주세요.`,
+      });
+    }
+
+    setTimeout(() => setUploadFeedback(null), 5000);
+  }, [caseId, fetchEvidence]);
 
   // Race condition 방어: ID가 없으면 로딩 스피너 또는 에러 표시
   if (isIdMissing) {
@@ -388,7 +597,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
       <div className="border-b border-gray-200 dark:border-neutral-700">
         <nav className="flex gap-6">
           {[
-            { id: 'evidence', label: '증거 자료', count: caseDetail.evidenceCount },
+            { id: 'evidence', label: '증거 자료', count: evidenceList.length },
             { id: 'timeline', label: '타임라인', count: caseDetail.recentActivities.length },
             { id: 'members', label: '팀원', count: caseDetail.members.length },
             { id: 'relations', label: '관계도', count: null },
@@ -419,33 +628,103 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
       {/* Tab Content */}
       <div className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg p-6">
         {activeTab === 'evidence' && (
-          <div>
-            {caseDetail.evidenceCount > 0 ? (
-              <div className="space-y-4">
-                {caseDetail.evidenceSummary.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-700 rounded-lg"
-                  >
-                    <span className="font-medium">{item.type}</span>
-                    <span className="text-[var(--color-text-secondary)]">{item.count}건</span>
-                  </div>
-                ))}
-                <Link
-                  href={detailPath}
-                  className="inline-flex items-center gap-2 text-[var(--color-primary)] hover:underline"
-                >
-                  전체 증거 자료 보기
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
+          <div className="space-y-6">
+            {/* Evidence Upload Section */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-[var(--color-text-primary)]">증거 업로드</h2>
+                  <p className="text-sm text-[var(--color-text-secondary)]">파일을 드래그하거나 클릭하여 업로드할 수 있습니다.</p>
+                </div>
+                <span className="text-xs text-[var(--color-text-secondary)] flex items-center">
+                  <Sparkles className="w-4 h-4 text-[var(--color-primary)] mr-1" /> Whisper · OCR 자동 적용
+                </span>
               </div>
-            ) : (
-              <p className="text-center text-[var(--color-text-secondary)] py-8">
-                등록된 증거 자료가 없습니다.
-              </p>
-            )}
+              <EvidenceUpload onUpload={handleUpload} disabled={uploadStatus.isUploading} />
+              {uploadStatus.isUploading && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 text-sm">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                    <span className="text-blue-800 dark:text-blue-300 font-medium">
+                      업로드 중 ({uploadStatus.completed + 1}/{uploadStatus.total})
+                    </span>
+                  </div>
+                  <p className="text-blue-700 dark:text-blue-400 text-xs mb-2 truncate">{uploadStatus.currentFile}</p>
+                  <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadStatus.progress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              {uploadFeedback && !uploadStatus.isUploading && (
+                <div
+                  className={`flex items-start space-x-2 rounded-lg px-4 py-3 text-sm ${
+                    uploadFeedback.tone === 'success'
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300'
+                      : uploadFeedback.tone === 'error'
+                      ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800'
+                      : 'bg-gray-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
+                  }`}
+                >
+                  <CheckCircle2 className={`w-4 h-4 mt-0.5 ${
+                    uploadFeedback.tone === 'error' ? 'text-red-500' : 'text-green-500'
+                  }`} />
+                  <p>{uploadFeedback.message}</p>
+                </div>
+              )}
+            </section>
+
+            {/* Evidence List Section */}
+            <section className="space-y-4 pt-4 border-t border-gray-200 dark:border-neutral-700">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-bold text-[var(--color-text-primary)]">
+                    증거 목록 <span className="text-[var(--color-text-secondary)] text-sm font-normal">({evidenceList.length})</span>
+                  </h2>
+                  <p className="text-xs text-[var(--color-text-secondary)]">상태 컬럼을 통해 AI 분석 파이프라인의 진행 상황을 확인하세요.</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={fetchEvidence}
+                    disabled={isLoadingEvidence}
+                    className="flex items-center text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 px-3 py-1.5 rounded-md shadow-sm disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingEvidence ? 'animate-spin' : ''}`} />
+                    새로고침
+                  </button>
+                  <button className="flex items-center text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 px-3 py-1.5 rounded-md shadow-sm">
+                    <Filter className="w-4 h-4 mr-2" />
+                    뷰 필터
+                  </button>
+                </div>
+              </div>
+              {isLoadingEvidence && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-[var(--color-primary)] animate-spin" />
+                  <span className="ml-2 text-[var(--color-text-secondary)]">증거 목록을 불러오는 중...</span>
+                </div>
+              )}
+              {evidenceError && !isLoadingEvidence && (
+                <ErrorState
+                  title="증거 목록을 불러올 수 없습니다"
+                  message={evidenceError}
+                  onRetry={fetchEvidence}
+                  retryText="다시 시도"
+                  size="sm"
+                />
+              )}
+              {!isLoadingEvidence && !evidenceError && evidenceList.length === 0 && (
+                <EvidenceEmptyState
+                  caseTitle={caseDetail?.title}
+                  size="sm"
+                />
+              )}
+              {!isLoadingEvidence && !evidenceError && evidenceList.length > 0 && (
+                <EvidenceTable items={evidenceList} />
+              )}
+            </section>
           </div>
         )}
 
