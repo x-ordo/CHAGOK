@@ -81,7 +81,8 @@ interface CaseDetailResponse {
   ai_summary?: string;
   ai_labels?: string[];
   recent_activities?: { action: string; timestamp: string; user: string }[];
-  members?: { userId: string; userName?: string; role: string }[];
+  // API returns snake_case, we transform to camelCase
+  members?: { user_id: string; user_name?: string; role: string }[];
 }
 
 interface LawyerCaseDetailClientProps {
@@ -168,6 +169,12 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
         }
 
         const data = response.data;
+        // Transform members from snake_case to camelCase
+        const transformedMembers = (data.members || []).map((m) => ({
+          userId: m.user_id,
+          userName: m.user_name,
+          role: m.role,
+        }));
         setCaseDetail({
           id: data.id,
           title: data.title,
@@ -184,7 +191,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
           aiSummary: data.ai_summary,
           aiLabels: data.ai_labels || [],
           recentActivities: data.recent_activities || [],
-          members: data.members || [],
+          members: transformedMembers,
         });
       } catch (err) {
         if (isCancelled) return;

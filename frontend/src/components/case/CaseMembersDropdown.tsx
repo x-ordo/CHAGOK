@@ -48,7 +48,7 @@ function getInitials(name?: string): string {
 /**
  * Generate a consistent color based on user ID
  */
-function getAvatarColor(userId: string): string {
+function getAvatarColor(userId?: string): string {
   const colors = [
     'bg-blue-500',
     'bg-green-500',
@@ -59,6 +59,7 @@ function getAvatarColor(userId: string): string {
     'bg-teal-500',
     'bg-orange-500',
   ];
+  if (!userId) return colors[0];
   const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return colors[hash % colors.length];
 }

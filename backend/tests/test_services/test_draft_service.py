@@ -182,42 +182,46 @@ class TestDraftServicePreview:
 class TestDraftServiceRagSearch:
     """Tests for _perform_rag_search method"""
 
+    @patch("app.services.draft.rag_orchestrator.search_legal_knowledge")
     @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     def test_rag_search_with_claim_section(
-        self, mock_search, draft_service
+        self, mock_evidence_search, mock_legal_search, draft_service
     ):
         """Test RAG search includes fault keywords for 청구원인 section"""
         # Arrange
         case_id = "case_123abc"
         sections = ["청구원인"]
 
-        mock_search.return_value = []
+        mock_evidence_search.return_value = []
+        mock_legal_search.return_value = []
 
         # Act
         draft_service._perform_rag_search(case_id, sections)
 
         # Assert
-        call_args = mock_search.call_args
-        assert "귀책사유" in call_args.kwargs.get("query", call_args[1].get("query", ""))
-        assert call_args.kwargs.get("top_k", call_args[1].get("top_k")) == 5
+        call_args = mock_evidence_search.call_args
+        assert "귀책사유" in call_args.kwargs.get("query", "")
+        assert call_args.kwargs.get("top_k") == 5
 
+    @patch("app.services.draft.rag_orchestrator.search_legal_knowledge")
     @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     def test_rag_search_general_sections(
-        self, mock_search, draft_service
+        self, mock_evidence_search, mock_legal_search, draft_service
     ):
         """Test RAG search for general sections"""
         # Arrange
         case_id = "case_123abc"
         sections = ["당사자", "사건경위"]
 
-        mock_search.return_value = []
+        mock_evidence_search.return_value = []
+        mock_legal_search.return_value = []
 
         # Act
         draft_service._perform_rag_search(case_id, sections)
 
         # Assert
-        call_args = mock_search.call_args
-        assert call_args.kwargs.get("top_k", call_args[1].get("top_k")) == 3
+        call_args = mock_evidence_search.call_args
+        assert call_args.kwargs.get("top_k") == 3
 
 
 class TestDraftServicePromptBuilding:
