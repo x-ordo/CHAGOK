@@ -165,10 +165,10 @@ export function KeypointList({
                   {/* Legal grounds */}
                   {linkedGrounds.map((ground) => (
                     <span
-                      key={ground.id}
+                      key={ground.code}
                       className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-primary-light text-primary"
                     >
-                      {ground.code}: {ground.name}
+                      {ground.code}: {ground.name_ko}
                     </span>
                   ))}
                 </div>

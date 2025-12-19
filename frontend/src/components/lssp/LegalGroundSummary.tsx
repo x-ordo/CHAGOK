@@ -33,7 +33,7 @@ export function LegalGroundSummary({
   const analysis = useMemo((): GroundAnalysis[] => {
     return legalGrounds.map((ground) => {
       const linkedKeypoints = keypoints.filter(
-        (kp) => kp.legal_grounds?.some((g) => g.id === ground.id)
+        (kp) => kp.legal_grounds?.some((g) => g.code === ground.code)
       );
       const verifiedCount = linkedKeypoints.filter((kp) => kp.user_verified).length;
 
@@ -132,7 +132,7 @@ export function LegalGroundSummary({
 
         {analysis.map(({ ground, keypointCount, verifiedCount, strength }) => (
           <div
-            key={ground.id}
+            key={ground.code}
             className={`border rounded-xl p-4 transition-colors ${getStrengthColor(strength)}`}
           >
             <div className="flex items-start justify-between">
@@ -143,11 +143,11 @@ export function LegalGroundSummary({
                 <div>
                   <div className="flex items-center space-x-2">
                     <h4 className="font-medium text-gray-900">
-                      {ground.code}. {ground.name}
+                      {ground.code}. {ground.name_ko}
                     </h4>
                     {getStrengthBadge(strength)}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">{ground.description}</p>
+                  {ground.notes && <p className="text-sm text-gray-500 mt-1">{ground.notes}</p>}
 
                   {/* Civil code reference */}
                   {ground.civil_code_ref && (

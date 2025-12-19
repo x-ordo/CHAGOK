@@ -13,6 +13,12 @@ export { useCaseList } from './useCaseList';
 export { useClients } from './useClients';
 export { useInvestigators } from './useInvestigators';
 
+// Data fetching - Detail
+export { useCaseDetail } from './useCaseDetail';
+
+// Draft generation
+export { useDraft } from './useDraft';
+
 // Dashboard
 export { useLawyerDashboard } from './useLawyerDashboard';
 

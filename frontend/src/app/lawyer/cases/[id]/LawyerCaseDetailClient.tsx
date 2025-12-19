@@ -10,17 +10,20 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, RefreshCw, Filter, Sparkles, CheckCircle2, FileText } from 'lucide-react';
+import { Loader2, RefreshCw, Sparkles, CheckCircle2, FileText, Scale, Filter } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import ExplainerCard from '@/components/cases/ExplainerCard';
 import ShareSummaryModal from '@/components/cases/ShareSummaryModal';
 import EditCaseModal from '@/components/cases/EditCaseModal';
 import { ApiCase } from '@/lib/api/cases';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
-import { PrecedentPanel } from '@/components/precedent';
 import { PartyGraph } from '@/components/party/PartyGraph';
-import { LSSPPanel } from '@/components/lssp';
 import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
+import { useDraft } from '@/hooks/useDraft';
+// New components for refactored UI
+import { AnalysisTab } from '@/components/case/AnalysisTab';
+import { CaseMembersDropdown } from '@/components/case/CaseMembersDropdown';
+import { EvidenceFilterDropdown } from '@/components/evidence/EvidenceFilterDropdown';
 // Evidence imports
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceTable from '@/components/evidence/EvidenceTable';
@@ -124,7 +127,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [caseDetail, setCaseDetail] = useState<CaseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'evidence' | 'timeline' | 'members' | 'relations' | 'draft'>('evidence');
+  const [activeTab, setActiveTab] = useState<'evidence' | 'timeline' | 'analysis' | 'relations' | 'draft'>('evidence');
   const [showSummaryCard, setShowSummaryCard] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -574,6 +577,10 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
                 {caseDetail.description}
               </p>
             )}
+            {/* Team Members Dropdown */}
+            <div className="mt-3">
+              <CaseMembersDropdown members={caseDetail.members} />
+            </div>
           </div>
           <div className="flex gap-2">
             <Link
@@ -678,26 +685,13 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
         </div>
       )}
 
-      {/* 012-precedent-integration: T029 - Similar Precedents Panel */}
-      <PrecedentPanel caseId={caseId} />
-
-      {/* LSSP: Legal Strategy & Structured Pleading Panel */}
-      <LSSPPanel
-        caseId={caseId}
-        evidenceCount={caseDetail.evidenceCount}
-        onDraftGenerate={(templateId) => {
-          // TODO: Navigate to draft editor or open modal
-          console.log('Generate draft with template:', templateId);
-        }}
-      />
-
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-neutral-700">
         <nav className="flex gap-6">
           {[
             { id: 'evidence', label: '증거 자료', count: evidenceList.length, icon: null },
             { id: 'timeline', label: '타임라인', count: caseDetail.recentActivities.length, icon: null },
-            { id: 'members', label: '팀원', count: caseDetail.members.length, icon: null },
+            { id: 'analysis', label: '법률 분석', count: null, icon: <Scale className="w-4 h-4 mr-1" /> },
             { id: 'relations', label: '관계도', count: null, icon: null },
             { id: 'draft', label: '초안 생성', count: null, icon: <FileText className="w-4 h-4 mr-1" /> },
           ].map((tab) => (
@@ -929,33 +923,15 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
           </div>
         )}
 
-        {activeTab === 'members' && (
-          <div>
-            {caseDetail.members.length > 0 ? (
-              <div className="space-y-3">
-                {caseDetail.members.map((member, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-700 rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white text-sm font-medium">
-                        {member.userName?.slice(0, 1) || '?'}
-                      </div>
-                      <span className="font-medium">{member.userName || member.userId}</span>
-                    </div>
-                    <span className="text-sm text-[var(--color-text-secondary)] capitalize">
-                      {member.role}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-[var(--color-text-secondary)] py-8">
-                팀원이 없습니다.
-              </p>
-            )}
-          </div>
+        {activeTab === 'analysis' && (
+          <AnalysisTab
+            caseId={caseId}
+            evidenceCount={caseDetail.evidenceCount}
+            onDraftGenerate={() => {
+              setActiveTab('draft');
+              setShowDraftModal(true);
+            }}
+          />
         )}
 
         {activeTab === 'relations' && (

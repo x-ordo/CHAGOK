@@ -6,7 +6,7 @@ LSSP Legal Grounds API (v2.01)
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 
 from app.db.session import get_db
@@ -34,6 +34,15 @@ class LegalGroundResponse(BaseModel):
     limitation: Optional[LimitationSchema] = None
     notes: Optional[str] = None
     version: str
+    # NEW: Civil code reference and typical evidence types
+    civil_code_ref: Optional[str] = None
+    typical_evidence_types: List[str] = []
+
+    @field_validator('typical_evidence_types', mode='before')
+    @classmethod
+    def convert_none_to_empty_list(cls, v):
+        """Handle None values from DB (migration not applied yet)"""
+        return v if v is not None else []
 
     class Config:
         from_attributes = True

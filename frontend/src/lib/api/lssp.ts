@@ -9,14 +9,29 @@ import { apiRequest, ApiResponse, apiClient } from './client';
 // Types: Legal Grounds
 // =============================================================================
 
+/**
+ * Limitation schema for legal grounds
+ */
+export interface LegalGroundLimitation {
+  type?: string;
+  known_within_months?: number;
+  occurred_within_years?: number;
+  needs_legal_review?: boolean;
+}
+
+/**
+ * Legal ground for divorce (민법 제840조)
+ * Matches backend LegalGroundResponse schema
+ */
 export interface LegalGround {
-  id: string;
-  code: string;
-  name: string;
-  description: string;
-  civil_code_ref: string | null;
-  typical_evidence_types: string[];
-  created_at: string;
+  code: string;                          // G1, G2, G3, G4, G5, G6
+  name_ko: string;                       // Korean name
+  elements: string[];                    // Required elements/criteria
+  limitation?: LegalGroundLimitation;    // Statute of limitations
+  notes?: string;                        // Additional notes
+  version: string;                       // Schema version (e.g., "2.01")
+  civil_code_ref?: string;               // e.g., "민법 제840조 제1호"
+  typical_evidence_types: string[];      // e.g., ["녹음", "문자메시지"]
 }
 
 // =============================================================================

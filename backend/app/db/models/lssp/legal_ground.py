@@ -21,7 +21,11 @@ class LegalGround(Base):
     elements = Column(JSON, nullable=False, default=list)  # 요건 목록
     limitation = Column(JSON, nullable=True)  # 제척기간 정보
     notes = Column(Text, nullable=True)
-    
+
+    # NEW: Civil code reference and typical evidence types
+    civil_code_ref = Column(String(100), nullable=True)  # e.g., "민법 제840조 제1호"
+    typical_evidence_types = Column(JSON, nullable=False, default=list)  # e.g., ["녹음", "문자메시지"]
+
     # Metadata
     version = Column(String(20), nullable=False, default="v2.01")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
