@@ -5,6 +5,8 @@
  * 003-role-based-ui Feature - US3
  *
  * Client-side component for case detail view with evidence list and AI summary.
+ *
+ * Phase C.1: Refactored to use shared hooks and components from Phase A and B.
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -18,32 +20,28 @@ import EditCaseModal from '@/components/cases/EditCaseModal';
 import { ApiCase } from '@/lib/api/cases';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 import { PartyGraph } from '@/components/party/PartyGraph';
-import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
-import { useDraft } from '@/hooks/useDraft';
+// Phase A: Shared Hooks
+import { useCaseIdValidation, useEvidenceUpload } from '@/hooks';
 // New components for refactored UI
 import { AnalysisTab } from '@/components/case/AnalysisTab';
 import { CaseMembersDropdown } from '@/components/case/CaseMembersDropdown';
-import { EvidenceFilterDropdown } from '@/components/evidence/EvidenceFilterDropdown';
+import { CaseActionsDropdown } from '@/components/case/CaseActionsDropdown';
 // Evidence imports
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceTable from '@/components/evidence/EvidenceTable';
 import { Evidence, EvidenceType, EvidenceStatus } from '@/types/evidence';
-import {
-  getPresignedUploadUrl,
-  uploadToS3,
-  notifyUploadComplete,
-  getEvidence,
-  UploadProgress
-} from '@/lib/api/evidence';
+import { getEvidence } from '@/lib/api/evidence';
 import { mapApiEvidenceToEvidence, mapApiEvidenceListToEvidence } from '@/lib/utils/evidenceMapper';
 import { EvidenceEmptyState } from '@/components/evidence/EvidenceEmptyState';
 import { ErrorState } from '@/components/shared/EmptyState';
 import { logger } from '@/lib/logger';
+// Phase A.1: Status Config
+import { getCaseStatusConfig } from '@/lib/utils/statusConfig';
 // Draft imports
 import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
-import { generateDraftPreview, DraftPreviewResponse } from '@/lib/api/draft';
-import { DraftCitation, PrecedentCitation } from '@/types/draft';
+import { generateDraftPreview } from '@/lib/api/draft';
+import { DraftCitation } from '@/types/draft';
 import { downloadDraftAsDocx, DraftDownloadFormat, DownloadResult } from '@/services/documentService';
 
 interface CaseDetail {
@@ -65,19 +63,7 @@ interface CaseDetail {
   members: { userId: string; userName?: string; role: string }[];
 }
 
-const statusColors: Record<string, string> = {
-  active: 'bg-blue-100 text-blue-800',
-  open: 'bg-green-100 text-green-800',
-  in_progress: 'bg-yellow-100 text-yellow-800',
-  closed: 'bg-gray-100 text-gray-800',
-};
-
-const statusLabels: Record<string, string> = {
-  active: '활성',
-  open: '진행 중',
-  in_progress: '검토 대기',
-  closed: '종료',
-};
+// Phase A.1: Status colors/labels now imported from @/lib/utils/statusConfig
 
 interface CaseDetailResponse {
   id: string;
@@ -102,24 +88,15 @@ interface LawyerCaseDetailClientProps {
   id: string;
 }
 
-// Evidence upload types
-type UploadFeedback = { message: string; tone: 'info' | 'success' | 'error' };
-type UploadStatus = {
-  isUploading: boolean;
-  currentFile: string;
-  progress: number;
-  completed: number;
-  total: number;
-};
+// Phase A.3: Upload types now imported from useEvidenceUpload hook
 
 export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetailClientProps) {
   const router = useRouter();
 
-  // Use URL path for case ID (handles static export fallback)
-  const id = useCaseIdFromUrl(paramId);
+  // Phase A.2: Use useCaseIdValidation hook for ID handling with timeout
+  const { caseId, isIdMissing, idWaitTimedOut } = useCaseIdValidation(paramId);
 
-  // caseId 설정 - 빈 값이면 빈 문자열 유지 (API 레벨에서 방어됨)
-  const caseId = id || '';
+  // Derived paths
   const detailPath = caseId ? getCaseDetailPath('lawyer', caseId) : '/lawyer/cases/detail';
   const procedurePath = caseId ? getLawyerCasePath('procedure', caseId) : '/lawyer/cases/procedure';
   const assetsPath = caseId ? getLawyerCasePath('assets', caseId) : '/lawyer/cases/assets';
@@ -131,8 +108,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [showSummaryCard, setShowSummaryCard] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  // 무한 스피너 방지: ID 대기 타임아웃 상태
-  const [idWaitTimedOut, setIdWaitTimedOut] = useState(false);
 
   // Draft state
   const [showDraftModal, setShowDraftModal] = useState(false);
@@ -146,14 +121,10 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [evidenceList, setEvidenceList] = useState<Evidence[]>([]);
   const [isLoadingEvidence, setIsLoadingEvidence] = useState(true);
   const [evidenceError, setEvidenceError] = useState<string | null>(null);
-  const [uploadFeedback, setUploadFeedback] = useState<UploadFeedback | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>({
-    isUploading: false,
-    currentFile: '',
-    progress: 0,
-    completed: 0,
-    total: 0,
-  });
+
+  // AI Analysis state (Phase B.3)
+  const [lastAnalyzedAt, setLastAnalyzedAt] = useState<string | undefined>();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // 증거 필터 상태
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -169,24 +140,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
     });
   }, [evidenceList, filterType, filterStatus]);
 
-  // Race condition 방어를 위한 ID 검증 플래그 (hooks 이후에 위치해야 함)
-  const isIdMissing = !id || id.trim() === '';
-
-  // 무한 스피너 방지: 2초 후에도 ID가 없으면 에러 상태로 전환
-  useEffect(() => {
-    if (!isIdMissing) {
-      setIdWaitTimedOut(false);
-      return;
-    }
-
-    const timeout = setTimeout(() => {
-      if (isIdMissing) {
-        setIdWaitTimedOut(true);
-      }
-    }, 2000);
-
-    return () => clearTimeout(timeout);
-  }, [isIdMissing]);
+  // Phase A.2: ID validation is now handled by useCaseIdValidation hook
 
   // Fetch case data with race condition prevention
   useEffect(() => {
@@ -321,104 +275,15 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
     return () => clearInterval(pollInterval);
   }, [evidenceList, caseId]);
 
-  // Handle file upload
-  const handleUpload = useCallback(async (files: File[]) => {
-    if (files.length === 0 || !caseId) return;
-
-    setUploadStatus({
-      isUploading: true,
-      currentFile: files[0].name,
-      progress: 0,
-      completed: 0,
-      total: files.length,
-    });
-
-    let successCount = 0;
-    let failCount = 0;
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-
-      setUploadStatus(prev => ({
-        ...prev,
-        currentFile: file.name,
-        progress: 0,
-      }));
-
-      try {
-        const presignedResult = await getPresignedUploadUrl(
-          caseId,
-          file.name,
-          file.type || 'application/octet-stream'
-        );
-
-        if (presignedResult.error || !presignedResult.data) {
-          throw new Error(presignedResult.error || 'Failed to get presigned URL');
-        }
-
-        const { upload_url, evidence_temp_id, s3_key } = presignedResult.data;
-
-        const uploadSuccess = await uploadToS3(
-          upload_url,
-          file,
-          (progress: UploadProgress) => {
-            setUploadStatus(prev => ({
-              ...prev,
-              progress: progress.percent,
-            }));
-          }
-        );
-
-        if (!uploadSuccess) {
-          throw new Error('S3 upload failed');
-        }
-
-        const completeResult = await notifyUploadComplete({
-          case_id: caseId,
-          evidence_temp_id,
-          s3_key,
-          file_size: file.size,
-        });
-
-        if (completeResult.error) {
-          throw new Error(completeResult.error || 'Failed to complete upload');
-        }
-
-        successCount++;
-      } catch (error) {
-        logger.error(`Upload failed for ${file.name}:`, error);
-        failCount++;
-      }
-
-      setUploadStatus(prev => ({
-        ...prev,
-        completed: i + 1,
-      }));
-    }
-
-    setUploadStatus(prev => ({ ...prev, isUploading: false }));
-
-    if (failCount === 0) {
-      setUploadFeedback({
-        tone: 'success',
-        message: `${successCount}개 파일 업로드 완료. AI가 증거를 분석 중입니다.`,
-      });
-      fetchEvidence();
-    } else if (successCount > 0) {
-      setUploadFeedback({
-        tone: 'info',
-        message: `${successCount}개 성공, ${failCount}개 실패. 실패한 파일을 다시 업로드해주세요.`,
-      });
-      fetchEvidence();
-    } else {
-      setUploadFeedback({
-        tone: 'error',
-        message: `업로드 실패. 네트워크를 확인하고 다시 시도해주세요.`,
-      });
-    }
-
-    setTimeout(() => setUploadFeedback(null), 5000);
-  }, [caseId, fetchEvidence]);
+  // Phase A.3: Use useEvidenceUpload hook for file upload
+  const {
+    handleUpload,
+    uploadStatus,
+    uploadFeedback,
+    isUploading,
+  } = useEvidenceUpload(caseId, {
+    onUploadComplete: fetchEvidence,
+  });
 
   // Draft generation handler
   const handleGenerateDraft = useCallback(async (selectedEvidenceIds: string[]) => {
@@ -478,6 +343,24 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const handleDraftRegenerate = useCallback(() => {
     setShowDraftModal(true);
   }, []);
+
+  // Phase B.3: AI Analysis request handler
+  const handleRequestAnalysis = useCallback(async () => {
+    if (!caseId) return;
+
+    setIsAnalyzing(true);
+    try {
+      // Trigger keypoint extraction from evidence
+      const response = await apiClient.post(`/lssp/cases/${caseId}/extract-keypoints`, {});
+      if (!response.error) {
+        setLastAnalyzedAt(new Date().toISOString());
+      }
+    } catch (err) {
+      logger.error('AI analysis request failed:', err);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [caseId]);
 
   // Race condition 방어: ID가 없으면 로딩 스피너 또는 에러 표시
   if (isIdMissing) {
@@ -541,8 +424,8 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
     );
   }
 
-  const statusColor = statusColors[caseDetail.status] || statusColors.active;
-  const statusLabel = statusLabels[caseDetail.status] || caseDetail.status;
+  // Phase A.1: Use getCaseStatusConfig for status colors/labels
+  const statusConfig = getCaseStatusConfig(caseDetail.status);
 
   return (
     <div className="space-y-6">
@@ -563,8 +446,8 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
               <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
                 {caseDetail.title}
               </h1>
-              <span className={`px-3 py-1 text-sm font-medium rounded-full ${statusColor}`}>
-                {statusLabel}
+              <span className={`px-3 py-1 text-sm font-medium rounded-full ${statusConfig.color}`}>
+                {statusConfig.label}
               </span>
             </div>
             {caseDetail.clientName && (
@@ -582,48 +465,25 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
               <CaseMembersDropdown members={caseDetail.members} />
             </div>
           </div>
-          <div className="flex gap-2">
-            <Link
-              href={procedurePath}
-              className="px-4 py-2 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 rounded-lg text-sm hover:bg-blue-50 dark:hover:bg-blue-900/30 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg>
-              절차 진행
-            </Link>
-            <Link
-              href={assetsPath}
-              className="px-4 py-2 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 rounded-lg text-sm hover:bg-green-50 dark:hover:bg-green-900/30 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              재산분할
-            </Link>
+          {/* Phase B.1: Header buttons consolidated into dropdown */}
+          <div className="flex items-center gap-2">
+            {/* Primary Action: Draft Generation */}
             <button
               type="button"
-              onClick={() => setShowEditModal(true)}
-              className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-neutral-700"
+              onClick={() => setShowDraftModal(true)}
+              className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm hover:bg-[var(--color-primary-hover)] flex items-center gap-2"
             >
-              수정
+              <Sparkles className="w-4 h-4" />
+              초안 생성
             </button>
-            <button
-              type="button"
-              onClick={() => setShowSummaryCard(true)}
-              className="px-4 py-2 border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 rounded-lg text-sm hover:bg-purple-50 dark:hover:bg-purple-900/30 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              요약 카드
-            </button>
-            <button
-              type="button"
-              className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm hover:bg-[var(--color-primary-hover)]"
-            >
-              AI 분석 요청
-            </button>
+            {/* Secondary Actions in Dropdown */}
+            <CaseActionsDropdown
+              procedurePath={procedurePath}
+              assetsPath={assetsPath}
+              onEdit={() => setShowEditModal(true)}
+              onSummaryCard={() => setShowSummaryCard(true)}
+              onAIAnalysis={handleRequestAnalysis}
+            />
           </div>
         </div>
 
@@ -931,6 +791,10 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
               setActiveTab('draft');
               setShowDraftModal(true);
             }}
+            // Phase B.3: AI analysis status bar props
+            lastAnalyzedAt={lastAnalyzedAt}
+            onRequestAnalysis={handleRequestAnalysis}
+            isAnalyzing={isAnalyzing}
           />
         )}
 

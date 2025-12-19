@@ -21,6 +21,10 @@ const APP_BASE_URL =
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_BASE_URL),
+  icons: {
+    icon: '/logo.svg',
+    apple: '/logo.svg',
+  },
   title: 'Legal Evidence Hub - AI 이혼 소송 증거 분석 솔루션',
   description:
     'AI 기반 이혼 소송 증거 자동 분석 및 답변서 초안 생성 서비스. 증거 정리 시간 90% 단축, 14일 무료 체험.',
@@ -111,7 +115,7 @@ export default function RootLayout({
               name: 'Legal Evidence Hub',
               alternateName: 'LEH',
               url: APP_BASE_URL,
-              logo: `${APP_BASE_URL}/logo.png`,
+              logo: `${APP_BASE_URL}/logo.svg`,
               description:
                 'AI 기반 이혼 소송 증거 자동 분석 및 답변서 초안 생성 서비스',
               address: {

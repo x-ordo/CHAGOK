@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { UserRole, ROLE_DISPLAY_NAMES } from '@/types/user';
+import { Logo } from '@/components/shared/Logo';
 
 export interface NavItem {
   id: string;
@@ -169,10 +170,8 @@ export function PortalSidebar({
         {/* Logo - T073: Home button links to role-specific dashboard */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-white/10">
           <Link href={homePath} className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center font-bold">
-              LEH
-            </div>
-            <span className="font-semibold text-lg">Legal Evidence</span>
+            <Logo size="sm" />
+            <span className="font-semibold text-lg">차곡 - 법률증거허브</span>
           </Link>
           {/* Close button for mobile */}
           {onClose && (

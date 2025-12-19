@@ -67,3 +67,11 @@ export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 // Error handling & retry
 export { useRetry, retryOperation } from './useRetry';
+
+// URL utilities
+export { useCaseIdFromUrl } from './useCaseIdFromUrl';
+export { useCaseIdValidation } from './useCaseIdValidation';
+
+// Upload utilities
+export { useEvidenceUpload } from './useEvidenceUpload';
+export type { UploadStatus, UploadFeedback, FeedbackTone } from './useEvidenceUpload';

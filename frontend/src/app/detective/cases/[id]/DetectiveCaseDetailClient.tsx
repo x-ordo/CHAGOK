@@ -18,6 +18,8 @@ import {
   type FieldRecord,
 } from '@/lib/api/detective-portal';
 import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
+// Phase C.3: Shared status config
+import { getCaseStatusConfig } from '@/lib/utils/statusConfig';
 
 interface DetectiveCaseDetailClientProps {
   caseId: string;
@@ -85,23 +87,12 @@ export default function DetectiveCaseDetailClient({ caseId: paramCaseId }: Detec
     setShowRejectModal(false);
   };
 
+  // Phase C.3: Using shared status config
   const getStatusBadge = (status: string) => {
-    const badges: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-700',
-      active: 'bg-blue-100 text-blue-700',
-      review: 'bg-purple-100 text-purple-700',
-      completed: 'bg-green-100 text-green-700',
-    };
-    const labels: Record<string, string> = {
-      pending: '대기중',
-      active: '진행중',
-      review: '검토중',
-      completed: '완료',
-    };
-
+    const config = getCaseStatusConfig(status);
     return (
-      <span className={`px-3 py-1 text-sm font-medium rounded-full ${badges[status] || badges.pending}`}>
-        {labels[status] || status}
+      <span className={`px-3 py-1 text-sm font-medium rounded-full ${config.color}`}>
+        {config.label}
       </span>
     );
   };

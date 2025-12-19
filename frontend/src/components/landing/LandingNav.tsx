@@ -12,6 +12,7 @@
 
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
+import { Logo } from '@/components/shared/Logo';
 
 interface LandingNavProps {
   isScrolled?: boolean;
@@ -66,16 +67,8 @@ export default function LandingNav({
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2">
-            <img
-              src="/logo.png"
-              alt="Legal Evidence Hub"
-              className="w-8 h-8 object-contain"
-              onError={(e) => {
-                // Fallback to text logo if image fails
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <span className="text-2xl font-bold text-secondary">LEH</span>
+            <Logo size="sm" />
+            <span className="text-2xl font-bold text-secondary">CHAGOK</span>
           </Link>
         </div>
 

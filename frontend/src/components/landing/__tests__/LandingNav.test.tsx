@@ -17,7 +17,7 @@ describe('LandingNav Component', () => {
     it('should render the logo on the left', () => {
       render(<LandingNav />);
 
-      const logo = screen.getByRole('img', { name: /legal evidence hub|leh/i });
+      const logo = screen.getByRole('img', { name: /chagok/i });
       expect(logo).toBeInTheDocument();
     });
 
@@ -141,7 +141,7 @@ describe('LandingNav Component', () => {
     it('should use Deep Trust Blue for logo text', () => {
       render(<LandingNav />);
 
-      const logo = screen.getByText('LEH');
+      const logo = screen.getByText('CHAGOK');
       expect(logo).toHaveClass('text-secondary');
     });
   });

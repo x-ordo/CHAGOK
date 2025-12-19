@@ -135,6 +135,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 'placeholder:text-neutral-400 dark:placeholder:text-neutral-500',
                 // Size
                 sizeStyles[inputSize],
+                // Minimum touch target (WCAG 2.1 AA: 44px)
+                'min-h-[44px]',
                 // Width
                 fullWidth && 'w-full',
                 // Padding for icons

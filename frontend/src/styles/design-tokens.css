@@ -103,10 +103,10 @@
    * ======================================== */
 
   /* Primary - Main action color (clarity-teal) */
-  /* Using teal-600 for WCAG 2.1 AA compliant contrast with white text (4.5:1+) */
-  --color-primary: var(--color-teal-600);
-  --color-primary-hover: var(--color-teal-700);
-  --color-primary-active: var(--color-teal-800);
+  /* Using teal-700 for WCAG 2.1 AA compliant contrast with white text (4.58:1) */
+  --color-primary: var(--color-teal-700);
+  --color-primary-hover: var(--color-teal-800);
+  --color-primary-active: var(--color-teal-900);
   --color-primary-light: var(--color-teal-100);
   --color-primary-contrast: #ffffff;
 

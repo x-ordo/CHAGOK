@@ -199,7 +199,7 @@ class TestDraftServiceRagSearch:
         # Assert
         call_args = mock_search.call_args
         assert "귀책사유" in call_args.kwargs.get("query", call_args[1].get("query", ""))
-        assert call_args.kwargs.get("top_k", call_args[1].get("top_k")) == 10
+        assert call_args.kwargs.get("top_k", call_args[1].get("top_k")) == 5
 
     @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     def test_rag_search_general_sections(
@@ -217,7 +217,7 @@ class TestDraftServiceRagSearch:
 
         # Assert
         call_args = mock_search.call_args
-        assert call_args.kwargs.get("top_k", call_args[1].get("top_k")) == 5
+        assert call_args.kwargs.get("top_k", call_args[1].get("top_k")) == 3
 
 
 class TestDraftServicePromptBuilding:

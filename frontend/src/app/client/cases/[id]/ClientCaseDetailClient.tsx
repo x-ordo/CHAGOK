@@ -13,6 +13,8 @@ import { getClientCaseDetail } from '@/lib/api/client-portal';
 import ProgressTracker from '@/components/client/ProgressTracker';
 import type { ClientCaseDetailResponse, RecentActivity } from '@/types/client-portal';
 import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
+// Phase C.2: Shared status config
+import { getEvidenceStatusConfig } from '@/lib/utils/statusConfig';
 
 // Activity Item Component
 function ActivityItem({
@@ -94,42 +96,7 @@ function EvidenceIcon({ type }: { type: string }) {
   }
 }
 
-// Status badge colors and labels
-function getStatusConfig(status: string): { color: string; label: string } {
-  switch (status) {
-    case 'verified':
-    case 'approved':
-      return {
-        color: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
-        label: status === 'approved' ? '승인됨' : '검증완료',
-      };
-    case 'processed':
-      return {
-        color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
-        label: '분석완료',
-      };
-    case 'pending_review':
-      return {
-        color: 'bg-yellow-100 text-yellow-700',
-        label: '검토 대기',
-      };
-    case 'rejected':
-      return {
-        color: 'bg-red-100 text-red-700',
-        label: '반려됨',
-      };
-    default:
-      return {
-        color: 'bg-[var(--color-neutral-200)] text-[var(--color-text-secondary)]',
-        label: '처리중',
-      };
-  }
-}
-
-// Legacy function for backwards compatibility
-function getStatusColor(status: string) {
-  return getStatusConfig(status).color;
-}
+// Phase C.2: Local getStatusConfig and getStatusColor removed - using shared getEvidenceStatusConfig from @/lib/utils/statusConfig
 
 interface ClientCaseDetailClientProps {
   caseId: string;
@@ -330,8 +297,8 @@ export default function ClientCaseDetailClient({ caseId: paramCaseId }: ClientCa
                       {evidence.file_name}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusConfig(evidence.status).color}`}>
-                        {getStatusConfig(evidence.status).label}
+                      <span className={`px-2 py-0.5 text-xs rounded-full ${getEvidenceStatusConfig(evidence.status).color}`}>
+                        {getEvidenceStatusConfig(evidence.status).label}
                       </span>
                       <span className="text-xs text-[var(--color-text-tertiary)]">
                         {new Date(evidence.uploaded_at).toLocaleDateString('ko-KR')}

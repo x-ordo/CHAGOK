@@ -45,7 +45,7 @@ describe('Landing Page Integration', () => {
       render(<LandingPage />);
 
       expect(screen.getByRole('navigation')).toBeInTheDocument();
-      expect(screen.getByText('LEH')).toBeInTheDocument();
+      expect(screen.getByText('CHAGOK')).toBeInTheDocument();
     });
 
     it('should render hero section', () => {
