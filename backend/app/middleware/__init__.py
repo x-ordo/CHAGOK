@@ -14,6 +14,12 @@ from .error_handler import (
 from .security import SecurityHeadersMiddleware, HTTPSRedirectMiddleware
 from .audit_log import AuditLogMiddleware
 from .latency import LatencyLoggingMiddleware, SLOW_REQUEST_THRESHOLD
+from .correlation import (
+    CorrelationIdMiddleware,
+    CORRELATION_ID_HEADER,
+    get_correlation_id_from_request,
+    get_correlation_id_middleware
+)
 from .case_permission import (
     CasePermissionChecker,
     get_permission_checker,
@@ -38,6 +44,11 @@ __all__ = [
     "AuditLogMiddleware",
     "LatencyLoggingMiddleware",
     "SLOW_REQUEST_THRESHOLD",
+    # Correlation ID middleware
+    "CorrelationIdMiddleware",
+    "CORRELATION_ID_HEADER",
+    "get_correlation_id_from_request",
+    "get_correlation_id_middleware",
     # Case permission utilities
     "CasePermissionChecker",
     "get_permission_checker",

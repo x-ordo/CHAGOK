@@ -12,7 +12,6 @@ from datetime import datetime, timezone  # noqa: E402
 
 from fastapi import FastAPI, Depends  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from fastapi.responses import JSONResponse  # noqa: E402
 from mangum import Mangum  # noqa: E402 - AWS Lambda handler
 
 # Import configuration and middleware
@@ -56,8 +55,10 @@ from app.middleware import (  # noqa: E402
     SecurityHeadersMiddleware,
     HTTPSRedirectMiddleware,
     AuditLogMiddleware,
-    LatencyLoggingMiddleware
+    LatencyLoggingMiddleware,
+    CorrelationIdMiddleware
 )
+from app.api import health  # noqa: E402 - Health check router
 
 
 # ============================================
@@ -74,6 +75,33 @@ logger = logging.getLogger(__name__)
 # Apply sensitive data filter to root logger
 root_logger = logging.getLogger()
 root_logger.addFilter(SensitiveDataFilter())
+
+
+# ============================================
+# Sentry SDK Initialization (Error Tracking)
+# ============================================
+if settings.SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+        sentry_sdk.init(
+            dsn=settings.SENTRY_DSN,
+            integrations=[
+                FastApiIntegration(transaction_style="endpoint"),
+                SqlalchemyIntegration(),
+            ],
+            environment=settings.APP_ENV,
+            release="leh-backend@0.2.0",
+            traces_sample_rate=0.1 if settings.APP_ENV in ("prod", "production") else 1.0,
+            send_default_pii=False,  # 개인정보 전송 방지
+        )
+        logger.info("Sentry initialized for environment: %s", settings.APP_ENV)
+    except ImportError:
+        logger.warning("sentry-sdk not installed, skipping Sentry initialization")
+    except Exception as e:
+        logger.error("Failed to initialize Sentry: %s", e)
 
 
 # ============================================
@@ -137,10 +165,13 @@ app.add_middleware(SecurityHeadersMiddleware)
 # 3. Latency Logging Middleware (Logs request duration)
 app.add_middleware(LatencyLoggingMiddleware)
 
-# 4. Audit Log Middleware (Must be before CORS to log all requests)
+# 4. Correlation ID Middleware (Request tracing)
+app.add_middleware(CorrelationIdMiddleware)
+
+# 5. Audit Log Middleware (Must be before CORS to log all requests)
 app.add_middleware(AuditLogMiddleware)
 
-# 5. CORS (Must be after security headers and audit log)
+# 6. CORS (Must be after security headers and audit log)
 # Note: For cross-origin cookie authentication, allow_credentials=True is required
 # API Gateway also has CORS config - they should match
 # Security: Production uses explicit methods/headers, dev uses wildcard for convenience
@@ -167,7 +198,7 @@ register_exception_handlers(app)
 
 
 # ============================================
-# Root & Health Check Endpoints
+# Root Endpoint
 # ============================================
 @app.get("/", tags=["Root"])
 async def root():
@@ -180,30 +211,15 @@ async def root():
         "environment": settings.APP_ENV,
         "docs": "/docs" if settings.APP_DEBUG else "disabled",
         "health": "/health",
+        "health_ready": "/health/ready",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 
-@app.get("/health", tags=["Health"])
-async def health_check():
-    """
-    헬스 체크 엔드포인트
-
-    모니터링 시스템 및 로드밸런서가 서버 상태를 확인하기 위해 사용
-
-    API_SPEC.md 기준:
-    - 200 OK: 서버 정상 동작
-    - 간단한 응답 형식 (에러 처리 불필요)
-    """
-    return JSONResponse(
-        status_code=200,
-        content={
-            "status": "ok",
-            "service": "Legal Evidence Hub API",
-            "version": "0.2.0",
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
-    )
+# ============================================
+# Health Check Router (Liveness + Readiness probes)
+# ============================================
+app.include_router(health.router)
 
 
 # ============================================
