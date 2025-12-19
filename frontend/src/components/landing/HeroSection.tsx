@@ -12,6 +12,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/primitives';
+import { BRAND } from '@/config/brand';
 
 export default function HeroSection() {
   return (
@@ -47,7 +48,7 @@ export default function HeroSection() {
             <div className="relative w-full h-96 bg-white rounded-2xl shadow-2xl overflow-hidden border border-neutral-100">
               <Image
                 src="/images/hero-dashboard.png"
-                alt="Legal Evidence Hub 제품 미리보기 - 증거 관리 대시보드"
+                alt={`${BRAND.fullName} 제품 미리보기 - 증거 관리 대시보드`}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
                 className="object-cover"

@@ -11,11 +11,12 @@
 
 import Link from 'next/link';
 import { Twitter, Linkedin, Github } from 'lucide-react';
+import { BRAND } from '@/config/brand';
 
 export default function LandingFooter() {
   const companyInfo = {
-    name: 'Legal Evidence Hub',
-    shortName: 'LEH',
+    name: BRAND.fullName,
+    shortName: BRAND.name,
     address: '서울특별시 강남구 테헤란로 123, 10층',
     email: 'contact@legalevidence.hub',
     phone: '02-1234-5678',

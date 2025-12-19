@@ -13,6 +13,7 @@
  */
 
 import { metadata } from '../../app/layout';
+import { BRAND } from '@/config/brand';
 
 describe('Plan 3.19.2 - SEO Optimization', () => {
   describe('Title Tag', () => {
@@ -23,7 +24,7 @@ describe('Plan 3.19.2 - SEO Optimization', () => {
 
     test('title should include brand name and value proposition', () => {
       const title = metadata.title as string;
-      expect(title).toContain('Legal Evidence Hub');
+      expect(title).toContain(BRAND.name);
       expect(title).toContain('AI');
     });
 
@@ -170,9 +171,9 @@ describe('Plan 3.19.2 - SEO Optimization', () => {
       expect(Array.isArray(metadata.authors)).toBe(true);
     });
 
-    test('should include Legal Evidence Hub as author', () => {
+    test('should include brand name as author', () => {
       const authors = metadata.authors as Array<{ name: string }>;
-      expect(authors.some((author) => author.name === 'Legal Evidence Hub')).toBe(
+      expect(authors.some((author) => author.name === BRAND.name)).toBe(
         true
       );
     });

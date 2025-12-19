@@ -4,10 +4,11 @@
  */
 
 import Link from 'next/link';
+import { BRAND } from '@/config/brand';
 
 export const metadata = {
-  title: '개인정보처리방침 - Legal Evidence Hub',
-  description: 'Legal Evidence Hub 개인정보처리방침 (개인정보보호법 준수)',
+  title: `개인정보처리방침 - ${BRAND.name}`,
+  description: `${BRAND.name} 개인정보처리방침 (개인정보보호법 준수)`,
 };
 
 export default function PrivacyPage() {
@@ -25,7 +26,7 @@ export default function PrivacyPage() {
             </p>
 
             <p className="text-gray-700 dark:text-gray-300 mb-8">
-              Legal Evidence Hub (이하 &quot;회사&quot;)는 개인정보보호법에 따라 이용자의 개인정보 보호 및
+              {BRAND.fullName} (이하 &quot;회사&quot;)는 개인정보보호법에 따라 이용자의 개인정보 보호 및
               권익을 보호하고 개인정보와 관련한 이용자의 고충을 원활하게 처리할 수 있도록
               다음과 같은 처리방침을 두고 있습니다.
             </p>

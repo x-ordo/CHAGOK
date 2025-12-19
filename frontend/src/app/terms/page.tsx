@@ -4,10 +4,11 @@
  */
 
 import Link from 'next/link';
+import { BRAND } from '@/config/brand';
 
 export const metadata = {
-  title: '이용약관 - Legal Evidence Hub',
-  description: 'Legal Evidence Hub 서비스 이용약관',
+  title: `이용약관 - ${BRAND.name}`,
+  description: `${BRAND.name} 서비스 이용약관`,
 };
 
 export default function TermsPage() {
@@ -27,7 +28,7 @@ export default function TermsPage() {
             <section className="mb-8">
               <h2 className="text-xl font-semibold mb-4">제1조 (목적)</h2>
               <p className="text-gray-700 dark:text-gray-300">
-                본 약관은 Legal Evidence Hub (이하 &quot;회사&quot;)가 제공하는 AI 기반 법률 증거 분석 서비스
+                본 약관은 {BRAND.fullName} (이하 &quot;회사&quot;)가 제공하는 AI 기반 법률 증거 분석 서비스
                 (이하 &quot;서비스&quot;)의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을
                 규정함을 목적으로 합니다.
               </p>

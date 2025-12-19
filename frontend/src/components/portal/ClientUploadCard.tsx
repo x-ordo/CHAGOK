@@ -1,5 +1,6 @@
 import { UploadCloud, ShieldCheck, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
+import { BRAND } from '@/config/brand';
 
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';
 
@@ -44,7 +45,7 @@ export default function ClientUploadCard({ status, uploadedCount, uploadedFiles,
         <div className="w-full max-w-2xl bg-white border border-gray-100 shadow-xl rounded-3xl p-10 space-y-8">
             <header className="text-center space-y-3">
                 <div className="inline-flex items-center justify-center px-4 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-[0.25em] uppercase">
-                    Legal Evidence Hub
+                    {BRAND.name}
                 </div>
                 <div>
                     <h1 className="text-2xl font-bold text-secondary">의뢰인 증거 제출 포털</h1>

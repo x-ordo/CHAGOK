@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRole } from '@/hooks/useRole';
 import { NotificationDropdown } from '@/components/shared/NotificationDropdown';
+import { BRAND } from '@/config/brand';
 
 interface NavItem {
   label: string;
@@ -120,10 +121,10 @@ export function LawyerNav({ collapsed = false, onItemClick }: LawyerNavProps) {
       <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
         <Link href="/lawyer/dashboard" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-[var(--color-primary)] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">LEH</span>
+            <span className="text-white font-bold text-sm">{BRAND.nameKo}</span>
           </div>
           {!collapsed && (
-            <span className="font-semibold text-gray-900 dark:text-gray-100">Legal Evidence Hub</span>
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{BRAND.name}</span>
           )}
         </Link>
       </div>

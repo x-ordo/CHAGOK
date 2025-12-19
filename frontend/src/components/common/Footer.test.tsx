@@ -2,6 +2,7 @@
 // T060 - FR-020: Copyright footer with legal links
 import { render, screen } from '@testing-library/react';
 import Footer from './Footer';
+import { BRAND } from '@/config/brand';
 
 describe('Footer 컴포넌트 (T060)', () => {
   it('Footer가 렌더링될 때 주요 법적 링크를 포함해야 한다.', () => {
@@ -18,7 +19,7 @@ describe('Footer 컴포넌트 (T060)', () => {
 
     // Copyright 텍스트 확인 (연도는 동적으로 변경될 수 있으므로 정규식 사용)
     const year = new Date().getFullYear();
-    expect(screen.getByText(new RegExp(`© ${year} Legal Evidence Hub`, 'i'))).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(`© ${year} ${BRAND.name}`, 'i'))).toBeInTheDocument();
   });
 
   it('이용약관 링크가 /terms로 연결되어야 한다.', () => {

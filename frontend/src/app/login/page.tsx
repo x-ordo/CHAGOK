@@ -20,6 +20,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import { useAuth } from '@/hooks/useAuth';
 import { getDashboardPath, UserRole } from '@/types/user';
 import LandingNav from '@/components/landing/LandingNav';
+import { BRAND } from '@/config/brand';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -78,7 +79,7 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-secondary mb-2">
-              Legal Evidence Hub
+              {BRAND.fullName}
             </h1>
             <p className="text-neutral-600">로그인하여 시작하세요</p>
           </div>

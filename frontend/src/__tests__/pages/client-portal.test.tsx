@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ClientEvidencePortal from '@/app/portal/page';
+import { BRAND } from '@/config/brand';
 
 jest.mock('next/navigation', () => ({
     useRouter: () => ({
@@ -16,7 +17,7 @@ describe('Plan 3.7 - Client Evidence Submission Portal', () => {
     test('renders only the required portal elements: logo, guidance, single upload zone, and feedback area', () => {
         render(<ClientEvidencePortal />);
 
-        expect(screen.getByText(/Legal Evidence Hub/i)).toBeInTheDocument();
+        expect(screen.getByText(new RegExp(BRAND.name, 'i'))).toBeInTheDocument();
         expect(screen.getByText(/안내/)).toBeInTheDocument();
 
         const uploadZones = screen.getAllByTestId('client-upload-zone');

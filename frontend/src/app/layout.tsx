@@ -13,6 +13,7 @@ import { Toaster } from 'react-hot-toast';
 import './globals.css';
 import Footer from '@/components/common/Footer';
 import { AppProviders } from './providers';
+import { BRAND } from '@/config/brand';
 
 const APP_BASE_URL =
   process.env.NEXT_PUBLIC_APP_BASE_URL ||
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
     icon: '/logo.svg',
     apple: '/logo.svg',
   },
-  title: 'Legal Evidence Hub - AI 이혼 소송 증거 분석 솔루션',
+  title: `${BRAND.fullName} - AI 이혼 소송 증거 분석 솔루션`,
   description:
     'AI 기반 이혼 소송 증거 자동 분석 및 답변서 초안 생성 서비스. 증거 정리 시간 90% 단축, 14일 무료 체험.',
   keywords: [
@@ -38,12 +39,12 @@ export const metadata: Metadata = {
     '증거관리',
     '소송지원',
   ],
-  authors: [{ name: 'Legal Evidence Hub' }],
+  authors: [{ name: BRAND.name }],
   openGraph: {
-    title: 'Legal Evidence Hub - AI 이혼 소송 증거 분석',
+    title: `${BRAND.fullName} - AI 이혼 소송 증거 분석`,
     description: '증거 정리 시간 90% 단축. AI가 이혼 소송 증거를 자동 분석하고 초안을 작성합니다.',
     url: APP_BASE_URL,
-    siteName: 'Legal Evidence Hub',
+    siteName: BRAND.name,
     locale: 'ko_KR',
     type: 'website',
     images: [
@@ -51,13 +52,13 @@ export const metadata: Metadata = {
         url: `${APP_BASE_URL}/images/og-image.png`,
         width: 1200,
         height: 630,
-        alt: 'Legal Evidence Hub - AI 이혼 소송 증거 분석',
+        alt: `${BRAND.fullName} - AI 이혼 소송 증거 분석`,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Legal Evidence Hub - AI 이혼 소송 증거 분석',
+    title: `${BRAND.fullName} - AI 이혼 소송 증거 분석`,
     description: '증거 정리 시간 90% 단축. AI가 이혼 소송 증거를 자동 분석하고 초안을 작성합니다.',
     images: [`${APP_BASE_URL}/images/twitter-image.png`],
   },
@@ -112,8 +113,8 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'Legal Evidence Hub',
-              alternateName: 'LEH',
+              name: BRAND.name,
+              alternateName: BRAND.nameKo,
               url: APP_BASE_URL,
               logo: `${APP_BASE_URL}/logo.svg`,
               description:
@@ -147,12 +148,12 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Product',
-              name: 'Legal Evidence Hub',
+              name: BRAND.name,
               description:
                 'AI 기반 이혼 소송 증거 자동 분석 및 답변서 초안 생성 서비스',
               brand: {
                 '@type': 'Brand',
-                name: 'Legal Evidence Hub',
+                name: BRAND.name,
               },
               offers: {
                 '@type': 'AggregateOffer',

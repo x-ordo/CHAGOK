@@ -3,10 +3,11 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ClientUploadCard from '@/components/portal/ClientUploadCard';
+import { BRAND } from '@/config/brand';
 
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';
 
-const DEFAULT_FIRM_NAME = 'Legal Evidence Hub 로펌';
+const DEFAULT_FIRM_NAME = BRAND.defaultFirmName;
 const DEFAULT_CASE_NAME = '의뢰인 사건';
 const UPLOAD_SIMULATION_DELAY_MS = 800;
 

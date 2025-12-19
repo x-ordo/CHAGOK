@@ -6,6 +6,8 @@
  * Design: "Neatly Stacked" concept - 3 floating document sheets
  */
 
+import { BRAND } from '@/config/brand';
+
 interface LogoProps {
   /** Size preset or custom pixel value */
   size?: 'sm' | 'md' | 'lg' | number;
@@ -101,7 +103,7 @@ export function Logo({ size = 'md', variant = 'icon', className = '' }: LogoProp
 
   if (variant === 'icon') {
     return (
-      <div className={className} role="img" aria-label="CHAGOK 로고">
+      <div className={className} role="img" aria-label={`${BRAND.name} 로고`}>
         <LogoIcon size={pixelSize} />
       </div>
     );
@@ -109,13 +111,13 @@ export function Logo({ size = 'md', variant = 'icon', className = '' }: LogoProp
 
   // Full variant: icon + text
   return (
-    <div className={`flex items-center gap-2 ${className}`} role="img" aria-label="CHAGOK 로고">
+    <div className={`flex items-center gap-2 ${className}`} role="img" aria-label={`${BRAND.name} 로고`}>
       <LogoIcon size={pixelSize} />
       <span
         className="font-bold text-secondary"
         style={{ fontSize: `${Math.max(pixelSize * 0.5, 14)}px` }}
       >
-        CHAGOK
+        {BRAND.name}
       </span>
     </div>
   );

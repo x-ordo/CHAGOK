@@ -3,7 +3,7 @@
  * Plan 3.19.1 - Solution (3가지 핵심 기능)
  *
  * Features:
- * - Section title: "Legal Evidence Hub가 해결합니다"
+ * - Section title: "CHAGOK이 해결합니다"
  * - 3-column layout showcasing core features
  * - Each feature: icon, heading, description
  * - Card-based design with shadows
@@ -11,6 +11,7 @@
  */
 
 import { Brain, Clock, FileCheck } from 'lucide-react';
+import { BRAND } from '@/config/brand';
 
 export default function SolutionSection() {
   const features = [
@@ -47,7 +48,7 @@ export default function SolutionSection() {
         <div className="space-y-12">
           {/* Section Title */}
           <h2 className="text-4xl font-bold text-secondary text-center">
-            Legal Evidence Hub가 해결합니다
+            {BRAND.name}이 해결합니다
           </h2>
 
           {/* Features Grid - Responsive: 1-col mobile, 2-col tablet, 3-col desktop */}

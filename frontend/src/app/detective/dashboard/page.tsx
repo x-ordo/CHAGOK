@@ -10,9 +10,10 @@
  */
 
 import { Metadata } from 'next';
+import { BRAND } from '@/config/brand';
 
 export const metadata: Metadata = {
-  title: '대시보드 - Legal Evidence Hub',
+  title: `대시보드 - ${BRAND.name}`,
   description: '탐정 대시보드',
 };
 

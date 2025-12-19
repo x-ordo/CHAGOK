@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import HomePage from '../../app/page';
 import LoginPage from '../../app/login/page';
 import * as authApi from '../../lib/api/auth';
+import { BRAND } from '@/config/brand';
 
 // Mock the router
 jest.mock('next/navigation', () => ({
@@ -97,7 +98,7 @@ describe('Plan 3.19.2 - Navigation Guard', () => {
             render(<HomePage />);
 
             // Landing page should be visible - check for main heading
-            expect(screen.getByText(/Legal Evidence Hub가 해결합니다/i)).toBeInTheDocument();
+            expect(screen.getByText(new RegExp(`${BRAND.name}이 해결합니다`, 'i'))).toBeInTheDocument();
         });
 
         test('Unauthenticated user should NOT be redirected from landing page', () => {
@@ -147,7 +148,7 @@ describe('Plan 3.19.2 - Navigation Guard', () => {
 
             // Wait for auth check to complete and login form to appear
             await waitFor(() => {
-                expect(screen.getByRole('heading', { name: /Legal Evidence Hub/i })).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: new RegExp(BRAND.name, 'i') })).toBeInTheDocument();
             });
         });
 
@@ -162,7 +163,7 @@ describe('Plan 3.19.2 - Navigation Guard', () => {
 
             // Wait for auth check to complete
             await waitFor(() => {
-                expect(screen.getByRole('heading', { name: /Legal Evidence Hub/i })).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: new RegExp(BRAND.name, 'i') })).toBeInTheDocument();
             });
 
             // Should not redirect
@@ -221,7 +222,7 @@ describe('Plan 3.19.2 - Navigation Guard', () => {
 
             // Wait for auth check to complete
             await waitFor(() => {
-                expect(screen.getByRole('heading', { name: /Legal Evidence Hub/i })).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: new RegExp(BRAND.name, 'i') })).toBeInTheDocument();
             });
 
             // Should not redirect

@@ -13,6 +13,7 @@
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/shared/Logo';
+import { BRAND } from '@/config/brand';
 
 interface LandingNavProps {
   isScrolled?: boolean;
@@ -68,7 +69,7 @@ export default function LandingNav({
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2">
             <Logo size="sm" />
-            <span className="text-2xl font-bold text-secondary">CHAGOK</span>
+            <span className="text-2xl font-bold text-secondary">{BRAND.name}</span>
           </Link>
         </div>
 

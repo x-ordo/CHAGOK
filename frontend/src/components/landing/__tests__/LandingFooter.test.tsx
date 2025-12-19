@@ -12,6 +12,7 @@
 
 import { render, screen } from '@testing-library/react';
 import LandingFooter from '../LandingFooter';
+import { BRAND } from '@/config/brand';
 
 describe('LandingFooter Component', () => {
   describe('Company Information Column', () => {
@@ -19,7 +20,7 @@ describe('LandingFooter Component', () => {
       render(<LandingFooter />);
 
       // Should have logo or company name (multiple instances)
-      const companyNames = screen.getAllByText(/LEH|Legal Evidence Hub/i);
+      const companyNames = screen.getAllByText(new RegExp(BRAND.name, 'i'));
       expect(companyNames.length).toBeGreaterThanOrEqual(1);
     });
 
@@ -166,8 +167,8 @@ describe('LandingFooter Component', () => {
     it('should have header for company info section', () => {
       render(<LandingFooter />);
 
-      // Should have "Legal Evidence Hub" heading
-      const heading = screen.getByRole('heading', { name: /Legal Evidence Hub/i });
+      // Should have brand name heading
+      const heading = screen.getByRole('heading', { name: new RegExp(BRAND.name, 'i') });
       expect(heading).toBeInTheDocument();
     });
 
@@ -179,7 +180,7 @@ describe('LandingFooter Component', () => {
       expect(companyLink).toBeInTheDocument();
 
       // Check that the heading is inside the link
-      const heading = screen.getByRole('heading', { name: /Legal Evidence Hub/i });
+      const heading = screen.getByRole('heading', { name: new RegExp(BRAND.name, 'i') });
       expect(companyLink).toContainElement(heading);
     });
 

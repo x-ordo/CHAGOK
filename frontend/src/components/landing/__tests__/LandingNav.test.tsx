@@ -11,6 +11,7 @@
 
 import { render, screen } from '@testing-library/react';
 import LandingNav from '../LandingNav';
+import { BRAND } from '@/config/brand';
 
 describe('LandingNav Component', () => {
   describe('Structure and Layout', () => {
@@ -141,7 +142,7 @@ describe('LandingNav Component', () => {
     it('should use Deep Trust Blue for logo text', () => {
       render(<LandingNav />);
 
-      const logo = screen.getByText('CHAGOK');
+      const logo = screen.getByText(BRAND.name);
       expect(logo).toHaveClass('text-secondary');
     });
   });

@@ -2,6 +2,7 @@
 // T060 - FR-020: Copyright footer with legal links
 import React from 'react';
 import Link from 'next/link';
+import { BRAND } from '@/config/brand';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -23,7 +24,7 @@ const Footer = () => {
           </a>
         </div>
         <p className="text-xs text-neutral-600 dark:text-neutral-400">
-          © {currentYear} Legal Evidence Hub. All Rights Reserved. 무단 활용 금지.
+          © {currentYear} {BRAND.name}. All Rights Reserved. 무단 활용 금지.
         </p>
       </div>
     </footer>
