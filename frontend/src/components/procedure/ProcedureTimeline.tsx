@@ -90,7 +90,7 @@ function ProcedureTimelineComponent({
           <button
             onClick={handleInitialize}
             disabled={initializing}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
           >
             {initializing ? '초기화 중...' : '타임라인 초기화'}
           </button>
@@ -145,7 +145,7 @@ function ProcedureTimelineComponent({
                 key={stage}
                 onClick={() => handleTransitionToNext(stage)}
                 disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700"
+                className="px-4 py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 dark:bg-primary/20 dark:text-primary-light dark:hover:bg-primary/30"
               >
                 {label}로 이동
               </button>

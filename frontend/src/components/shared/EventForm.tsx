@@ -176,7 +176,7 @@ export default function EventForm({
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100 ${
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-neutral-900 dark:text-gray-100 ${
             errors.title ? 'border-red-500' : 'border-gray-300 dark:border-neutral-700'
           }`}
           placeholder="일정 제목을 입력하세요"
@@ -229,7 +229,7 @@ export default function EventForm({
           id="startTime"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100 ${
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-neutral-900 dark:text-gray-100 ${
             errors.startTime ? 'border-red-500' : 'border-gray-300 dark:border-neutral-700'
           }`}
           disabled={isLoading}
@@ -249,7 +249,7 @@ export default function EventForm({
           id="endTime"
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100 ${
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-neutral-900 dark:text-gray-100 ${
             errors.endTime ? 'border-red-500' : 'border-gray-300 dark:border-neutral-700'
           }`}
           disabled={isLoading}
@@ -269,7 +269,7 @@ export default function EventForm({
           id="location"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-neutral-900 dark:text-gray-100"
           placeholder="예: 서울가정법원 301호"
           disabled={isLoading}
         />
@@ -285,7 +285,7 @@ export default function EventForm({
             id="caseId"
             value={caseId}
             onChange={(e) => setCaseId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-neutral-900 dark:text-gray-100"
             disabled={isLoading}
           >
             <option value="">사건 선택 안함</option>
@@ -307,7 +307,7 @@ export default function EventForm({
           id="reminder"
           value={reminderMinutes}
           onChange={(e) => setReminderMinutes(Number(e.target.value))}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-neutral-900 dark:text-gray-100"
           disabled={isLoading}
         >
           {REMINDER_OPTIONS.map((opt) => (
@@ -328,7 +328,7 @@ export default function EventForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-neutral-900 dark:text-gray-100"
           placeholder="추가 메모를 입력하세요"
           disabled={isLoading}
         />
@@ -360,7 +360,7 @@ export default function EventForm({
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             disabled={isLoading}
           >
             {isLoading ? '저장 중...' : isEditing ? '수정' : '저장'}

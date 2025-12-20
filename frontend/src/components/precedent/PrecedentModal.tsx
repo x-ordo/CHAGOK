@@ -28,16 +28,16 @@ export function PrecedentModal({ precedent, isOpen, onClose }: PrecedentModalPro
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div className="relative bg-white dark:bg-neutral-900 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto border border-neutral-200 dark:border-neutral-800">
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-start">
+          <div className="sticky top-0 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex justify-between items-start">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{precedent.case_ref}</h2>
-              <p className="text-sm text-gray-500">{precedent.court}</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{precedent.case_ref}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{precedent.court}</p>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               aria-label="닫기"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,18 +51,18 @@ export function PrecedentModal({ precedent, isOpen, onClose }: PrecedentModalPro
             {/* Meta Info */}
             <div className="flex flex-wrap gap-4 text-sm">
               <div>
-                <span className="text-gray-500">선고일:</span>
-                <span className="ml-1 font-medium">{precedent.decision_date}</span>
+                <span className="text-gray-500 dark:text-gray-400">선고일:</span>
+                <span className="ml-1 font-medium text-gray-900 dark:text-gray-100">{precedent.decision_date}</span>
               </div>
               <div>
-                <span className="text-gray-500">유사도:</span>
+                <span className="text-gray-500 dark:text-gray-400">유사도:</span>
                 <span
                   className={`ml-1 font-medium ${
                     scorePercentage >= 80
-                      ? 'text-green-600'
+                      ? 'text-green-600 dark:text-green-400'
                       : scorePercentage >= 60
-                      ? 'text-yellow-600'
-                      : 'text-gray-600'
+                      ? 'text-yellow-600 dark:text-yellow-400'
+                      : 'text-gray-600 dark:text-gray-400'
                   }`}
                 >
                   {scorePercentage}%
@@ -72,15 +72,15 @@ export function PrecedentModal({ precedent, isOpen, onClose }: PrecedentModalPro
 
             {/* Division Ratio */}
             {precedent.division_ratio && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">재산분할 비율</h3>
+              <div className="bg-gray-50 dark:bg-neutral-800 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">재산분할 비율</h3>
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                       <span>원고</span>
                       <span>피고</span>
                     </div>
-                    <div className="h-4 bg-gray-200 rounded-full overflow-hidden flex">
+                    <div className="h-4 bg-gray-200 dark:bg-neutral-700 rounded-full overflow-hidden flex">
                       <div
                         className="h-full bg-blue-500"
                         style={{ width: `${precedent.division_ratio.plaintiff}%` }}
@@ -91,7 +91,7 @@ export function PrecedentModal({ precedent, isOpen, onClose }: PrecedentModalPro
                       />
                     </div>
                   </div>
-                  <div className="text-lg font-bold text-gray-900">
+                  <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     {precedent.division_ratio.plaintiff}:{precedent.division_ratio.defendant}
                   </div>
                 </div>
@@ -100,19 +100,19 @@ export function PrecedentModal({ precedent, isOpen, onClose }: PrecedentModalPro
 
             {/* Summary */}
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">판결 요지</h3>
-              <p className="text-gray-600 leading-relaxed">{precedent.summary}</p>
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">판결 요지</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{precedent.summary}</p>
             </div>
 
             {/* Key Factors */}
             {precedent.key_factors.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">주요 요인</h3>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">주요 요인</h3>
                 <div className="flex flex-wrap gap-2">
                   {precedent.key_factors.map((factor, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm"
+                      className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm"
                     >
                       {factor}
                     </span>
@@ -123,10 +123,10 @@ export function PrecedentModal({ precedent, isOpen, onClose }: PrecedentModalPro
           </div>
 
           {/* Footer */}
-          <div className="sticky bottom-0 bg-gray-50 border-t px-6 py-4 flex justify-end">
+          <div className="sticky bottom-0 bg-gray-50 dark:bg-neutral-800 border-t border-gray-200 dark:border-neutral-700 px-6 py-4 flex justify-end">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+              className="px-4 py-2 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors"
             >
               닫기
             </button>

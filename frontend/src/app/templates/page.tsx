@@ -61,7 +61,7 @@ export default function TemplateManagerPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
           <form className="space-y-4" onSubmit={handleUpload}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className="flex flex-col text-sm text-neutral-700">
@@ -101,7 +101,7 @@ export default function TemplateManagerPage() {
           </form>
         </section>
 
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">업로드된 템플릿</h2>
             <p className="text-sm text-gray-500">총 {templates.length}건</p>

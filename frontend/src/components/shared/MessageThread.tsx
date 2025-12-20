@@ -110,8 +110,8 @@ export function MessageThread({
       </div>
       <form onSubmit={handleSend} className="border-t p-4">
         <div className="flex items-end space-x-2">
-          <textarea value={inputValue} onChange={handleInputChange} onKeyDown={handleKeyDown} placeholder="메시지를 입력하세요..." aria-label="메시지 입력" rows={1} className="flex-1 resize-none border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 max-h-32" style={{ minHeight: "44px" }} />
-          <button type="submit" disabled={!inputValue.trim() || isSending} className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50">{isSending ? "전송 중..." : "전송"}</button>
+          <textarea value={inputValue} onChange={handleInputChange} onKeyDown={handleKeyDown} placeholder="메시지를 입력하세요..." aria-label="메시지 입력" rows={1} className="flex-1 resize-none border border-neutral-300 dark:border-neutral-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:text-white max-h-32" style={{ minHeight: "44px" }} />
+          <button type="submit" disabled={!inputValue.trim() || isSending} className="px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50 hover:bg-primary/90">{isSending ? "전송 중..." : "전송"}</button>
         </div>
       </form>
     </div>

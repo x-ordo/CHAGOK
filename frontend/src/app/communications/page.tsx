@@ -76,7 +76,7 @@ function CommunicationsContent() {
         </div>
 
         {activeTab === 'info' && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4" aria-label="Client info form">
+          <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 space-y-4" aria-label="Client info form">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">의뢰인 정보 입력</h2>
@@ -112,7 +112,7 @@ function CommunicationsContent() {
         )}
 
         {activeTab === 'share' && (
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4" aria-label="Evidence sharing">
+          <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 space-y-4" aria-label="Evidence sharing">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">증거 목록 공유</h2>

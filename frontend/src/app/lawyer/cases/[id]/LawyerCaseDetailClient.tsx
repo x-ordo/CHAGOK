@@ -43,6 +43,9 @@ import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 import { generateDraftPreview } from '@/lib/api/draft';
 import { DraftCitation } from '@/types/draft';
 import { downloadDraftAsDocx, DraftDownloadFormat, DownloadResult } from '@/services/documentService';
+import { ExpertInsightsPanel } from '@/components/case/ExpertInsightsPanel';
+import { useProcedure } from '@/hooks/useProcedure';
+import { ProcedureTimeline } from '@/components/procedure';
 
 interface CaseDetail {
   id: string;
@@ -99,9 +102,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
 
   // Derived paths
   const detailPath = caseId ? getCaseDetailPath('lawyer', caseId) : '/lawyer/cases/detail';
-  const procedurePath = caseId ? getLawyerCasePath('procedure', caseId) : '/lawyer/cases/procedure';
   const assetsPath = caseId ? getLawyerCasePath('assets', caseId) : '/lawyer/cases/assets';
-
   const [caseDetail, setCaseDetail] = useState<CaseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,6 +110,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [showSummaryCard, setShowSummaryCard] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showExpertPanel, setShowExpertPanel] = useState(false);
 
   // Draft state
   const [showDraftModal, setShowDraftModal] = useState(false);
@@ -369,6 +371,9 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
     }
   }, [caseId]);
 
+  // Phase B.4: Procedure Logic (Round 2 UX)
+  const procedure = useProcedure(caseId || '');
+
   // Race condition 방어: ID가 없으면 로딩 스피너 또는 에러 표시
   if (isIdMissing) {
     // 2초 후에도 ID가 없으면 에러 UI 표시
@@ -474,22 +479,12 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
           </div>
           {/* Phase B.1: Header buttons consolidated into dropdown */}
           <div className="flex items-center gap-2">
-            {/* Primary Action: Draft Generation */}
-            <button
-              type="button"
-              onClick={() => setShowDraftModal(true)}
-              className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm hover:bg-[var(--color-primary-hover)] flex items-center gap-2"
-            >
-              <Sparkles className="w-4 h-4" />
-              초안 생성
-            </button>
             {/* Secondary Actions in Dropdown */}
             <CaseActionsDropdown
-              procedurePath={procedurePath}
               assetsPath={assetsPath}
               onEdit={() => setShowEditModal(true)}
               onSummaryCard={() => setShowSummaryCard(true)}
-              onAIAnalysis={handleRequestAnalysis}
+              onExpertInsights={() => setShowExpertPanel(true)}
             />
           </div>
         </div>
@@ -551,6 +546,12 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
           <p className="text-purple-900 dark:text-purple-200">{caseDetail.aiSummary}</p>
         </div>
       )}
+
+      {/* Expert Insights Panel */}
+      <ExpertInsightsPanel
+        isOpen={showExpertPanel}
+        onClose={() => setShowExpertPanel(false)}
+      />
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-neutral-700">
@@ -767,26 +768,48 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
         )}
 
         {activeTab === 'timeline' && (
-          <div>
-            {caseDetail.recentActivities.length > 0 ? (
-              <div className="space-y-4">
-                {caseDetail.recentActivities.map((activity, index) => (
-                  <div key={index} className="flex gap-3">
-                    <div className="w-2 h-2 mt-2 rounded-full bg-[var(--color-primary)]" />
-                    <div>
-                      <p className="text-[var(--color-text-primary)]">{activity.action}</p>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
-                        {activity.user} - {new Date(activity.timestamp).toLocaleString('ko-KR')}
-                      </p>
+          <div className="space-y-8">
+            {/* Procedure Timeline Section */}
+            <div>
+              <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4">절차 진행 현황</h3>
+              <ProcedureTimeline
+                stages={procedure.stages}
+                currentStage={procedure.currentStage}
+                progressPercent={procedure.progressPercent}
+                validNextStages={procedure.validNextStages}
+                loading={procedure.loading}
+                error={procedure.error}
+                onUpdateStage={procedure.updateStage}
+                onCompleteStage={procedure.completeStage}
+                onSkipStage={procedure.skipStage}
+                onTransition={procedure.transition}
+                onInitialize={procedure.initializeTimeline}
+              />
+            </div>
+
+            {/* Recent Activity Section */}
+            <div>
+               <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4">최근 활동 로그</h3>
+              {caseDetail.recentActivities.length > 0 ? (
+                <div className="space-y-4">
+                  {caseDetail.recentActivities.map((activity, index) => (
+                    <div key={index} className="flex gap-3">
+                      <div className="w-2 h-2 mt-2 rounded-full bg-[var(--color-primary)]" />
+                      <div>
+                        <p className="text-[var(--color-text-primary)]">{activity.action}</p>
+                        <p className="text-sm text-[var(--color-text-secondary)]">
+                          {activity.user} - {new Date(activity.timestamp).toLocaleString('ko-KR')}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-[var(--color-text-secondary)] py-8">
-                활동 기록이 없습니다.
-              </p>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-[var(--color-text-secondary)] py-8 bg-gray-50 dark:bg-neutral-900/50 rounded-lg">
+                  활동 기록이 없습니다.
+                </p>
+              )}
+            </div>
           </div>
         )}
 

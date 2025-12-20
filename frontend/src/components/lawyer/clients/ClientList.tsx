@@ -55,7 +55,7 @@ export function ClientList({
         <button
           type="button"
           onClick={onAdd}
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -84,14 +84,14 @@ export function ClientList({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="이름, 전화번호, 이메일로 검색..."
-          className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-lg border border-neutral-300 py-2 pl-10 pr-4 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
         />
       </div>
 
       {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       )}
 
@@ -118,7 +118,7 @@ export function ClientList({
             <button
               type="button"
               onClick={onAdd}
-              className="mt-4 text-sm text-blue-600 hover:text-blue-800"
+              className="mt-4 text-sm text-primary hover:text-primary/80"
             >
               첫 의뢰인을 추가하세요
             </button>

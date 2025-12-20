@@ -42,7 +42,7 @@ export default function ClientUploadCard({ status, uploadedCount, uploadedFiles,
     const feedback = FEEDBACK_TEXT[status](uploadedCount);
 
     return (
-        <div className="w-full max-w-2xl bg-white border border-gray-100 shadow-xl rounded-3xl p-10 space-y-8">
+        <div className="w-full max-w-2xl bg-white border border-neutral-200 shadow-sm rounded-lg p-10 space-y-8">
             <header className="text-center space-y-3">
                 <div className="inline-flex items-center justify-center px-4 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-[0.25em] uppercase">
                     {BRAND.name}
@@ -61,7 +61,7 @@ export default function ClientUploadCard({ status, uploadedCount, uploadedFiles,
                 </div>
             </header>
 
-            <div className="flex flex-col items-center text-gray-500 text-sm bg-neutral-50 rounded-2xl p-4 space-y-2">
+            <div className="flex flex-col items-center text-gray-500 text-sm bg-neutral-50 rounded-lg p-4 space-y-2">
                 <ShieldCheck className="w-5 h-5 text-secondary" />
                 <p>암호화된 연결로 업로드되며, 요청하신 목적 외에는 사용되지 않습니다.</p>
             </div>
@@ -70,7 +70,7 @@ export default function ClientUploadCard({ status, uploadedCount, uploadedFiles,
                 htmlFor="client-file-upload"
                 data-testid="client-upload-zone"
                 className={clsx(
-                    'flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-neutral-50/60 px-6 py-12 text-center cursor-pointer transition-all duration-200',
+                    'flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-neutral-50/60 px-6 py-12 text-center cursor-pointer transition-all duration-200',
                     'hover:border-primary hover:bg-primary/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                 )}
             >
@@ -95,7 +95,7 @@ export default function ClientUploadCard({ status, uploadedCount, uploadedFiles,
                 {uploadedFiles.length > 0 ? (
                     <div
                         data-testid="uploaded-files-list"
-                        className="rounded-2xl border border-gray-100 bg-white px-5 py-4"
+                        className="rounded-lg border border-neutral-200 bg-white px-5 py-4"
                     >
                         <p className="text-sm font-medium text-secondary mb-2">업로드된 파일</p>
                         <ul className="space-y-1 text-sm text-neutral-700">
@@ -115,7 +115,7 @@ export default function ClientUploadCard({ status, uploadedCount, uploadedFiles,
             <div
                 data-testid="upload-feedback"
                 className={clsx(
-                    'rounded-2xl px-5 py-4 text-center text-sm bg-neutral-50',
+                    'rounded-lg px-5 py-4 text-center text-sm bg-neutral-50',
                     status === 'success' && 'bg-success/5 border border-success/40',
                     status === 'error' && 'bg-error/5 border border-error/40',
                 )}

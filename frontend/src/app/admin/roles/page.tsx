@@ -107,7 +107,7 @@ export default function AdminRolesPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-4">
-        <section aria-label="역할별 권한 매트릭스" className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <section aria-label="역할별 권한 매트릭스" className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-gray-900">역할별 권한 매트릭스</h2>
             <p className="text-sm text-neutral-600 mt-1">각 역할별로 사건 접근 및 관리자 기능 권한을 세밀하게 제어합니다.</p>

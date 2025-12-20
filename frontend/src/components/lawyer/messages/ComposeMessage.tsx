@@ -103,7 +103,7 @@ export function ComposeMessage({
               className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
                 errors.recipientId
                   ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  : 'border-neutral-300 focus:border-primary focus:ring-primary'
               }`}
             />
             {errors.recipientId && (
@@ -128,7 +128,7 @@ export function ComposeMessage({
               className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
                 errors.subject
                   ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  : 'border-neutral-300 focus:border-primary focus:ring-primary'
               }`}
             />
             {errors.subject && (
@@ -153,7 +153,7 @@ export function ComposeMessage({
               className={`w-full resize-none rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
                 errors.content
                   ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  : 'border-neutral-300 focus:border-primary focus:ring-primary'
               }`}
             />
             {errors.content && (
@@ -175,7 +175,7 @@ export function ComposeMessage({
           <button
             type="submit"
             disabled={isSending}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary/90 disabled:opacity-50"
           >
             {isSending ? (
               <span className="flex items-center gap-2">

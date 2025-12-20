@@ -9,15 +9,23 @@
  * Phase B.3: Added AI analysis status bar with last analyzed timestamp and request button.
  */
 
-import { useState, Suspense, lazy } from 'react';
-import { Scale, FileText, LucideIcon, Sparkles, Clock, Loader2, RefreshCw } from 'lucide-react';
+'use client';
+
+/**
+ * AnalysisTab Component
+ * Contains LSSP (Legal Strategy) and Precedent panels as sub-tabs.
+ *
+ * Lazy loads heavy panel components for better initial page load performance.
+ *
+ * Phase B.3: Added AI analysis status bar with last analyzed timestamp and request button.
+ */
+
+import { Suspense, lazy } from 'react';
+import { Sparkles, Clock, Loader2, RefreshCw } from 'lucide-react';
 
 // Lazy load heavy panels for performance
 const LSSPPanel = lazy(() =>
   import('@/components/lssp/LSSPPanel').then(mod => ({ default: mod.LSSPPanel }))
-);
-const PrecedentPanel = lazy(() =>
-  import('@/components/precedent/PrecedentPanel').then(mod => ({ default: mod.PrecedentPanel }))
 );
 
 interface AnalysisTabProps {
@@ -34,19 +42,6 @@ interface AnalysisTabProps {
   /** Whether AI analysis is currently in progress */
   isAnalyzing?: boolean;
 }
-
-type SectionId = 'lssp' | 'precedent';
-
-interface SubTabConfig {
-  id: SectionId;
-  label: string;
-  icon: LucideIcon;
-}
-
-const SUB_TABS: SubTabConfig[] = [
-  { id: 'lssp', label: '법률 전략 (LSSP)', icon: FileText },
-  { id: 'precedent', label: '유사 판례', icon: Scale },
-];
 
 /**
  * Format relative time for last analysis timestamp
@@ -153,41 +148,11 @@ function PanelSkeleton() {
 }
 
 /**
- * Sub-tab button component
- */
-function SubTabButton({
-  tab,
-  isActive,
-  onClick,
-}: {
-  tab: SubTabConfig;
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  const Icon = tab.icon;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors ${
-        isActive
-          ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
-          : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-      }`}
-    >
-      <Icon className="w-4 h-4" />
-      {tab.label}
-    </button>
-  );
-}
-
-/**
- * Analysis Tab - Contains LSSP and Precedent sub-tabs
+ * Analysis Tab - Contains LSSP (Legal Strategy) panel
  *
  * Features:
  * - Lazy loading of heavy panels for better initial load
- * - Sub-tab navigation between LSSP and Precedent
+ * - Sub-tab navigation flattened (Precedent integrated into LSSP)
  * - Skeleton loading states
  * - Draft generation callback integration
  * - AI analysis status bar with last analyzed timestamp (Phase B.3)
@@ -200,8 +165,6 @@ export function AnalysisTab({
   onRequestAnalysis,
   isAnalyzing = false,
 }: AnalysisTabProps) {
-  const [activeSection, setActiveSection] = useState<SectionId>('lssp');
-
   return (
     <div className="space-y-6">
       {/* AI Analysis Status Bar (Phase B.3) */}
@@ -213,30 +176,13 @@ export function AnalysisTab({
         />
       )}
 
-      {/* Sub-tab navigation */}
-      <div className="flex gap-6 border-b border-gray-200 dark:border-neutral-700">
-        {SUB_TABS.map((tab) => (
-          <SubTabButton
-            key={tab.id}
-            tab={tab}
-            isActive={activeSection === tab.id}
-            onClick={() => setActiveSection(tab.id)}
-          />
-        ))}
-      </div>
-
       {/* Panel content with lazy loading */}
       <Suspense fallback={<PanelSkeleton />}>
-        {activeSection === 'lssp' && (
-          <LSSPPanel
-            caseId={caseId}
-            evidenceCount={evidenceCount}
-            onDraftGenerate={onDraftGenerate}
-          />
-        )}
-        {activeSection === 'precedent' && (
-          <PrecedentPanel caseId={caseId} />
-        )}
+        <LSSPPanel
+          caseId={caseId}
+          evidenceCount={evidenceCount}
+          onDraftGenerate={onDraftGenerate}
+        />
       </Suspense>
     </div>
   );

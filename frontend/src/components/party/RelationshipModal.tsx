@@ -205,7 +205,7 @@ export function RelationshipModal({
                     onChange={(e) =>
                       setFormData({ ...formData, source_party_id: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
                   >
                     <option value="">선택해주세요</option>
                     {parties.map((party) => (
@@ -225,7 +225,7 @@ export function RelationshipModal({
                     onChange={(e) =>
                       setFormData({ ...formData, target_party_id: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
                   >
                     <option value="">선택해주세요</option>
                     {parties
@@ -316,7 +316,7 @@ export function RelationshipModal({
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white resize-none"
                 rows={3}
                 placeholder="관계에 대한 추가 설명"
               />
@@ -348,7 +348,7 @@ export function RelationshipModal({
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg disabled:opacity-50"
                 disabled={isSubmitting || isDeleting}
               >
                 {isSubmitting ? '저장 중...' : isEditMode ? '수정' : '추가'}

@@ -121,7 +121,7 @@ export function ClientForm({
                 className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
                   errors.name
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                    : 'border-neutral-300 focus:border-primary focus:ring-primary'
                 }`}
               />
               {errors.name && (
@@ -146,7 +146,7 @@ export function ClientForm({
                 className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
                   errors.phone
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                    : 'border-neutral-300 focus:border-primary focus:ring-primary'
                 }`}
               />
               {errors.phone && (
@@ -171,7 +171,7 @@ export function ClientForm({
                 className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
                   errors.email
                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                    : 'border-neutral-300 focus:border-primary focus:ring-primary'
                 }`}
               />
               {errors.email && (
@@ -193,7 +193,7 @@ export function ClientForm({
                 onChange={(e) => setMemo(e.target.value)}
                 placeholder="의뢰인에 대한 메모 (선택사항)"
                 rows={3}
-                className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full resize-none rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
               />
             </div>
           </div>
@@ -211,7 +211,7 @@ export function ClientForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">

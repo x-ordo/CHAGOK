@@ -51,6 +51,12 @@ These rules must NEVER be violated under any circumstances:
    - 로컬 서버 실행하지 말 것 (uvicorn, npm run dev 등)
    - API 테스트 시 staging API 엔드포인트 사용
 
+7. **커밋 메시지 규칙 (Commit Message Rules)**
+   - 커밋 메시지에 다음 내용 절대 포함 금지:
+     - `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
+     - `Co-Authored-By: Claude` 또는 유사 AI 귀속 문구
+   - 커밋 메시지는 순수하게 변경 내용만 기술
+
 ## Common Development Commands
 
 ### Backend (FastAPI)

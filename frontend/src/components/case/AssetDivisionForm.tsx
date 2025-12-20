@@ -83,34 +83,34 @@ function AssetRow({
   onDelete: (assetId: string) => void;
   onRatioChange: (assetId: string, plaintiffRatio: number) => void;
 }) {
-  const config = ASSET_TYPE_CONFIG[asset.asset_type];
-  const ownershipConfig = OWNERSHIP_CONFIG[asset.ownership];
+  const config = ASSET_TYPE_CONFIG[asset.asset_type] || ASSET_TYPE_CONFIG['other'];
+  const ownershipConfig = OWNERSHIP_CONFIG[asset.ownership] || OWNERSHIP_CONFIG['joint'];
   const IconComponent = getAssetIcon(config.icon);
   const isDebt = asset.asset_type === 'debt';
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-white rounded-lg border border-neutral-200 hover:border-neutral-300 transition-colors">
+    <div className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
       <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${isDebt ? 'bg-red-50' : 'bg-teal-50'}`}>
         <IconComponent className={`w-5 h-5 ${isDebt ? 'text-red-500' : 'text-teal-500'}`} />
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-gray-900 truncate">{asset.name}</div>
-        <div className="text-sm text-gray-500 flex items-center gap-2">
+        <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{asset.name}</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
           <span>{config.label}</span>
           <span className="text-neutral-300">|</span>
           <span style={{ color: ownershipConfig.color }}>{ownershipConfig.label}</span>
         </div>
       </div>
 
-      <div className={`text-right ${isDebt ? 'text-red-600' : 'text-gray-900'}`}>
+      <div className={`text-right ${isDebt ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}`}>
         <div className="font-semibold">
           {isDebt ? '-' : ''}{formatCurrency(asset.current_value)}
         </div>
       </div>
 
       <div className="w-32">
-        <div className="text-xs text-gray-500 mb-1 text-center">
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 text-center">
           원고 {asset.division_ratio_plaintiff}% : 피고 {asset.division_ratio_defendant}%
         </div>
         <input
@@ -119,7 +119,7 @@ function AssetRow({
           max="100"
           value={asset.division_ratio_plaintiff}
           onChange={(e) => onRatioChange(asset.id, parseInt(e.target.value, 10))}
-          className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
+          className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer"
         />
       </div>
 
@@ -179,16 +179,16 @@ function AddAssetForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-neutral-200 p-4 space-y-4">
-      <h3 className="font-medium text-gray-900">새 재산 추가</h3>
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-4 space-y-4">
+      <h3 className="font-medium text-gray-900 dark:text-gray-100">새 재산 추가</h3>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm text-gray-600 mb-1">재산 유형</label>
+          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">재산 유형</label>
           <select
             value={formData.asset_type}
             onChange={(e) => setFormData({ ...formData, asset_type: e.target.value as AssetType })}
-            className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm"
+            className="w-full border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm"
           >
             {Object.entries(ASSET_TYPE_CONFIG).map(([key, config]) => (
               <option key={key} value={key}>{config.label}</option>
@@ -197,11 +197,11 @@ function AddAssetForm({
         </div>
 
         <div>
-          <label className="block text-sm text-gray-600 mb-1">소유 구분</label>
+          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">소유 구분</label>
           <select
             value={formData.ownership}
             onChange={(e) => setFormData({ ...formData, ownership: e.target.value as OwnershipType })}
-            className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm"
+            className="w-full border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm"
           >
             {Object.entries(OWNERSHIP_CONFIG).map(([key, config]) => (
               <option key={key} value={key}>{config.label}</option>
@@ -211,32 +211,32 @@ function AddAssetForm({
       </div>
 
       <div>
-        <label className="block text-sm text-gray-600 mb-1">재산명</label>
+        <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">재산명</label>
         <input
           type="text"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           placeholder="예: 서울 강남구 아파트"
-          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm"
+          className="w-full border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm text-gray-600 mb-1">현재 가치 (원)</label>
+        <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">현재 가치 (원)</label>
         <input
           type="number"
           value={formData.current_value || ''}
           onChange={(e) => setFormData({ ...formData, current_value: parseInt(e.target.value, 10) || 0 })}
           placeholder="0"
-          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm"
+          className="w-full border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm"
           min="0"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm text-gray-600 mb-1">
+        <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
           분할 비율: 원고 {formData.division_ratio_plaintiff}% : 피고 {formData.division_ratio_defendant}%
         </label>
         <input
@@ -245,7 +245,7 @@ function AddAssetForm({
           max="100"
           value={formData.division_ratio_plaintiff}
           onChange={(e) => handleRatioChange(parseInt(e.target.value, 10))}
-          className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
+          className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer"
         />
       </div>
 
@@ -253,7 +253,7 @@ function AddAssetForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-gray-600 hover:bg-neutral-100 rounded-lg"
+          className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg"
         >
           취소
         </button>
@@ -282,38 +282,38 @@ function DivisionSummaryCard({
   };
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
-      <h3 className="font-semibold text-gray-900 mb-4">분할 결과 Preview</h3>
+    <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-800 p-6">
+      <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">분할 결과 Preview</h3>
 
       <div className="space-y-3">
         <div className="flex justify-between">
-          <span className="text-gray-600">총 자산</span>
-          <span className="font-medium text-gray-900">{formatCurrency(summary.total_assets)}</span>
+          <span className="text-gray-600 dark:text-gray-400">총 자산</span>
+          <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(summary.total_assets)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600">총 부채</span>
-          <span className="font-medium text-red-600">-{formatCurrency(summary.total_debts)}</span>
+          <span className="text-gray-600 dark:text-gray-400">총 부채</span>
+          <span className="font-medium text-red-600 dark:text-red-400">-{formatCurrency(summary.total_debts)}</span>
         </div>
-        <div className="border-t border-neutral-200 pt-3 flex justify-between">
-          <span className="text-gray-600">순자산</span>
-          <span className="font-semibold text-gray-900">{formatCurrency(summary.net_value)}</span>
+        <div className="border-t border-neutral-200 dark:border-neutral-800 pt-3 flex justify-between">
+          <span className="text-gray-600 dark:text-gray-400">순자산</span>
+          <span className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(summary.net_value)}</span>
         </div>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-neutral-200 space-y-3">
+      <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-3">
         <div className="flex justify-between">
-          <span className="text-teal-600 font-medium">원고 취득 예정</span>
-          <span className="font-semibold text-teal-600">{formatCurrency(summary.plaintiff_share)}</span>
+          <span className="text-teal-600 dark:text-teal-400 font-medium">원고 취득 예정</span>
+          <span className="font-semibold text-teal-600 dark:text-teal-400">{formatCurrency(summary.plaintiff_share)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-slate-700 font-medium">피고 취득 예정</span>
-          <span className="font-semibold text-slate-700">{formatCurrency(summary.defendant_share)}</span>
+          <span className="text-slate-700 dark:text-slate-300 font-medium">피고 취득 예정</span>
+          <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(summary.defendant_share)}</span>
         </div>
       </div>
 
       {summary.settlement_needed !== 0 && (
-        <div className="mt-4 p-3 bg-amber-50 rounded-lg">
-          <div className="text-sm text-amber-800 font-medium">
+        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
+          <div className="text-sm text-amber-800 dark:text-amber-200 font-medium">
             {summary.settlement_needed > 0
               ? `피고가 원고에게 ${formatCurrency(Math.abs(summary.settlement_needed))} 정산 필요`
               : `원고가 피고에게 ${formatCurrency(Math.abs(summary.settlement_needed))} 정산 필요`}
@@ -377,7 +377,7 @@ export function AssetDivisionForm({ caseId }: AssetDivisionFormProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-neutral-500">재산 정보 불러오는 중...</div>
+        <div className="text-neutral-500 dark:text-neutral-400">재산 정보 불러오는 중...</div>
       </div>
     );
   }
@@ -388,7 +388,7 @@ export function AssetDivisionForm({ caseId }: AssetDivisionFormProps) {
         {!showAddForm && (
           <button
             onClick={() => setShowAddForm(true)}
-            className="w-full p-3 border-2 border-dashed border-neutral-300 rounded-lg text-neutral-500 hover:border-teal-500 hover:text-teal-500 transition-colors"
+            className="w-full p-3 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg text-neutral-500 dark:text-neutral-400 hover:border-teal-500 hover:text-teal-500 transition-colors"
           >
             + 재산 추가
           </button>
@@ -400,11 +400,11 @@ export function AssetDivisionForm({ caseId }: AssetDivisionFormProps) {
 
         {Object.entries(assetsByType).map(([type, typeAssets]) => {
           if (typeAssets.length === 0) return null;
-          const config = ASSET_TYPE_CONFIG[type as AssetType];
+          const config = ASSET_TYPE_CONFIG[type as AssetType] || ASSET_TYPE_CONFIG['other'];
 
           return (
             <div key={type} className="space-y-2">
-              <h3 className="font-medium text-gray-700 flex items-center gap-2">
+              <h3 className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 {config.label}
                 <span className="text-sm text-neutral-400">({typeAssets.length})</span>
               </h3>
@@ -422,7 +422,7 @@ export function AssetDivisionForm({ caseId }: AssetDivisionFormProps) {
         })}
 
         {assets.length === 0 && !showAddForm && (
-          <div className="text-center py-12 text-neutral-500">
+          <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
             등록된 재산이 없습니다. 위 버튼을 클릭하여 재산을 추가하세요.
           </div>
         )}
@@ -432,7 +432,7 @@ export function AssetDivisionForm({ caseId }: AssetDivisionFormProps) {
         <div className="sticky top-6">
           <DivisionSummaryCard summary={divisionSummary} />
 
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-sm text-blue-700 dark:text-blue-300">
             <strong>안내:</strong> 이 결과는 입력된 정보를 기준으로 한 예상치입니다.
             실제 분할 결과는 법원의 판단에 따라 달라질 수 있습니다.
           </div>

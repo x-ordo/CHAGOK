@@ -12,6 +12,7 @@ import {
   Loader2,
   ChevronRight,
   GitBranch,
+  BookOpen,
 } from 'lucide-react';
 import {
   getKeypoints,
@@ -27,6 +28,7 @@ import {
 import { KeypointList } from './KeypointList';
 import { LegalGroundSummary } from './LegalGroundSummary';
 import { PipelinePanel } from './PipelinePanel';
+import { PrecedentPanel } from '../precedent/PrecedentPanel';
 import { logger } from '@/lib/logger';
 
 interface LSSPPanelProps {
@@ -35,7 +37,7 @@ interface LSSPPanelProps {
   onDraftGenerate?: (templateId: string) => void;
 }
 
-type LSSPTab = 'keypoints' | 'grounds' | 'drafts' | 'pipeline';
+type LSSPTab = 'keypoints' | 'grounds' | 'precedents' | 'drafts' | 'pipeline';
 
 export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelProps) {
   const [activeTab, setActiveTab] = useState<LSSPTab>('keypoints');
@@ -135,6 +137,12 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
       icon: Scale,
     },
     {
+      id: 'precedents' as const,
+      label: '유사 판례',
+      count: undefined, // Precedents manage their own count
+      icon: BookOpen,
+    },
+    {
       id: 'drafts' as const,
       label: '문서 생성',
       count: templates.length,
@@ -150,23 +158,23 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+      <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-100 dark:border-neutral-800 shadow-sm p-6">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 text-primary animate-spin" />
-          <span className="ml-2 text-gray-500">LSSP 데이터 로딩 중...</span>
+          <span className="ml-2 text-gray-500 dark:text-gray-400">LSSP 데이터 로딩 중...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-100 dark:border-neutral-800 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100">
+      <div className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">법률 전략 분석 (LSSP)</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">법률 전략 분석 (LSSP)</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               AI가 증거에서 핵심 쟁점을 추출하고 법적 근거와 연결합니다
             </p>
           </div>
@@ -174,7 +182,7 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
             <button
               onClick={fetchData}
               disabled={isLoading}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
               title="새로고침"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -200,7 +208,7 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
       </div>
 
       {/* Tab navigation */}
-      <div className="flex border-b border-gray-100">
+      <div className="flex border-b border-gray-100 dark:border-neutral-800 overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -208,21 +216,23 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 text-sm font-medium transition-colors min-w-[120px] ${
                 isActive
-                  ? 'text-primary border-b-2 border-primary bg-primary-light/30'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'text-primary border-b-2 border-primary bg-primary-light/30 dark:bg-primary/10'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-800'
               }`}
             >
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
-              <span
-                className={`px-1.5 py-0.5 rounded-full text-xs ${
-                  isActive ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
-                }`}
-              >
-                {tab.count}
-              </span>
+              {tab.count !== undefined && (
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-xs ${
+                    isActive ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              )}
             </button>
           );
         })}
@@ -230,14 +240,14 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
 
       {/* Error state */}
       {error && (
-        <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2">
-          <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+        <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg flex items-start space-x-2">
+          <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
           </div>
           <button
             onClick={() => setError(null)}
-            className="text-red-500 hover:text-red-700"
+            className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
           >
             ×
           </button>
@@ -250,7 +260,7 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
           <div className="space-y-4">
             {/* Actions */}
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {keypoints.length === 0
                   ? '아직 추출된 쟁점이 없습니다. AI 추출을 실행하거나 직접 추가하세요.'
                   : `총 ${keypoints.length}개의 핵심 쟁점이 있습니다.`}
@@ -268,7 +278,7 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
                   )}
                   AI 추출
                 </button>
-                <button className="flex items-center px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">
+                <button className="flex items-center px-3 py-1.5 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors">
                   <Plus className="w-4 h-4 mr-1.5" />
                   직접 추가
                 </button>
@@ -293,6 +303,10 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
           />
         )}
 
+        {activeTab === 'precedents' && (
+          <PrecedentPanel caseId={caseId} className="border-none shadow-none !p-0" hideHeader={true} />
+        )}
+
         {activeTab === 'drafts' && (
           <div className="space-y-4">
             <p className="text-sm text-gray-500">
@@ -300,8 +314,8 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
             </p>
 
             {templates.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-neutral-600" />
                 <p>사용 가능한 템플릿이 없습니다.</p>
               </div>
             ) : (
@@ -311,15 +325,15 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
                     key={template.id}
                     onClick={() => onDraftGenerate?.(template.id)}
                     disabled={verifiedCount === 0}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-primary-light/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-neutral-800 rounded-xl hover:border-primary dark:hover:border-primary hover:bg-primary-light/20 dark:hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-primary-light rounded-lg">
+                      <div className="p-2 bg-primary-light dark:bg-primary/20 rounded-lg">
                         <FileText className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{template.name}</p>
-                        <p className="text-sm text-gray-500">{template.description}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{template.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{template.description}</p>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -329,8 +343,8 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
             )}
 
             {verifiedCount === 0 && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
                   <strong>안내:</strong> 문서를 생성하려면 최소 1개 이상의 쟁점을 검증해야 합니다.
                   핵심 쟁점 탭에서 쟁점을 검증해 주세요.
                 </p>

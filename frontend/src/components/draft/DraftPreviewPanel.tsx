@@ -687,7 +687,7 @@ export default function DraftPreviewPanel({
     };
 
     return (
-        <section className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-gray-100 dark:border-neutral-700 p-6 space-y-6" aria-label="Draft editor">
+        <section className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-100 dark:border-neutral-700 p-6 space-y-6" aria-label="Draft editor">
             <div className="flex items-start justify-between gap-4">
                 <div>
                     <p className="text-sm text-neutral-600 leading-relaxed">
@@ -855,7 +855,7 @@ export default function DraftPreviewPanel({
             <div
                 data-testid="draft-editor-surface"
                 data-zen-mode="true"
-                className="relative rounded-2xl border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-inner focus-within:border-primary transition-colors"
+                className="relative rounded-lg border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-inner focus-within:border-primary transition-colors"
             >
                 <div
                     ref={editorRef}
@@ -907,7 +907,7 @@ export default function DraftPreviewPanel({
                 </div>
 
                 {/* 012-precedent-integration: T035 - 유사 판례 인용 섹션 */}
-                <div className="rounded-2xl border border-blue-100 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-900/20 p-4 space-y-3">
+                <div className="rounded-lg border border-blue-100 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-900/20 p-4 space-y-3">
                     <div className="flex items-center gap-2">
                         <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         <h4 className="text-sm font-semibold text-neutral-700 dark:text-gray-200">유사 판례 참고자료</h4>
@@ -964,7 +964,7 @@ export default function DraftPreviewPanel({
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-4 space-y-3">
+                <div className="rounded-lg border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-4 space-y-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <MessageSquare className="w-4 h-4 text-secondary" />
@@ -1007,7 +1007,7 @@ export default function DraftPreviewPanel({
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-4 space-y-3">
+                <div className="rounded-lg border border-gray-100 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-4 space-y-3">
                     <div className="flex items-center gap-2">
                         <GitBranch className="w-4 h-4 text-secondary" />
                         <h4 className="text-sm font-semibold text-neutral-700 dark:text-gray-200">변경 추적</h4>
@@ -1033,7 +1033,7 @@ export default function DraftPreviewPanel({
 
             {isHistoryOpen && (
                 <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/30 px-4 pb-6 sm:items-center" role="dialog" aria-label="버전 히스토리 패널">
-                    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-neutral-800 p-6 shadow-2xl" data-testid="version-history-panel">
+                    <div className="w-full max-w-md rounded-lg bg-white dark:bg-neutral-800 p-6 shadow-2xl" data-testid="version-history-panel">
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <p className="text-base font-semibold text-gray-900 dark:text-gray-100">버전 히스토리</p>
@@ -1068,7 +1068,7 @@ export default function DraftPreviewPanel({
 
             {isTemplateModalOpen && (
                 <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 px-4" role="dialog" aria-label="템플릿 선택">
-                    <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-neutral-800 p-6 shadow-2xl space-y-4">
+                    <div className="w-full max-w-2xl rounded-lg bg-white dark:bg-neutral-800 p-6 shadow-2xl space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">법률 문서 템플릿</h3>
                             <button
@@ -1101,7 +1101,7 @@ export default function DraftPreviewPanel({
 
             {isCitationModalOpen && (
                 <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 px-4" role="dialog" aria-label="증거 인용 삽입">
-                    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-neutral-800 p-6 shadow-2xl space-y-4">
+                    <div className="w-full max-w-md rounded-lg bg-white dark:bg-neutral-800 p-6 shadow-2xl space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">증거 인용 선택</h3>
                             <button

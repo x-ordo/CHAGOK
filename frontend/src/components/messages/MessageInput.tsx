@@ -132,7 +132,7 @@ export function MessageInput({
             placeholder={placeholder}
             disabled={disabled || isSending}
             rows={1}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-neutral-900 disabled:cursor-not-allowed dark:bg-neutral-900 dark:text-gray-100"
+            className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-neutral-100 dark:disabled:bg-neutral-900 disabled:cursor-not-allowed dark:bg-neutral-900 dark:text-neutral-100"
             style={{ maxHeight: '150px' }}
           />
         </div>
@@ -142,7 +142,7 @@ export function MessageInput({
           type="button"
           onClick={handleSubmit}
           disabled={!message.trim() || isSending || disabled}
-          className="flex-shrink-0 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="flex-shrink-0 p-2 bg-primary text-white rounded-full hover:bg-primary/90 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-colors"
         >
           {isSending ? (
             <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">

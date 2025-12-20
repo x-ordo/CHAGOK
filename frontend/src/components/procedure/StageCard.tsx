@@ -155,7 +155,7 @@ function StageCardComponent({
                 e.stopPropagation();
                 onComplete(stage);
               }}
-              className="flex-1 px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+              className="flex-1 px-3 py-1.5 text-sm font-medium text-white bg-success rounded-lg hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-success focus:ring-offset-2"
               disabled={disabled}
             >
               완료
@@ -167,7 +167,7 @@ function StageCardComponent({
                 e.stopPropagation();
                 onSkip(stage);
               }}
-              className="flex-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+              className="flex-1 px-3 py-1.5 text-sm font-medium text-neutral-700 bg-neutral-200 rounded-lg hover:bg-neutral-300 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 dark:bg-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-500"
               disabled={disabled}
             >
               건너뛰기

@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-4">
-        <section aria-label="사용자 목록" className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <section aria-label="사용자 목록" className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">사용자 목록</h2>

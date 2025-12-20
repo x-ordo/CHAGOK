@@ -159,7 +159,7 @@ export function EvidenceLinkModal({
                 placeholder="증거 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 mb-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
               />
               <div className="max-h-40 overflow-y-auto border rounded-lg">
                 {isLoadingEvidence ? (
@@ -229,7 +229,7 @@ export function EvidenceLinkModal({
                     setSelectedParty(e.target.value);
                     if (e.target.value) setSelectedRelationship('');
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
                 >
                   <option value="">당사자 선택...</option>
                   {parties.map((party) => (
@@ -248,7 +248,7 @@ export function EvidenceLinkModal({
                     setSelectedRelationship(e.target.value);
                     if (e.target.value) setSelectedParty('');
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
                 >
                   <option value="">관계 선택...</option>
                   {relationships.map((rel) => (
@@ -298,7 +298,7 @@ export function EvidenceLinkModal({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg disabled:opacity-50"
               disabled={isSubmitting}
             >
               {isSubmitting ? '연결 중...' : '연결'}

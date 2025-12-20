@@ -199,7 +199,7 @@ export function PartyModal({
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
                 placeholder="실명 또는 가명"
                 autoFocus
               />
@@ -214,7 +214,7 @@ export function PartyModal({
                 type="text"
                 value={formData.alias}
                 onChange={(e) => setFormData({ ...formData, alias: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
                 placeholder="예: 김○○"
               />
             </div>
@@ -228,7 +228,7 @@ export function PartyModal({
                 type="number"
                 value={formData.birth_year}
                 onChange={(e) => setFormData({ ...formData, birth_year: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
                 placeholder="예: 1985"
                 min={1900}
                 max={new Date().getFullYear()}
@@ -244,7 +244,7 @@ export function PartyModal({
                 type="text"
                 value={formData.occupation}
                 onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
                 placeholder="예: 회사원"
               />
             </div>

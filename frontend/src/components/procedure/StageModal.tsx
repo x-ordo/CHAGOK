@@ -152,7 +152,7 @@ function StageModalComponent({
               value={formData.scheduled_date || ''}
               onChange={(e) => handleChange('scheduled_date', e.target.value)}
               disabled={!isEditable || loading}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white disabled:opacity-50"
             />
           </div>
 
@@ -167,7 +167,7 @@ function StageModalComponent({
               onChange={(e) => handleChange('court_reference', e.target.value)}
               disabled={!isEditable || loading}
               placeholder="2024드단12345"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white disabled:opacity-50"
             />
           </div>
 
@@ -183,7 +183,7 @@ function StageModalComponent({
                 onChange={(e) => handleChange('court_room', e.target.value)}
                 disabled={!isEditable || loading}
                 placeholder="301호"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white disabled:opacity-50"
               />
             </div>
             <div>
@@ -196,7 +196,7 @@ function StageModalComponent({
                 onChange={(e) => handleChange('judge_name', e.target.value)}
                 disabled={!isEditable || loading}
                 placeholder="김판사"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white disabled:opacity-50"
               />
             </div>
           </div>
@@ -212,7 +212,7 @@ function StageModalComponent({
               disabled={!isEditable || loading}
               rows={3}
               placeholder="단계 관련 메모..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white disabled:opacity-50"
             />
           </div>
 
@@ -237,14 +237,14 @@ function StageModalComponent({
                   value={outcome}
                   onChange={(e) => setOutcome(e.target.value)}
                   placeholder="예: 조정 성립, 기각, 인용 등"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                 />
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleComplete}
                   disabled={completing}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-success rounded-lg hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-success disabled:opacity-50"
                 >
                   {completing ? '처리 중...' : '완료 확인'}
                 </button>
@@ -271,14 +271,14 @@ function StageModalComponent({
                   value={skipReason}
                   onChange={(e) => setSkipReason(e.target.value)}
                   placeholder="예: 조정 불회부, 협의 이혼 등"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                 />
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleSkip}
                   disabled={skipping}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-yellow-600 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-warning rounded-lg hover:bg-warning/90 focus:outline-none focus:ring-2 focus:ring-warning disabled:opacity-50"
                 >
                   {skipping ? '처리 중...' : '건너뛰기 확인'}
                 </button>
@@ -325,7 +325,7 @@ function StageModalComponent({
               <button
                 onClick={handleSave}
                 disabled={saving || loading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
               >
                 {saving ? '저장 중...' : '저장'}
               </button>

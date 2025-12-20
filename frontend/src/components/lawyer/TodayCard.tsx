@@ -76,15 +76,15 @@ function UrgentItem({ item }: { item: TodayItem }) {
               {label}
             </span>
             {item.start_time && (
-              <span className="flex items-center gap-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1 text-xs text-neutral-500">
                 <ClockIcon />
                 {item.start_time}
               </span>
             )}
           </div>
-          <p className="mt-1 font-medium text-gray-900 truncate">{item.title}</p>
+          <p className="mt-1 font-medium text-neutral-900 truncate">{item.title}</p>
           {item.location && (
-            <p className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+            <p className="flex items-center gap-1 mt-1 text-xs text-neutral-500">
               <LocationIcon />
               {item.location}
             </p>
@@ -93,7 +93,7 @@ function UrgentItem({ item }: { item: TodayItem }) {
         {item.case_id && (
           <Link
             href={getCaseDetailPath('lawyer', item.case_id)}
-            className="text-xs text-blue-600 hover:underline whitespace-nowrap"
+            className="text-xs text-primary hover:underline whitespace-nowrap"
           >
             {item.case_title || '케이스 보기'}
           </Link>
@@ -106,11 +106,11 @@ function UrgentItem({ item }: { item: TodayItem }) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
-      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3">
+      <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-3 text-success">
         <CheckCircleIcon />
       </div>
-      <p className="text-gray-900 font-medium">오늘 일정이 모두 완료되었습니다!</p>
-      <p className="text-sm text-gray-500 mt-1">편안한 하루 보내세요.</p>
+      <p className="text-neutral-900 font-medium">오늘 일정이 모두 완료되었습니다!</p>
+      <p className="text-sm text-neutral-500 mt-1">편안한 하루 보내세요.</p>
     </div>
   );
 }
@@ -119,9 +119,9 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-3 animate-pulse">
       {[1, 2].map((i) => (
-        <div key={i} className="p-3 rounded-lg bg-gray-100">
-          <div className="h-4 w-16 bg-gray-200 rounded mb-2" />
-          <div className="h-5 w-3/4 bg-gray-200 rounded" />
+        <div key={i} className="p-3 rounded-lg bg-neutral-100">
+          <div className="h-4 w-16 bg-neutral-200 rounded mb-2" />
+          <div className="h-5 w-3/4 bg-neutral-200 rounded" />
         </div>
       ))}
     </div>
@@ -133,20 +133,20 @@ export function TodayCard({ items, allComplete, isLoading }: TodayCardProps) {
   const hasUrgent = urgentCount > 0;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
       {/* Header */}
-      <div className={`px-4 py-3 border-b ${hasUrgent ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
+      <div className={`px-4 py-3 border-b ${hasUrgent ? 'bg-error/5 border-error/20' : 'bg-success/5 border-success/20'}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {hasUrgent ? (
-              <span className="text-red-600"><AlertIcon /></span>
+              <span className="text-error"><AlertIcon /></span>
             ) : (
-              <span className="text-green-600"><CheckCircleIcon /></span>
+              <span className="text-success"><CheckCircleIcon /></span>
             )}
-            <h2 className="font-semibold text-gray-900">오늘의 일정</h2>
+            <h2 className="font-semibold text-neutral-900">오늘의 일정</h2>
           </div>
           {hasUrgent && (
-            <span className="text-xs font-medium text-red-600 bg-red-100 px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-error bg-error/10 px-2 py-1 rounded-full">
               {urgentCount}건 긴급
             </span>
           )}

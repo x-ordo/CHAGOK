@@ -63,7 +63,7 @@ export function DirectMessageView({
           <button
             type="button"
             onClick={onCompose}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary/90"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -124,7 +124,7 @@ export function DirectMessageView({
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
               placeholder="답장 내용을 입력하세요..."
-              className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-neutral-300 p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:bg-neutral-800 dark:border-neutral-600 dark:text-white"
               rows={4}
               autoFocus
             />
@@ -143,7 +143,7 @@ export function DirectMessageView({
                 type="button"
                 onClick={handleReply}
                 disabled={!replyContent.trim()}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary/90 disabled:opacity-50"
               >
                 보내기
               </button>
@@ -154,7 +154,7 @@ export function DirectMessageView({
             <button
               type="button"
               onClick={() => setIsReplying(true)}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-white hover:bg-primary/90"
             >
               <svg
                 className="h-4 w-4"

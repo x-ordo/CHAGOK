@@ -14,11 +14,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import {
   MoreVertical,
-  ClipboardCheck,
   DollarSign,
   Edit3,
   FileText,
-  Sparkles,
+  BookOpen,
 } from 'lucide-react';
 
 // =============================================================================
@@ -26,11 +25,6 @@ import {
 // =============================================================================
 
 export interface CaseActionsDropdownProps {
-  /**
-   * Path to the procedure page
-   */
-  procedurePath: string;
-
   /**
    * Path to the assets page
    */
@@ -50,6 +44,11 @@ export interface CaseActionsDropdownProps {
    * Handler for AI analysis request (optional - can be handled in Analysis tab)
    */
   onAIAnalysis?: () => void;
+
+  /**
+   * Handler for expert insights button click
+   */
+  onExpertInsights?: () => void;
 
   /**
    * Additional CSS classes
@@ -72,11 +71,11 @@ interface DropdownItem {
 // =============================================================================
 
 export function CaseActionsDropdown({
-  procedurePath,
   assetsPath,
   onEdit,
   onSummaryCard,
   onAIAnalysis,
+  onExpertInsights,
   className = '',
 }: CaseActionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -126,14 +125,6 @@ export function CaseActionsDropdown({
   // Define dropdown items
   const items: DropdownItem[] = [
     {
-      id: 'procedure',
-      label: '절차 진행',
-      icon: <ClipboardCheck className="w-4 h-4" />,
-      type: 'link',
-      href: procedurePath,
-      colorClass: 'text-blue-600 dark:text-blue-400',
-    },
-    {
       id: 'assets',
       label: '재산분할',
       icon: <DollarSign className="w-4 h-4" />,
@@ -159,15 +150,15 @@ export function CaseActionsDropdown({
     },
   ];
 
-  // Add AI analysis if handler provided
-  if (onAIAnalysis) {
+  // Add Expert Insights if handler provided
+  if (onExpertInsights) {
     items.push({
-      id: 'ai-analysis',
-      label: 'AI 분석 요청',
-      icon: <Sparkles className="w-4 h-4" />,
+      id: 'expert-insights',
+      label: '전문가 인사이트',
+      icon: <BookOpen className="w-4 h-4" />,
       type: 'button',
-      onClick: onAIAnalysis,
-      colorClass: 'text-indigo-600 dark:text-indigo-400',
+      onClick: onExpertInsights,
+      colorClass: 'text-teal-600 dark:text-teal-400',
     });
   }
 

@@ -45,7 +45,7 @@ export default function HeroSection() {
 
           {/* Hero Image */}
           <div className="relative">
-            <div className="relative w-full h-96 bg-white rounded-2xl shadow-2xl overflow-hidden border border-neutral-100">
+            <div className="relative w-full h-96 bg-white rounded-lg shadow-2xl overflow-hidden border border-neutral-100">
               <Image
                 src="/images/hero-dashboard.png"
                 alt={`${BRAND.fullName} 제품 미리보기 - 증거 관리 대시보드`}

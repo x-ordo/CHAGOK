@@ -58,10 +58,10 @@ const getVariantClasses = (variant: LoadingButtonProps['variant'], isLoading: bo
   const baseClasses = 'transition-colors duration-200 font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2';
 
   const variants = {
-    primary: `${baseClasses} bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 disabled:bg-blue-400`,
-    secondary: `${baseClasses} bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500 disabled:bg-gray-100 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600`,
-    danger: `${baseClasses} bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-400`,
-    ghost: `${baseClasses} bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-gray-800`,
+    primary: `${baseClasses} bg-primary text-white hover:bg-primary/90 focus:ring-primary disabled:bg-primary/60`,
+    secondary: `${baseClasses} bg-neutral-200 text-neutral-900 hover:bg-neutral-300 focus:ring-neutral-500 disabled:bg-neutral-100 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-600`,
+    danger: `${baseClasses} bg-error text-white hover:bg-error/90 focus:ring-error disabled:bg-error/60`,
+    ghost: `${baseClasses} bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-neutral-500 dark:text-neutral-300 dark:hover:bg-neutral-800`,
   };
 
   return variants[variant || 'primary'];

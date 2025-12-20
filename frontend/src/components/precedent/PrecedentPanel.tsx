@@ -14,9 +14,10 @@ import { PrecedentModal } from './PrecedentModal';
 interface PrecedentPanelProps {
   caseId: string;
   className?: string;
+  hideHeader?: boolean;
 }
 
-export function PrecedentPanel({ caseId, className = '' }: PrecedentPanelProps) {
+export function PrecedentPanel({ caseId, className = '', hideHeader = false }: PrecedentPanelProps) {
   const [data, setData] = useState<PrecedentSearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +44,7 @@ export function PrecedentPanel({ caseId, className = '' }: PrecedentPanelProps) 
     if (!isSearched) {
       return (
         <div className="text-center py-8">
-          <p className="text-gray-500 mb-4">유사 판례를 검색하여 참고 자료를 확인하세요.</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">유사 판례를 검색하여 참고 자료를 확인하세요.</p>
           <button
             onClick={handleSearch}
             disabled={loading}
@@ -58,10 +59,10 @@ export function PrecedentPanel({ caseId, className = '' }: PrecedentPanelProps) 
     if (error) {
       return (
         <div className="text-center py-8">
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className="text-red-500 dark:text-red-400 mb-4">{error}</p>
           <button
             onClick={handleSearch}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+            className="px-4 py-2 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors"
           >
             다시 시도
           </button>
@@ -72,8 +73,8 @@ export function PrecedentPanel({ caseId, className = '' }: PrecedentPanelProps) 
     if (!data || data.precedents.length === 0) {
       return (
         <div className="text-center py-8">
-          <p className="text-gray-500">관련 판례를 찾을 수 없습니다.</p>
-          <p className="text-sm text-gray-400 mt-2">
+          <p className="text-gray-500 dark:text-gray-400">관련 판례를 찾을 수 없습니다.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
             검색 조건을 변경하거나 사건 정보를 추가해 보세요.
           </p>
         </div>
@@ -94,22 +95,24 @@ export function PrecedentPanel({ caseId, className = '' }: PrecedentPanelProps) 
   };
 
   return (
-    <div className={`bg-white rounded-lg border ${className}`}>
+    <div className={`bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 ${className}`}>
       {/* Header */}
-      <div className="px-4 py-3 border-b flex justify-between items-center">
-        <h2 className="font-semibold text-gray-900">유사 판례</h2>
-        {isSearched && data && (
-          <span className="text-sm text-gray-500">
-            {data.query_context.total_found}건 발견
-          </span>
-        )}
-      </div>
+      {!hideHeader && (
+        <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex justify-between items-center">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">유사 판례</h2>
+          {isSearched && data && (
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {data.query_context.total_found}건 발견
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Query Context */}
       {isSearched && data && data.query_context.fault_types.length > 0 && (
-        <div className="px-4 py-2 bg-gray-50 border-b">
-          <span className="text-xs text-gray-500">검색 키워드: </span>
-          <span className="text-xs text-gray-700">
+        <div className="px-4 py-2 bg-gray-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-800">
+          <span className="text-xs text-gray-500 dark:text-gray-400">검색 키워드: </span>
+          <span className="text-xs text-gray-700 dark:text-gray-300">
             {data.query_context.fault_types.join(', ')}
           </span>
         </div>
@@ -120,11 +123,11 @@ export function PrecedentPanel({ caseId, className = '' }: PrecedentPanelProps) 
 
       {/* Refresh Button */}
       {isSearched && (
-        <div className="px-4 py-3 border-t">
+        <div className="px-4 py-3 border-t border-neutral-200 dark:border-neutral-800">
           <button
             onClick={handleSearch}
             disabled={loading}
-            className="w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+            className="w-full px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors disabled:opacity-50"
           >
             {loading ? '검색 중...' : '새로고침'}
           </button>
