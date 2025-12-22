@@ -11,6 +11,19 @@ export interface DraftCitation {
   labels: string[];
 }
 
+/**
+ * 판례 인용 정보 (012-precedent-integration)
+ */
+export interface PrecedentCitation {
+  case_ref: string;
+  court: string;
+  decision_date: string;
+  summary: string;
+  key_factors: string[];
+  similarity_score: number;
+  source_url?: string;
+}
+
 export interface DraftPreviewRequest {
   sections?: string[];
   language?: string;
@@ -21,7 +34,9 @@ export interface DraftPreviewResponse {
   case_id: string;
   draft_text: string;
   citations: DraftCitation[];
+  precedent_citations?: PrecedentCitation[];  // 판례 인용 (012-precedent-integration)
   generated_at: string;
+  preview_disclaimer?: string;  // 미리보기 면책조항
 }
 
 /**
