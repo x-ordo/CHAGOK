@@ -13,7 +13,6 @@ import { useState } from 'react';
 import PortalSidebar, { NavIcons, NavItem, HamburgerIcon } from '@/components/shared/PortalSidebar';
 import { NotificationDropdown } from '@/components/shared/NotificationDropdown';
 import RoleGuard from '@/components/auth/RoleGuard';
-// ThemeToggle removed - dark mode disabled
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UserRole } from '@/types/user';
