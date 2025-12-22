@@ -183,9 +183,9 @@ export async function generateDraftPreviewAsync(
 ): Promise<ApiResponse<DraftPreviewResponse>> {
   // 1. Start async job
   const startResponse = await startAsyncDraftPreview(caseId, request);
-  if (!startResponse.success || !startResponse.data) {
+  if (startResponse.status >= 400 || !startResponse.data) {
     return {
-      success: false,
+      status: startResponse.status,
       error: startResponse.error || '초안 생성 시작에 실패했습니다.',
     };
   }
@@ -198,7 +198,7 @@ export async function generateDraftPreviewAsync(
     await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
 
     const statusResponse = await getDraftJobStatus(caseId, jobId);
-    if (!statusResponse.success || !statusResponse.data) {
+    if (statusResponse.status >= 400 || !statusResponse.data) {
       continue; // Retry on network error
     }
 
@@ -212,14 +212,14 @@ export async function generateDraftPreviewAsync(
     // Check completion
     if (status === 'completed' && result) {
       return {
-        success: true,
+        status: 200,
         data: result,
       };
     }
 
     if (status === 'failed') {
       return {
-        success: false,
+        status: 500,
         error: error_message || '초안 생성에 실패했습니다.',
       };
     }
@@ -227,7 +227,7 @@ export async function generateDraftPreviewAsync(
 
   // Timeout
   return {
-    success: false,
+    status: 504,
     error: '초안 생성 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.',
   };
 }
