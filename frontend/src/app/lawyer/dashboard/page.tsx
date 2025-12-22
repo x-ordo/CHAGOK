@@ -2,13 +2,10 @@
  * Lawyer Dashboard Page
  * 003-role-based-ui Feature - US2
  * 007-lawyer-portal-v1 Feature - US7 (Today View)
- * 009-calm-control-design-system - Enhanced with Risk Flags & AI Recommendations
  *
- * Calm-Control Dashboard:
+ * Dashboard:
  * - 오늘 내가 통제해야 할 사건/증거/드래프트를 상단에 배치
- * - 우선순위/위험도 기반 카드 위주 (타임라인 아님)
- * - 위험 플래그 사건 섹션
- * - AI 추천 작업 큐 (Preview-only)
+ * - 우선순위 기반 카드 위주
  */
 
 'use client';
@@ -17,38 +14,22 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLawyerDashboard } from '@/hooks/useLawyerDashboard';
 import { useTodayView } from '@/hooks/useTodayView';
-import { useRiskFlags } from '@/hooks/useRiskFlags';
-import { useAIRecommendations } from '@/hooks/useAIRecommendations';
 import { StatsCard } from '@/components/lawyer/StatsCard';
 import { TodayCard } from '@/components/lawyer/TodayCard';
 import { WeeklyPreview } from '@/components/lawyer/WeeklyPreview';
-import { RiskFlagCard } from '@/components/lawyer/RiskFlagCard';
-import { AIRecommendationCard } from '@/components/lawyer/AIRecommendationCard';
 import { DashboardSkeleton } from '@/components/shared/LoadingSkeletons';
 import { useRole } from '@/hooks/useRole';
 import { getCaseDetailPath } from '@/lib/portalPaths';
 
-// Icons for stats cards
-const BriefcaseIcon = () => (
-  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-  </svg>
-);
-
+// Icons for stats cards (simplified to 2)
 const ActiveIcon = () => (
-  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-  </svg>
-);
-
-const PendingIcon = () => (
-  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
   </svg>
 );
 
 const CompletedIcon = () => (
-  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
@@ -128,8 +109,6 @@ export default function LawyerDashboardPage() {
     allComplete,
     isLoading: todayLoading,
   } = useTodayView();
-  const { cases: riskCases, isLoading: riskLoading } = useRiskFlags();
-  const { recommendations, isLoading: aiLoading } = useAIRecommendations();
 
   // Loading state
   if (isLoading) {
@@ -148,7 +127,7 @@ export default function LawyerDashboardPage() {
     );
   }
 
-  const statsIcons = [<BriefcaseIcon key="0" />, <ActiveIcon key="1" />, <PendingIcon key="2" />, <CompletedIcon key="3" />];
+  const statsIcons = [<ActiveIcon key="0" />, <CompletedIcon key="1" />];
 
   return (
     <div className="space-y-6">
@@ -160,8 +139,8 @@ export default function LawyerDashboardPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Grid - Simplified to 2 cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {data?.stats?.stats_cards?.map((card, index) => (
           <StatsCard
             key={card.label}
@@ -173,21 +152,10 @@ export default function LawyerDashboardPage() {
           />
         )) || (
           <>
-            <StatsCard label="전체 케이스" value={data?.stats?.total_cases || 0} icon={<BriefcaseIcon />} />
-            <StatsCard label="진행 중" value={data?.stats?.active_cases || 0} icon={<ActiveIcon />} />
-            <StatsCard label="검토 대기" value={data?.stats?.pending_review || 0} icon={<PendingIcon />} />
+            <StatsCard label="진행 중 케이스" value={data?.stats?.total_cases || 0} icon={<ActiveIcon />} />
             <StatsCard label="이번 달 완료" value={data?.stats?.completed_this_month || 0} icon={<CompletedIcon />} />
           </>
         )}
-      </div>
-
-      {/* Priority Section: Risk Flags & AI Recommendations (Calm-Control) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Risk Flag Cases - subtle emphasis, no screaming colors */}
-        <RiskFlagCard cases={riskCases} isLoading={riskLoading} />
-
-        {/* AI Recommendations - Preview-only, manual trigger */}
-        <AIRecommendationCard recommendations={recommendations} isLoading={aiLoading} />
       </div>
 
       {/* Today View Section (US7) */}

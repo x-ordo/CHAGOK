@@ -24,7 +24,6 @@ import { PartyGraph } from '@/components/party/PartyGraph';
 import { useCaseIdValidation, useEvidenceUpload } from '@/hooks';
 // New components for refactored UI
 import { AnalysisTab } from '@/components/case/AnalysisTab';
-import { CaseMembersDropdown } from '@/components/case/CaseMembersDropdown';
 import { CaseActionsDropdown } from '@/components/case/CaseActionsDropdown';
 // Evidence imports
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
@@ -474,10 +473,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
                 {caseDetail.description}
               </p>
             )}
-            {/* Team Members Dropdown */}
-            <div className="mt-3">
-              <CaseMembersDropdown members={caseDetail.members} />
-            </div>
           </div>
           {/* Phase B.1: Header buttons consolidated into dropdown */}
           <div className="flex items-center gap-2">
