@@ -11,6 +11,14 @@ import pytest
 from unittest.mock import patch, MagicMock, mock_open
 from datetime import datetime
 
+
+def create_mock_segment(start: float, text: str) -> MagicMock:
+    """Helper to create mock TranscriptionSegment with attribute access"""
+    segment = MagicMock()
+    segment.start = start
+    segment.text = text
+    return segment
+
 # Check for optional dependencies
 try:
     import ffmpeg  # noqa: F401
@@ -140,7 +148,7 @@ class TestAudioParserMetadata:
         mock_path.return_value.exists.return_value = True
 
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
-            segments=[{'start': 0.0, 'text': '테스트 음성'}]
+            segments=[create_mock_segment(0.0, '테스트 음성')]
         )
 
         from src.parsers.audio_parser import AudioParser
@@ -170,8 +178,8 @@ class TestAudioParserMetadata:
 
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
             segments=[
-                {'start': 0.0, 'text': '첫 번째'},
-                {'start': 5.5, 'text': '두 번째'}
+                create_mock_segment(0.0, '첫 번째'),
+                create_mock_segment(5.5, '두 번째')
             ]
         )
 

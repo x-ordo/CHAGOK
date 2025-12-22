@@ -70,20 +70,21 @@ class AudioParser(BaseParser):
 
         # 세그먼트별 처리
         for segment_index, segment in enumerate(transcript.segments):
-            text = segment['text'].strip()
+            # OpenAI SDK v1.0+: TranscriptionSegment는 Pydantic 객체 (속성 접근 사용)
+            text = segment.text.strip()
 
             # 빈 텍스트 제외
             if not text:
                 continue
 
             # 세그먼트 시작 시간 기준으로 타임스탬프 계산
-            segment_time = base_timestamp + timedelta(seconds=segment['start'])
+            segment_time = base_timestamp + timedelta(seconds=segment.start)
 
             # 표준 메타데이터 생성
             metadata = self._create_standard_metadata(
                 filepath=file_path,
                 source_type="audio",
-                segment_start=segment['start'],
+                segment_start=segment.start,
                 segment_index=segment_index
             )
 
