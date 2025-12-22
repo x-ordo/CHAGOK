@@ -47,6 +47,8 @@ import { useProcedure } from '@/hooks/useProcedure';
 import { ProcedureTimeline } from '@/components/procedure';
 // New tab components
 import { AssetSummaryTab } from '@/components/case/AssetSummaryTab';
+// 014-case-fact-summary: FactSummaryPanel
+import { FactSummaryPanel } from '@/components/fact-summary/FactSummaryPanel';
 
 interface CaseDetail {
   id: string;
@@ -777,18 +779,24 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
         )}
 
         {activeTab === 'analysis' && (
-          <AnalysisTab
-            caseId={caseId}
-            evidenceCount={caseDetail.evidenceCount}
-            onDraftGenerate={() => {
-              setActiveTab('draft');
-              setShowDraftModal(true);
-            }}
-            // Phase B.3: AI analysis status bar props
-            lastAnalyzedAt={lastAnalyzedAt}
-            onRequestAnalysis={handleRequestAnalysis}
-            isAnalyzing={isAnalyzing}
-          />
+          <div className="space-y-6">
+            {/* 014-case-fact-summary: 사실관계 요약 패널 */}
+            <FactSummaryPanel caseId={caseId} />
+
+            {/* 기존 분석 탭 */}
+            <AnalysisTab
+              caseId={caseId}
+              evidenceCount={caseDetail.evidenceCount}
+              onDraftGenerate={() => {
+                setActiveTab('draft');
+                setShowDraftModal(true);
+              }}
+              // Phase B.3: AI analysis status bar props
+              lastAnalyzedAt={lastAnalyzedAt}
+              onRequestAnalysis={handleRequestAnalysis}
+              isAnalyzing={isAnalyzing}
+            />
+          </div>
         )}
 
         {activeTab === 'relations' && (

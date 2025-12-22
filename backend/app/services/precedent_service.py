@@ -19,7 +19,7 @@ from app.utils.precedent_search import (
     search_similar_precedents as qdrant_search,
     get_fallback_precedents,
 )
-from app.utils.dynamo import get_evidence_by_case
+from app.utils.dynamo import get_evidence_by_case, get_case_fact_summary
 
 logger = logging.getLogger(__name__)
 
@@ -97,11 +97,19 @@ class PrecedentService:
         """
         logger.info(f"[PrecedentSearch] Starting search for case_id={case_id}")
 
+        # T026: 사실관계 요약이 있으면 우선 사용 (014-case-fact-summary 연계)
+        fact_summary = self._get_fact_summary_for_search(case_id)
+
         # T021: 사건의 유책사유 추출
         fault_types = self.get_fault_types(case_id)
         logger.info(f"[PrecedentSearch] Extracted fault_types={fault_types}")
 
-        if not fault_types:
+        # T027: 검색 쿼리 구성 (사실관계 우선, 없으면 유책사유)
+        if fact_summary:
+            # 사실관계 요약을 검색 쿼리로 사용 (최대 500자)
+            query = fact_summary[:500]
+            logger.info(f"[PrecedentSearch] Using fact summary as query ({len(fact_summary)} chars)")
+        elif not fault_types:
             # 유책사유가 없으면 기본 검색어 사용
             query = "이혼 판례 재산분할"
         else:
@@ -213,6 +221,33 @@ class PrecedentService:
         except Exception as e:
             logger.error(f"Failed to get fault types for case {case_id}: {e}")
             return []
+
+    def _get_fact_summary_for_search(self, case_id: str) -> str:
+        """
+        Get fact summary for precedent search (014-case-fact-summary T026)
+
+        Retrieves lawyer-modified or AI-generated fact summary for semantic search.
+
+        Args:
+            case_id: Case ID
+
+        Returns:
+            Fact summary text, empty string if not available
+        """
+        try:
+            summary_data = get_case_fact_summary(case_id)
+            if not summary_data:
+                return ""
+
+            # Prefer lawyer-modified summary over AI-generated
+            fact_summary = summary_data.get("modified_summary") or summary_data.get("ai_summary", "")
+            if fact_summary:
+                logger.info(f"[PrecedentSearch] Found fact summary for case {case_id}")
+                return fact_summary
+            return ""
+        except Exception as e:
+            logger.warning(f"[PrecedentSearch] Failed to get fact summary for case {case_id}: {e}")
+            return ""
 
     def _get_fallback_response(self, fault_types: List[str]) -> PrecedentSearchResponse:
         """T024: Fallback 응답 생성 (fault_types 기반 필터링)"""

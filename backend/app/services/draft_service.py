@@ -33,12 +33,10 @@ from app.db.schemas import (
     DraftJobCreateResponse,
     DraftJobStatusResponse,
 )
-
-logger = logging.getLogger(__name__)
 from app.db.models import DraftDocument, DraftStatus, DocumentType, Job, JobType, JobStatus
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
-from app.utils.dynamo import get_evidence_by_case
+from app.utils.dynamo import get_evidence_by_case, get_case_fact_summary
 from app.utils.qdrant import (
     get_template_by_type,
     search_evidence_by_semantic,
@@ -75,6 +73,8 @@ __all__ = [
     'DOCX_AVAILABLE',
     'Document',
 ]
+
+logger = logging.getLogger(__name__)
 
 
 class DraftService:
@@ -150,17 +150,21 @@ class DraftService:
         # 3.5 Search similar precedents
         precedent_results = self.rag_orchestrator.search_precedents(case_id)
 
+        # 3.6 Get fact summary context (014-case-fact-summary T023)
+        fact_summary_context = self._get_fact_summary_context(case_id)
+
         # 4. Check if template exists for JSON output mode
         template = get_template_by_type("이혼소장")
         use_json_output = template is not None
 
-        # 5. Build GPT-4o prompt with RAG context + precedents
+        # 5. Build GPT-4o prompt with RAG context + precedents + fact summary (T024)
         prompt_messages = self.prompt_builder.build_draft_prompt(
             case=case,
             sections=request.sections,
             evidence_context=evidence_results,
             legal_context=legal_results,
             precedent_context=precedent_results,
+            fact_summary_context=fact_summary_context,
             language=request.language,
             style=request.style
         )
@@ -594,10 +598,10 @@ class DraftService:
         """Legacy: delegates to CitationExtractor"""
         return self.citation_extractor.extract_precedent_citations(precedent_results)
 
-    def _build_draft_prompt(self, case, sections, evidence_context, legal_context, precedent_context, language, style) -> List[dict]:
+    def _build_draft_prompt(self, case, sections, evidence_context, legal_context, precedent_context, fact_summary_context="", language="ko", style="formal") -> List[dict]:
         """Legacy: delegates to PromptBuilder"""
         return self.prompt_builder.build_draft_prompt(
-            case, sections, evidence_context, legal_context, precedent_context, language, style
+            case, sections, evidence_context, legal_context, precedent_context, fact_summary_context, language, style
         )
 
     def _build_ai_placeholder_prompt(self, placeholder_key, section, evidence_context) -> List[dict]:
@@ -617,6 +621,37 @@ class DraftService:
     def _register_korean_font(self, pdfmetrics, TTFont) -> bool:
         """Legacy: delegates to DocumentExporter"""
         return self.document_exporter._register_korean_font(pdfmetrics, TTFont)
+
+    def _get_fact_summary_context(self, case_id: str) -> str:
+        """
+        Get fact summary context for draft generation (014-case-fact-summary T023)
+
+        Retrieves stored fact summary (lawyer-modified version preferred, AI-generated as fallback).
+        Returns empty string if no summary exists.
+
+        Args:
+            case_id: Case ID
+
+        Returns:
+            Fact summary text for context injection, empty string if not available
+        """
+        try:
+            summary_data = get_case_fact_summary(case_id)
+            if not summary_data:
+                return ""
+
+            # Prefer lawyer-modified summary over AI-generated
+            fact_summary = summary_data.get("modified_summary") or summary_data.get("ai_summary", "")
+            if not fact_summary:
+                return ""
+
+            return f"""[사건 사실관계 요약]
+{fact_summary}
+---
+위 사실관계는 변호사가 검토/수정한 내용입니다. 초안 작성 시 이 사실관계를 우선적으로 참조하세요."""
+        except Exception:
+            # Silently fail - fact summary is optional context
+            return ""
 
     # ==========================================================================
     # Async Draft Preview Methods (API Gateway 30s timeout 우회)
