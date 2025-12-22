@@ -39,7 +39,7 @@ import { getCaseStatusConfig } from '@/lib/utils/statusConfig';
 // Draft imports
 import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
-import { generateDraftPreview } from '@/lib/api/draft';
+import { generateDraftPreviewAsync, DraftJobStatus } from '@/lib/api/draft';
 import { DraftCitation } from '@/types/draft';
 import { downloadDraftAsDocx, DraftDownloadFormat, DownloadResult } from '@/services/documentService';
 import { ExpertInsightsPanel } from '@/components/case/ExpertInsightsPanel';
@@ -120,6 +120,8 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [draftError, setDraftError] = useState<string | null>(null);
   const [hasExistingDraft, setHasExistingDraft] = useState(false);
+  const [draftProgress, setDraftProgress] = useState(0);
+  const [draftStatus, setDraftStatus] = useState<DraftJobStatus | null>(null);
 
   // Evidence state
   const [evidenceList, setEvidenceList] = useState<Evidence[]>([]);
@@ -295,19 +297,32 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
     onUploadComplete: fetchEvidence,
   });
 
-  // Draft generation handler
+  // Draft generation handler (async with polling)
   const handleGenerateDraft = useCallback(async (selectedEvidenceIds: string[]) => {
     if (!caseId) return;
 
     setIsGeneratingDraft(true);
     setDraftError(null);
+    setDraftProgress(0);
+    setDraftStatus('queued');
 
     try {
-      const response = await generateDraftPreview(caseId, {
-        sections: ['청구취지', '청구원인'],
-        language: 'ko',
-        style: '법원 제출용_표준',
-      });
+      // Use async version with progress callback
+      const response = await generateDraftPreviewAsync(
+        caseId,
+        {
+          sections: ['청구취지', '청구원인'],
+          language: 'ko',
+          style: '법원 제출용_표준',
+        },
+        // Progress callback
+        (progress, status) => {
+          setDraftProgress(progress);
+          setDraftStatus(status);
+        },
+        120000,  // 2 minute max wait
+        1500     // 1.5 second poll interval
+      );
 
       if (response.error || !response.data) {
         throw new Error(response.error || '초안 생성에 실패했습니다.');
@@ -332,6 +347,8 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
       setDraftError(err instanceof Error ? err.message : '초안 생성에 실패했습니다.');
     } finally {
       setIsGeneratingDraft(false);
+      setDraftProgress(0);
+      setDraftStatus(null);
     }
   }, [caseId]);
 
@@ -903,6 +920,8 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
         onClose={() => setShowDraftModal(false)}
         onGenerate={handleGenerateDraft}
         evidenceList={evidenceList}
+        progress={draftProgress}
+        status={draftStatus}
       />
     </div>
   );

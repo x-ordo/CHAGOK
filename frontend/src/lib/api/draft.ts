@@ -107,3 +107,127 @@ export async function generateLineBasedDraftPreview(
     }),
   });
 }
+
+// ============================================
+// Async Draft Preview (API Gateway 30s timeout 우회)
+// ============================================
+
+export type DraftJobStatus = 'queued' | 'processing' | 'completed' | 'failed';
+
+export interface DraftJobCreateResponse {
+  job_id: string;
+  case_id: string;
+  status: DraftJobStatus;
+  message: string;
+  created_at: string;
+}
+
+export interface DraftJobStatusResponse {
+  job_id: string;
+  case_id: string;
+  status: DraftJobStatus;
+  progress: number;
+  result?: DraftPreviewResponse;
+  error_message?: string;
+  created_at: string;
+  completed_at?: string;
+}
+
+/**
+ * Start async draft preview generation
+ * Returns immediately with job_id for polling
+ */
+export async function startAsyncDraftPreview(
+  caseId: string,
+  request: DraftPreviewRequest = {}
+): Promise<ApiResponse<DraftJobCreateResponse>> {
+  return apiRequest<DraftJobCreateResponse>(`/cases/${caseId}/draft-preview-async`, {
+    method: 'POST',
+    body: JSON.stringify({
+      sections: request.sections || ['청구취지', '청구원인'],
+      language: request.language || 'ko',
+      style: request.style || '법원 제출용_표준',
+    }),
+  });
+}
+
+/**
+ * Get draft job status
+ * Poll this endpoint until status is 'completed' or 'failed'
+ */
+export async function getDraftJobStatus(
+  caseId: string,
+  jobId: string
+): Promise<ApiResponse<DraftJobStatusResponse>> {
+  return apiRequest<DraftJobStatusResponse>(`/cases/${caseId}/draft-jobs/${jobId}`, {
+    method: 'GET',
+  });
+}
+
+/**
+ * Generate draft preview with async fallback
+ * Starts async job and polls until complete
+ *
+ * @param caseId - Case ID
+ * @param request - Draft preview request
+ * @param onProgress - Optional callback for progress updates
+ * @param maxWaitMs - Maximum wait time in milliseconds (default: 120000 = 2 minutes)
+ * @param pollIntervalMs - Poll interval in milliseconds (default: 1500)
+ */
+export async function generateDraftPreviewAsync(
+  caseId: string,
+  request: DraftPreviewRequest = {},
+  onProgress?: (progress: number, status: DraftJobStatus) => void,
+  maxWaitMs: number = 120000,
+  pollIntervalMs: number = 1500
+): Promise<ApiResponse<DraftPreviewResponse>> {
+  // 1. Start async job
+  const startResponse = await startAsyncDraftPreview(caseId, request);
+  if (!startResponse.success || !startResponse.data) {
+    return {
+      success: false,
+      error: startResponse.error || '초안 생성 시작에 실패했습니다.',
+    };
+  }
+
+  const jobId = startResponse.data.job_id;
+  const startTime = Date.now();
+
+  // 2. Poll for result
+  while (Date.now() - startTime < maxWaitMs) {
+    await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+
+    const statusResponse = await getDraftJobStatus(caseId, jobId);
+    if (!statusResponse.success || !statusResponse.data) {
+      continue; // Retry on network error
+    }
+
+    const { status, progress, result, error_message } = statusResponse.data;
+
+    // Report progress
+    if (onProgress) {
+      onProgress(progress, status);
+    }
+
+    // Check completion
+    if (status === 'completed' && result) {
+      return {
+        success: true,
+        data: result,
+      };
+    }
+
+    if (status === 'failed') {
+      return {
+        success: false,
+        error: error_message || '초안 생성에 실패했습니다.',
+      };
+    }
+  }
+
+  // Timeout
+  return {
+    success: false,
+    error: '초안 생성 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.',
+  };
+}
