@@ -109,21 +109,13 @@ class LawyerDashboardService:
             or 0
         )
 
-        # Build stats cards
+        # Build stats cards (simplified to 2 cards)
         stats_cards = [
             StatsCardData(
-                label="전체 케이스",
+                label="진행 중 케이스",
                 value=total_cases,
                 change=cases_change,
                 trend="up" if cases_change > 0 else "stable",
-            ),
-            StatsCardData(
-                label="진행 중",
-                value=active_cases,
-            ),
-            StatsCardData(
-                label="검토 대기",
-                value=pending_review,
             ),
             StatsCardData(
                 label="이번 달 완료",

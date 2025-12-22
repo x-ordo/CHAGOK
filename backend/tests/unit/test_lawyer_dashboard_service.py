@@ -274,12 +274,15 @@ class TestStatsCardsGeneration:
         assert hasattr(result.stats, "stats_cards")
         assert isinstance(result.stats.stats_cards, list)
 
-        # Expected labels (Korean)
-        expected_labels = ["전체 케이스", "진행 중", "검토 대기", "이번 달 완료"]
+        # Expected labels (Korean) - simplified to 2 cards
+        expected_labels = ["진행 중 케이스", "이번 달 완료"]
         card_labels = [card.label for card in result.stats.stats_cards]
 
         for label in expected_labels:
             assert label in card_labels, f"Missing label: {label}"
+
+        # Verify only 2 cards are returned
+        assert len(result.stats.stats_cards) == 2
 
         # Cleanup
         db.delete(user)
