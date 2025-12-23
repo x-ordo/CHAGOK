@@ -202,7 +202,7 @@ class Settings(BaseSettings):
 
     # Gemini API Settings (for draft generation - faster than OpenAI)
     GEMINI_API_KEY: str = Field(default="", env="GEMINI_API_KEY")
-    GEMINI_MODEL_CHAT: str = Field(default="gemini-2.0-flash", env="GEMINI_MODEL_CHAT")
+    GEMINI_MODEL_CHAT: str = Field(default="gemini-3-flash-preview", env="GEMINI_MODEL_CHAT")
     USE_GEMINI_FOR_DRAFT: bool = Field(default=True, env="USE_GEMINI_FOR_DRAFT")
 
     LLM_REQUEST_TIMEOUT_SECONDS: int = Field(default=60, env="LLM_REQUEST_TIMEOUT_SECONDS")  # Async draft uses Lambda 90s timeout
