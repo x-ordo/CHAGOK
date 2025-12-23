@@ -50,6 +50,8 @@ import { AssetSummaryTab } from '@/components/case/AssetSummaryTab';
 import { ConsultationHistoryTab } from '@/components/case/ConsultationHistoryTab';
 // 014-case-fact-summary: FactSummaryPanel
 import { FactSummaryPanel } from '@/components/fact-summary/FactSummaryPanel';
+// 016-draft-fact-summary: fact-summary 조회
+import { getFactSummary } from '@/lib/api/fact-summary';
 // Issue #423: Pipeline progress visualization
 import { PipelineProgressIndicator } from '@/components/case/PipelineProgressIndicator';
 
@@ -128,6 +130,8 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [hasExistingDraft, setHasExistingDraft] = useState(false);
   const [draftProgress, setDraftProgress] = useState(0);
   const [draftStatus, setDraftStatus] = useState<DraftJobStatus | null>(null);
+  // 016-draft-fact-summary: fact-summary 존재 여부
+  const [hasFactSummary, setHasFactSummary] = useState(false);
 
   // Evidence state
   const [evidenceList, setEvidenceList] = useState<Evidence[]>([]);
@@ -252,6 +256,21 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
     fetchEvidence();
   }, [fetchEvidence]);
 
+  // 016-draft-fact-summary: fact-summary 존재 여부 확인
+  const checkFactSummary = useCallback(async () => {
+    if (!caseId) return;
+    try {
+      const response = await getFactSummary(caseId);
+      setHasFactSummary(!!(response.data?.ai_summary || response.data?.modified_summary));
+    } catch {
+      setHasFactSummary(false);
+    }
+  }, [caseId]);
+
+  useEffect(() => {
+    checkFactSummary();
+  }, [checkFactSummary]);
+
   // Auto-polling: silently check for status updates
   useEffect(() => {
     const hasProcessingItems = evidenceList.some(
@@ -304,7 +323,8 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   });
 
   // Draft generation handler (async with polling)
-  const handleGenerateDraft = useCallback(async (selectedEvidenceIds: string[]) => {
+  // 016-draft-fact-summary: 증거 선택 없이 fact-summary 기반 생성
+  const handleGenerateDraft = useCallback(async () => {
     if (!caseId) return;
 
     setIsGeneratingDraft(true);
@@ -1028,11 +1048,12 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
       />
 
       {/* Draft Generation Modal */}
+      {/* 016-draft-fact-summary: fact-summary 기반 초안 생성 */}
       <DraftGenerationModal
         isOpen={showDraftModal}
         onClose={() => setShowDraftModal(false)}
         onGenerate={handleGenerateDraft}
-        evidenceList={evidenceList}
+        hasFactSummary={hasFactSummary}
         progress={draftProgress}
         status={draftStatus}
       />
