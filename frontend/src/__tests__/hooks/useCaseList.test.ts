@@ -66,16 +66,24 @@ describe('useCaseList Hook', () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    // Clean up any pending promises to prevent act() warnings
+    jest.clearAllTimers();
+  });
+
   describe('Initial State and Data Fetching', () => {
     it('starts with loading state', async () => {
       // Never resolve to keep loading state
       mockApiGet.mockImplementation(() => new Promise(() => {}));
 
-      const { result } = renderHook(() => useCaseList());
+      const { result, unmount } = renderHook(() => useCaseList());
 
       expect(result.current.isLoading).toBe(true);
       expect(result.current.cases).toEqual([]);
       expect(result.current.error).toBeNull();
+
+      // Clean up to prevent state updates after unmount
+      unmount();
     });
 
     it('fetches cases on mount and transforms response', async () => {

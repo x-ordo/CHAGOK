@@ -8,7 +8,9 @@ Fact Summary API Router
 - PATCH /cases/{case_id}/fact-summary - 사실관계 수정
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_db, get_current_user_id
@@ -26,15 +28,15 @@ router = APIRouter(prefix="/cases", tags=["Fact Summary"])
 
 @router.get(
     "/{case_id}/fact-summary",
-    response_model=FactSummaryResponse,
+    response_model=Optional[FactSummaryResponse],
     summary="사실관계 조회",
-    description="사건의 저장된 사실관계(AI 생성본 또는 변호사 수정본)를 조회합니다."
+    description="사건의 저장된 사실관계(AI 생성본 또는 변호사 수정본)를 조회합니다. 없으면 null 반환."
 )
 async def get_fact_summary(
     case_id: str,
     db: Session = Depends(get_db),
     user_id: str = Depends(get_current_user_id)
-):
+) -> Optional[FactSummaryResponse]:
     """
     사실관계 조회 API (T012)
 
@@ -42,18 +44,13 @@ async def get_fact_summary(
 
     Returns:
         FactSummaryResponse: 사실관계 데이터 (ai_summary, modified_summary 등)
+        None: 사실관계가 아직 생성되지 않음 (정상 상태)
 
     Raises:
-        404: 사실관계가 존재하지 않음
         403: 사건 접근 권한 없음
     """
     service = FactSummaryService(db)
-    result = service.get_fact_summary(case_id, user_id)
-
-    if not result:
-        raise HTTPException(status_code=404, detail="사실관계가 존재하지 않습니다")
-
-    return result
+    return service.get_fact_summary(case_id, user_id)
 
 
 @router.post(
