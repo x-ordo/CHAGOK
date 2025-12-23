@@ -135,7 +135,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const dashboardLink = within(sidebar as HTMLElement).getByRole('link', { name: /대시보드/i });
-      expect(dashboardLink).toHaveClass('bg-accent');
+      expect(dashboardLink).toHaveClass('bg-primary');
     });
 
     it('should highlight "케이스" when on /lawyer/cases', () => {
@@ -144,7 +144,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const casesLink = within(sidebar as HTMLElement).getByRole('link', { name: /케이스/i });
-      expect(casesLink).toHaveClass('bg-accent');
+      expect(casesLink).toHaveClass('bg-primary');
     });
 
     it('should highlight "케이스" when on /lawyer/cases/123 (nested route)', () => {
@@ -153,7 +153,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const casesLink = within(sidebar as HTMLElement).getByRole('link', { name: /케이스/i });
-      expect(casesLink).toHaveClass('bg-accent');
+      expect(casesLink).toHaveClass('bg-primary');
     });
 
     it('should highlight "의뢰인" when on /lawyer/clients', () => {
@@ -162,7 +162,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const clientsLink = within(sidebar as HTMLElement).getByRole('link', { name: /의뢰인/i });
-      expect(clientsLink).toHaveClass('bg-accent');
+      expect(clientsLink).toHaveClass('bg-primary');
     });
 
     it('should highlight "탐정" when on /lawyer/investigators', () => {
@@ -171,7 +171,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const investigatorsLink = within(sidebar as HTMLElement).getByRole('link', { name: /탐정/i });
-      expect(investigatorsLink).toHaveClass('bg-accent');
+      expect(investigatorsLink).toHaveClass('bg-primary');
     });
 
     it('should highlight "일정" when on /lawyer/calendar', () => {
@@ -180,7 +180,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const calendarLink = within(sidebar as HTMLElement).getByRole('link', { name: /일정/i });
-      expect(calendarLink).toHaveClass('bg-accent');
+      expect(calendarLink).toHaveClass('bg-primary');
     });
 
     it('should highlight "메시지" when on /lawyer/messages', () => {
@@ -189,7 +189,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const messagesLink = within(sidebar as HTMLElement).getByRole('link', { name: /메시지/i });
-      expect(messagesLink).toHaveClass('bg-accent');
+      expect(messagesLink).toHaveClass('bg-primary');
     });
 
     it('should highlight "청구/결제" when on /lawyer/billing', () => {
@@ -198,7 +198,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const billingLink = within(sidebar as HTMLElement).getByRole('link', { name: /청구\/결제/i });
-      expect(billingLink).toHaveClass('bg-accent');
+      expect(billingLink).toHaveClass('bg-primary');
     });
   });
 
@@ -210,12 +210,12 @@ describe('PortalSidebar Active State - FR-009', () => {
       const sidebar = getDesktopSidebar(container);
       // Cases should not be highlighted
       const casesLink = within(sidebar as HTMLElement).getByRole('link', { name: /케이스/i });
-      expect(casesLink).not.toHaveClass('bg-accent');
+      expect(casesLink).not.toHaveClass('bg-primary');
       expect(casesLink).toHaveClass('text-gray-700');
 
       // Calendar should not be highlighted
       const calendarLink = within(sidebar as HTMLElement).getByRole('link', { name: /일정/i });
-      expect(calendarLink).not.toHaveClass('bg-accent');
+      expect(calendarLink).not.toHaveClass('bg-primary');
     });
 
     it('should only highlight dashboard for exact match (not /lawyer/dashboard/something)', () => {
@@ -224,7 +224,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const dashboardLink = within(sidebar as HTMLElement).getByRole('link', { name: /대시보드/i });
-      expect(dashboardLink).toHaveClass('bg-accent');
+      expect(dashboardLink).toHaveClass('bg-primary');
     });
   });
 
@@ -235,7 +235,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const casesLink = within(sidebar as HTMLElement).getByRole('link', { name: /케이스/i });
-      expect(casesLink).toHaveClass('bg-accent');
+      expect(casesLink).toHaveClass('bg-primary');
     });
 
     it('should highlight "의뢰인" for /lawyer/clients/456', () => {
@@ -244,7 +244,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const clientsLink = within(sidebar as HTMLElement).getByRole('link', { name: /의뢰인/i });
-      expect(clientsLink).toHaveClass('bg-accent');
+      expect(clientsLink).toHaveClass('bg-primary');
     });
 
     it('should highlight "메시지" for /lawyer/messages/thread/123', () => {
@@ -253,7 +253,7 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       const messagesLink = within(sidebar as HTMLElement).getByRole('link', { name: /메시지/i });
-      expect(messagesLink).toHaveClass('bg-accent');
+      expect(messagesLink).toHaveClass('bg-primary');
     });
   });
 
