@@ -158,6 +158,9 @@ class FactSummaryService:
             put_case_fact_summary(summary_data)
             logger.info(f"[FactSummary] Created new summary for case_id={case_id}")
 
+        # 017-party-graph-improvement: Auto-extract parties from fact summary
+        self._auto_extract_parties(case_id, user_id, ai_summary)
+
         return FactSummaryGenerateResponse(
             case_id=case_id,
             ai_summary=ai_summary,
@@ -397,3 +400,42 @@ class FactSummaryService:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
+
+    def _auto_extract_parties(
+        self,
+        case_id: str,
+        user_id: str,
+        fact_summary: str
+    ) -> None:
+        """
+        Automatically extract parties and relationships from fact summary (017-party-graph-improvement)
+
+        This is called after fact summary generation to populate party graph.
+        Errors are logged but do not fail the main operation.
+
+        Args:
+            case_id: Case ID
+            user_id: Current user ID
+            fact_summary: Generated fact summary text
+        """
+        try:
+            from app.services.party_extraction_service import PartyExtractionService
+
+            extraction_service = PartyExtractionService(self.db)
+            result = extraction_service.extract_from_fact_summary(
+                case_id=case_id,
+                user_id=user_id,
+                fact_summary_text=fact_summary  # Pass directly to avoid re-fetching
+            )
+
+            logger.info(
+                f"[FactSummary] Auto-extracted parties: "
+                f"new={result.new_parties_count}, merged={result.merged_parties_count}, "
+                f"relationships={result.new_relationships_count}"
+            )
+
+        except ImportError as e:
+            logger.warning(f"[FactSummary] Party extraction service not available: {e}")
+        except Exception as e:
+            # Log but don't fail - party extraction is enhancement, not critical
+            logger.warning(f"[FactSummary] Party extraction failed (non-critical): {e}")
