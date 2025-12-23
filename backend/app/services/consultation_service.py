@@ -113,10 +113,11 @@ class ConsultationService:
 
         # Audit log
         self.audit_service.log(
-            action="CONSULTATION_CREATE",
             user_id=user_id,
-            case_id=case_id,
-            details={"consultation_id": consultation.id, "type": data.type},
+            action="CONSULTATION_CREATE",
+            resource_type="consultation",
+            resource_id=consultation.id,
+            details={"case_id": case_id, "type": data.type},
         )
 
         self.db.commit()
@@ -222,10 +223,11 @@ class ConsultationService:
 
         # Audit log
         self.audit_service.log(
-            action="CONSULTATION_UPDATE",
             user_id=user_id,
-            case_id=consultation.case_id,
-            details={"consultation_id": consultation_id},
+            action="CONSULTATION_UPDATE",
+            resource_type="consultation",
+            resource_id=consultation_id,
+            details={"case_id": consultation.case_id},
         )
 
         self.db.commit()
@@ -266,10 +268,11 @@ class ConsultationService:
         if success:
             # Audit log
             self.audit_service.log(
-                action="CONSULTATION_DELETE",
                 user_id=user_id,
-                case_id=case_id,
-                details={"consultation_id": consultation_id},
+                action="CONSULTATION_DELETE",
+                resource_type="consultation",
+                resource_id=consultation_id,
+                details={"case_id": case_id},
             )
             self.db.commit()
 
@@ -335,11 +338,12 @@ class ConsultationService:
 
         # Audit log
         self.audit_service.log(
-            action="CONSULTATION_EVIDENCE_LINK",
             user_id=user_id,
-            case_id=consultation.case_id,
+            action="CONSULTATION_EVIDENCE_LINK",
+            resource_type="consultation",
+            resource_id=consultation_id,
             details={
-                "consultation_id": consultation_id,
+                "case_id": consultation.case_id,
                 "evidence_ids": request.evidence_ids,
             },
         )
@@ -380,11 +384,12 @@ class ConsultationService:
         if success:
             # Audit log
             self.audit_service.log(
-                action="CONSULTATION_EVIDENCE_UNLINK",
                 user_id=user_id,
-                case_id=consultation.case_id,
+                action="CONSULTATION_EVIDENCE_UNLINK",
+                resource_type="consultation",
+                resource_id=consultation_id,
                 details={
-                    "consultation_id": consultation_id,
+                    "case_id": consultation.case_id,
                     "evidence_id": evidence_id,
                 },
             )
