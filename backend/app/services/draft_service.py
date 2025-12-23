@@ -150,20 +150,24 @@ class DraftService:
         # 3.5 Search similar precedents
         precedent_results = self.rag_orchestrator.search_precedents(case_id)
 
-        # 3.6 Get fact summary context (014-case-fact-summary T023)
+        # 3.6 Search consultation records (Issue #403)
+        consultation_results = self.rag_orchestrator.search_case_consultations(case_id)
+
+        # 3.7 Get fact summary context (014-case-fact-summary T023)
         fact_summary_context = self._get_fact_summary_context(case_id)
 
         # 4. Check if template exists for JSON output mode
         template = get_template_by_type("이혼소장")
         use_json_output = template is not None
 
-        # 5. Build GPT-4o prompt with RAG context + precedents + fact summary (T024)
+        # 5. Build GPT-4o prompt with RAG context + precedents + consultations + fact summary (Issue #403)
         prompt_messages = self.prompt_builder.build_draft_prompt(
             case=case,
             sections=request.sections,
             evidence_context=evidence_results,
             legal_context=legal_results,
             precedent_context=precedent_results,
+            consultation_context=consultation_results,
             fact_summary_context=fact_summary_context,
             language=request.language,
             style=request.style
