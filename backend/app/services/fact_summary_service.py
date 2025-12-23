@@ -250,11 +250,7 @@ class FactSummaryService:
             consultation_list.append({
                 "id": c.id,
                 "date": c.date.isoformat() if c.date else "",
-                "time": c.time.strftime("%H:%M") if c.time else "",
-                "type": c.type.value if hasattr(c.type, 'value') else str(c.type),
                 "summary": c.summary or "",
-                "notes": c.notes or "",
-                "participants": [p.name for p in c.participants] if c.participants else [],
             })
 
         # Sort by date (oldest first for chronological story)
@@ -339,32 +335,16 @@ class FactSummaryService:
 ---
 """
 
-        # Format consultation records (상담 내역)
+        # Format consultation records (상담 내역) - 날짜와 내용만 포함
         consultation_text = ""
         if consultation_list:
             for i, consultation in enumerate(consultation_list, 1):
                 date = consultation.get("date", "날짜 미상")
-                time = consultation.get("time", "")
-                consult_type = consultation.get("type", "상담")
                 summary = consultation.get("summary", "")
-                notes = consultation.get("notes", "")
-                participants = consultation.get("participants", [])
-                participants_str = ", ".join(participants) if participants else ""
-
-                # 상담 유형 한글 변환
-                type_map = {
-                    "phone": "전화 상담",
-                    "in_person": "대면 상담",
-                    "online": "온라인 상담",
-                    "video": "화상 상담",
-                }
-                consult_type_ko = type_map.get(consult_type, consult_type)
 
                 consultation_text += f"""
-[상담{i}] ({consult_type_ko}) {date} {time}
-{f"참석자: {participants_str}" if participants_str else ""}
-요약: {summary}
-{f"메모: {notes}" if notes else ""}
+[상담{i}] {date}
+{summary}
 ---
 """
 
