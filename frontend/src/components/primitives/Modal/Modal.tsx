@@ -119,6 +119,9 @@ export function Modal({
     (event: KeyboardEvent) => {
       if (!isOpen || !modalRef.current) return;
 
+      // Skip if IME composition is in progress (for Korean/Japanese/Chinese input)
+      if (event.isComposing || event.keyCode === 229) return;
+
       // Close on Escape
       if (event.key === 'Escape' && closeOnEscape) {
         event.preventDefault();
@@ -196,14 +199,21 @@ export function Modal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center p-4"
+      className="fixed inset-0 flex items-center justify-center p-4"
       role="presentation"
+      style={{ zIndex: 9999, isolation: 'isolate' }}
     >
-      {/* Backdrop/Overlay */}
+      {/* Backdrop/Overlay - blocks all clicks to content behind */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
-        onClick={closeOnOverlayClick ? onClose : undefined}
+        className="fixed inset-0 bg-black/80"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (closeOnOverlayClick) onClose();
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
         aria-hidden="true"
+        style={{ zIndex: 9999 }}
       />
 
       {/* Modal Panel */}
@@ -214,9 +224,10 @@ export function Modal({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
+        style={{ zIndex: 10000, position: 'relative' }}
         className={twMerge(
           clsx(
-            'relative bg-white rounded-xl shadow-xl',
+            'bg-white dark:bg-neutral-800 rounded-xl shadow-xl',
             'w-full max-h-[85vh] flex flex-col',
             'animate-scale-in',
             'focus:outline-none',
@@ -225,18 +236,18 @@ export function Modal({
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 p-6 border-b border-neutral-200">
+        <div className="flex items-start justify-between gap-4 p-6 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex-1 min-w-0">
             <h2
               id={titleId}
-              className="text-xl font-bold text-secondary truncate"
+              className="text-xl font-bold text-secondary dark:text-gray-100 truncate"
             >
               {title}
             </h2>
             {description && (
               <p
                 id={descriptionId}
-                className="mt-1 text-sm text-neutral-500"
+                className="mt-1 text-sm text-neutral-500 dark:text-gray-400"
               >
                 {description}
               </p>
@@ -255,13 +266,13 @@ export function Modal({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-neutral-800">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex justify-end gap-3 p-6 border-t border-neutral-200 bg-neutral-50 rounded-b-xl">
+          <div className="flex justify-end gap-3 p-6 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 rounded-b-xl">
             {footer}
           </div>
         )}

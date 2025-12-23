@@ -10,7 +10,7 @@
  */
 
 /* Import design tokens first */
-@import '../styles/tokens.css';
+@import '../styles/design-tokens.css';
 
 @tailwind base;
 @tailwind components;
@@ -26,16 +26,14 @@
       BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI',
       'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 
-    /* Legacy color aliases (for backward compatibility) */
-    --deep-trust-blue: var(--color-secondary);
-    --clarity-teal: var(--color-primary);
-    --calm-grey: var(--color-neutral-50);
-    --accent: var(--color-primary);
+    /* Legacy color aliases - REMOVED (2025-12-19)
+       All components migrated to semantic tokens.
+       See tailwind.config.js for migration notes. */
   }
 
   /* Base body styles */
   body {
-    @apply bg-neutral-50 text-neutral-800 antialiased;
+    @apply bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-gray-100 antialiased;
     font-family: var(--font-pretendard);
   }
 
@@ -85,8 +83,8 @@
   }
 
   .btn-secondary {
-    @apply bg-white text-primary border-2 border-primary px-6 py-3 rounded-lg font-semibold
-           hover:bg-primary-light active:bg-primary-light
+    @apply bg-white dark:bg-neutral-800 text-primary border-2 border-primary px-6 py-3 rounded-lg font-semibold
+           hover:bg-primary-light dark:hover:bg-neutral-700 active:bg-primary-light dark:active:bg-neutral-600
            transition-colors duration-200
            focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;
@@ -109,34 +107,68 @@
            hover:shadow-md transition-shadow duration-200;
   }
 
-  /* Legacy text color classes */
-  .text-deep-trust-blue {
-    color: var(--color-secondary);
+  /* Legacy color classes - REMOVED (2025-12-19)
+     Migrated to semantic tokens:
+     - text-deep-trust-blue → text-secondary
+     - text-clarity-teal → text-primary
+     - text-accent → text-primary
+     - bg-deep-trust-blue → bg-secondary
+     - bg-clarity-teal → bg-primary
+     - bg-calm-grey → bg-neutral-50
+     - bg-accent → bg-primary
+  */
+
+  /*
+   * React Flow dark mode styles
+   */
+  .dark .react-flow {
+    --xy-background-color: theme('colors.neutral.900');
   }
 
-  .text-clarity-teal {
-    color: var(--color-primary);
+  .dark .react-flow__node {
+    background-color: theme('colors.neutral.800');
+    border-color: theme('colors.neutral.600');
+    color: theme('colors.neutral.100');
   }
 
-  .text-accent {
-    color: var(--color-primary);
+  .dark .react-flow__edge-path {
+    stroke: theme('colors.neutral.400');
   }
 
-  /* Legacy background color classes */
-  .bg-deep-trust-blue {
-    background-color: var(--color-secondary);
+  .dark .react-flow__edge-text {
+    fill: theme('colors.neutral.300');
   }
 
-  .bg-clarity-teal {
-    background-color: var(--color-primary);
+  .dark .react-flow__controls {
+    background-color: theme('colors.neutral.800');
+    border-color: theme('colors.neutral.600');
   }
 
-  .bg-calm-grey {
-    background-color: var(--color-neutral-50);
+  .dark .react-flow__controls-button {
+    background-color: theme('colors.neutral.800');
+    border-color: theme('colors.neutral.600');
+    fill: theme('colors.neutral.300');
   }
 
-  .bg-accent {
-    background-color: var(--color-primary);
+  .dark .react-flow__controls-button:hover {
+    background-color: theme('colors.neutral.700');
+  }
+
+  .dark .react-flow__minimap {
+    background-color: theme('colors.neutral.800');
+  }
+
+  .dark .react-flow__panel {
+    background-color: theme('colors.neutral.800');
+    border-color: theme('colors.neutral.600');
+  }
+
+  .dark .react-flow__attribution {
+    background-color: transparent;
+  }
+
+  .dark .react-flow__attribution a {
+    color: theme('colors.neutral.500');
   }
 }
 

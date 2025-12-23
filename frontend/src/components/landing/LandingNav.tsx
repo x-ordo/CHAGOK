@@ -8,13 +8,48 @@
  * - Calm Control design system compliance
  */
 
+'use client';
+
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
+import { Logo } from '@/components/shared/Logo';
+import { BRAND } from '@/config/brand';
 
 interface LandingNavProps {
   isScrolled?: boolean;
+  isAuthenticated?: boolean;
+  authLoading?: boolean;
+  onLogout?: () => Promise<void> | void;
 }
 
-export default function LandingNav({ isScrolled = false }: LandingNavProps) {
+export default function LandingNav({
+  isScrolled = false,
+  isAuthenticated = false,
+  authLoading = false,
+  onLogout,
+}: LandingNavProps) {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    e.preventDefault();
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleLogout = useCallback(async () => {
+    if (!onLogout || isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await onLogout();
+    } catch (error) {
+      console.error('로그아웃 실패', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }, [isLoggingOut, onLogout]);
+
   return (
     <nav
       className={`sticky top-0 z-50 px-6 py-4 transition-all duration-300 ${
@@ -33,51 +68,59 @@ export default function LandingNav({ isScrolled = false }: LandingNavProps) {
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2">
-            <img
-              src="/logo.png"
-              alt="Legal Evidence Hub"
-              className="w-8 h-8 object-contain"
-              onError={(e) => {
-                // Fallback to text logo if image fails
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <span className="text-2xl font-bold text-secondary">LEH</span>
+            <Logo size="sm" />
+            <span className="text-2xl font-bold text-secondary">{BRAND.name}</span>
           </Link>
         </div>
 
         {/* Navigation Menu */}
         <div className="flex items-center space-x-8">
-          <Link
+          <a
             href="#features"
-            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors"
+            onClick={(e) => scrollToSection(e, 'features')}
+            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors cursor-pointer"
           >
             기능
-          </Link>
-          <Link
+          </a>
+          <a
             href="#pricing"
-            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors"
+            onClick={(e) => scrollToSection(e, 'pricing')}
+            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors cursor-pointer"
           >
             가격
-          </Link>
-          <Link
+          </a>
+          <a
             href="#testimonials"
-            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors"
+            onClick={(e) => scrollToSection(e, 'testimonials')}
+            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors cursor-pointer"
           >
             고객사례
-          </Link>
-          <Link
-            href="/login"
-            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors"
-          >
-            로그인
-          </Link>
+          </a>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={isLoggingOut || authLoading}
+              className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60"
+              aria-label="로그아웃"
+            >
+              {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
+              aria-label="로그인 페이지로 이동"
+            >
+              로그인
+            </Link>
+          )}
           <Link
             href="/signup"
             className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
-            aria-label="무료체험 시작하기"
+            aria-label="회원가입 페이지로 이동"
           >
-            무료체험
+            회원가입
           </Link>
         </div>
       </div>

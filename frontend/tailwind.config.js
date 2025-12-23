@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // Dark mode via class (controlled by ThemeProvider)
+  darkMode: 'class',
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
@@ -42,6 +44,12 @@ module.exports = {
           light: 'var(--color-error-light)',
           contrast: 'var(--color-error-contrast)',
         },
+        info: {
+          DEFAULT: 'var(--color-info)',
+          hover: 'var(--color-info-hover)',
+          light: 'var(--color-info-light)',
+          contrast: 'var(--color-info-contrast)',
+        },
         neutral: {
           50: 'var(--color-neutral-50)',
           100: 'var(--color-neutral-100)',
@@ -56,18 +64,15 @@ module.exports = {
         },
 
         // ========================================
-        // LEGACY ALIASES (backward compatibility)
-        // These map old color names to new semantic system
-        // Can be removed once all components are migrated
+        // LEGACY ALIASES - REMOVED (2025-12-19)
+        // All components migrated to semantic tokens:
+        // - accent → primary
+        // - accent-dark → primary-hover
+        // - semantic-error → error
+        // - deep-trust-blue → secondary
+        // - calm-grey → neutral-50
+        // - success-green → success
         // ========================================
-        accent: {
-          DEFAULT: 'var(--color-primary)',
-          dark: 'var(--color-primary-hover)',
-        },
-        'semantic-error': 'var(--color-error)',
-        'deep-trust-blue': 'var(--color-secondary)',
-        'calm-grey': 'var(--color-neutral-50)',
-        'success-green': 'var(--color-success)',
       },
 
       // ========================================

@@ -5,7 +5,11 @@
 
 import { apiRequest, ApiResponse } from './client';
 
-export interface Case {
+/**
+ * API Case type - matches backend snake_case convention
+ * Use mapApiCaseToCase() from '@/lib/utils/caseMapper' to convert to frontend Case type
+ */
+export interface ApiCase {
   id: string;
   title: string;
   client_name: string;
@@ -17,14 +21,23 @@ export interface Case {
   updated_at: string;
 }
 
+/** Alias for ApiCase - use when frontend component needs Case type */
+export type Case = ApiCase;
+
 export interface CreateCaseRequest {
   title: string;
   client_name: string;
   description?: string;
 }
 
+export interface UpdateCaseRequest {
+  title?: string;
+  client_name?: string;
+  description?: string;
+}
+
 export interface CaseListResponse {
-  cases: Case[];
+  cases: ApiCase[];
   total: number;
 }
 
@@ -32,16 +45,42 @@ export interface CaseListResponse {
  * Get list of cases for current user
  */
 export async function getCases(): Promise<ApiResponse<CaseListResponse>> {
-  return apiRequest<CaseListResponse>('/cases', {
+  const response = await apiRequest<ApiCase[] | CaseListResponse>('/cases', {
     method: 'GET',
   });
+
+  // Handle both array response (from backend) and object response
+  if (response.data) {
+    if (Array.isArray(response.data)) {
+      // Backend returns array directly
+      return {
+        data: {
+          cases: response.data,
+          total: response.data.length,
+        },
+        status: response.status,
+      };
+    }
+    // Already in expected format
+    return response as ApiResponse<CaseListResponse>;
+  }
+
+  return response as ApiResponse<CaseListResponse>;
 }
 
 /**
  * Get a single case by ID
+ * @param caseId - Case ID
+ * @param basePath - Optional base path for role-specific endpoints (e.g., '/lawyer')
  */
-export async function getCase(caseId: string): Promise<ApiResponse<Case>> {
-  return apiRequest<Case>(`/cases/${caseId}`, {
+export async function getCase(caseId: string, basePath: string = ''): Promise<ApiResponse<ApiCase>> {
+  // Race condition 방어: ID가 없으면 API 호출 건너뛰기
+  if (!caseId || caseId.trim() === '') {
+    console.warn('[getCase] caseId가 비어있습니다. API 호출을 건너뜁니다.');
+    return { data: undefined, status: 0, error: 'Case ID가 필요합니다.' };
+  }
+
+  return apiRequest<ApiCase>(`${basePath}/cases/${caseId}`, {
     method: 'GET',
   });
 }
@@ -51,8 +90,8 @@ export async function getCase(caseId: string): Promise<ApiResponse<Case>> {
  */
 export async function createCase(
   data: CreateCaseRequest
-): Promise<ApiResponse<Case>> {
-  return apiRequest<Case>('/cases', {
+): Promise<ApiResponse<ApiCase>> {
+  return apiRequest<ApiCase>('/cases', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -66,9 +105,9 @@ export async function createCase(
  */
 export async function updateCaseStatus(
   caseId: string,
-  status: Case['status']
-): Promise<ApiResponse<Case>> {
-  return apiRequest<Case>(`/cases/${caseId}/status`, {
+  status: ApiCase['status']
+): Promise<ApiResponse<ApiCase>> {
+  return apiRequest<ApiCase>(`/cases/${caseId}/status`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -83,5 +122,44 @@ export async function updateCaseStatus(
 export async function deleteCase(caseId: string): Promise<ApiResponse<void>> {
   return apiRequest<void>(`/cases/${caseId}`, {
     method: 'DELETE',
+  });
+}
+
+/**
+ * Update case details (title, client_name, description)
+ */
+export async function updateCase(
+  caseId: string,
+  data: UpdateCaseRequest
+): Promise<ApiResponse<ApiCase>> {
+  return apiRequest<ApiCase>(`/cases/${caseId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+}
+
+// ================================
+// Case Members
+// ================================
+
+export interface CaseMember {
+  user_id: string;
+  name: string;
+  email: string;
+  permission: 'read' | 'read_write';
+  role: 'owner' | 'member' | 'viewer';
+}
+
+export interface CaseMembersResponse {
+  members: CaseMember[];
+  total: number;
+}
+
+export async function getCaseMembers(caseId: string): Promise<ApiResponse<CaseMembersResponse>> {
+  return apiRequest<CaseMembersResponse>(`/cases/${caseId}/members`, {
+    method: 'GET',
   });
 }

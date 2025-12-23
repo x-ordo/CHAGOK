@@ -8,11 +8,25 @@ Per BACKEND_SERVICE_REPOSITORY_GUIDE.md:
 - No direct DB or AWS SDK calls
 """
 
-# TODO: Import routers as they are implemented
-# from .auth import router as auth_router
-# from .cases import router as cases_router
-# from .evidence import router as evidence_router
-# from .draft import router as draft_router
-# from .search import router as search_router
+from . import auth
+from . import admin
+from . import cases
+from . import evidence
+from . import lawyer_portal
+from . import lawyer_clients
+from . import lawyer_investigators
+from . import properties
+from . import settings
+from . import party
+from . import relationships
+from . import evidence_links
+from . import search
+from . import dashboard
+from . import calendar
 
-__all__ = []
+__all__ = [
+    "auth", "admin", "cases", "evidence", "lawyer_portal",
+    "lawyer_clients", "lawyer_investigators", "properties",
+    "settings", "party", "relationships", "evidence_links", "search",
+    "dashboard", "calendar"
+]

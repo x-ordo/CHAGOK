@@ -44,7 +44,7 @@ class SensitiveDataFilter(logging.Filter):
         (re.compile(r'Failed to parse: .+'), 'Failed to parse: ***'),
         (re.compile(r'Parse error at line \d+: .+'), 'Parse error at line ***: ***'),
         (re.compile(r'OpenAI API error with key .+:'), 'OpenAI API error: ***'),
-        (re.compile(r'Error: .+ credentials invalid'), 'Error: *** credentials invalid'),
+        # (re.compile(r'Error: .+ credentials invalid'), 'Error: *** credentials invalid'),
     ]
 
     def filter(self, record: logging.LogRecord) -> bool:
@@ -74,9 +74,16 @@ class SensitiveDataFilter(logging.Filter):
             if exc_value:
                 # Create new exception with sanitized message
                 sanitized_msg = self._sanitize(str(exc_value))
-                new_exc = type(exc_value)(sanitized_msg)
-                # Replace exc_info with sanitized version
-                record.exc_info = (exc_type, new_exc, exc_tb)
+                try:
+                    # Try to create new exception with sanitized message
+                    new_exc = type(exc_value)(sanitized_msg)
+                    # Replace exc_info with sanitized version
+                    record.exc_info = (exc_type, new_exc, exc_tb)
+                except TypeError:
+                    # Some exceptions have non-standard constructors
+                    # (e.g., Qdrant's UnexpectedResponse requires multiple args)
+                    # Fall back to just sanitizing the exc_text
+                    pass
                 # Also update exc_text if it was already formatted
                 record.exc_text = None  # Force re-formatting with new exception
 

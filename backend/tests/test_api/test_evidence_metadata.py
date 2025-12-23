@@ -38,12 +38,17 @@ class TestEvidenceList:
         # When: GET /cases/{case_id}/evidence
         response = client.get(f"/cases/{case_id}/evidence", headers=auth_headers)
 
-        # Then: Returns evidence list
+        # Then: Returns evidence list wrapped in EvidenceListResponse
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert isinstance(data, list)
+        # API returns EvidenceListResponse: {"evidence": [...], "total": N}
+        assert isinstance(data, dict)
+        assert "evidence" in data
+        assert "total" in data
+        assert isinstance(data["evidence"], list)
         # Initially empty since no evidence uploaded yet
-        assert len(data) == 0
+        assert len(data["evidence"]) == 0
+        assert data["total"] == 0
 
     def test_should_return_evidence_with_complete_metadata(self, client, test_user, auth_headers):
         """
@@ -71,13 +76,13 @@ class TestEvidenceList:
         Given: User does not have access to a case
         When: GET /cases/{case_id}/evidence is called
         Then:
-            - Returns 403 Forbidden (or 404 if case doesn't exist)
+            - Returns 403 Forbidden (prevents info leakage about case existence)
         """
-        # When: GET evidence for non-existent case
+        # When: GET evidence for non-existent case (user has no access)
         response = client.get("/cases/case_nonexistent/evidence", headers=auth_headers)
 
-        # Then: 404 Not Found (case doesn't exist)
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        # Then: 403 Forbidden (prevents information leakage about case existence)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_should_require_authentication(self, client):
         """

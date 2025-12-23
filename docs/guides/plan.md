@@ -240,6 +240,33 @@
 
 ---
 
+### 1.14 비밀번호 재설정 (Password Reset) ✅ **완료 (2025-12-01)**
+
+> **담당: H (Backend)**
+> **목표**: 이메일 기반 비밀번호 재설정 기능 구현
+
+- [x] `POST /auth/forgot-password` 호출 시:
+  - 이메일 주소를 받아 비밀번호 재설정 토큰을 생성해야 한다.
+  - 토큰은 `password_reset_tokens` 테이블에 저장 (1시간 유효).
+  - AWS SES를 통해 재설정 링크가 포함된 이메일을 발송해야 한다.
+  - 보안: 이메일 존재 여부와 상관없이 항상 성공 응답 반환 (user enumeration 방지).
+- [x] `POST /auth/reset-password` 호출 시:
+  - 유효한 토큰과 새 비밀번호를 받아 비밀번호를 변경해야 한다.
+  - 토큰이 만료되었거나 이미 사용된 경우 400 에러 반환.
+  - 성공 시 토큰을 사용됨으로 마킹.
+- [x] DB 모델 추가:
+  - `PasswordResetToken` 모델: id, user_id, token, expires_at, used_at, created_at
+- [x] 이메일 서비스 구현:
+  - `app/utils/email.py`: AWS SES 기반 이메일 발송
+  - `SES_SENDER_EMAIL` 환경변수 설정 필요
+
+**설정 필요 사항:**
+- AWS SES 발신 이메일 인증 필요 (`aws ses verify-email-identity`)
+- Lambda 환경변수 `SES_SENDER_EMAIL` 설정 필요
+- SES 샌드박스 모드에서는 인증된 이메일로만 발송 가능
+
+---
+
 ## 2. AI Worker (L, S3 Event → DynamoDB / Qdrant) ✅ **완료**
 
 ### 2.1 Event 파싱 ✅
@@ -468,6 +495,19 @@
 - [x] 리치 텍스트 에디터는:
   - 기본적으로 **문서 본문만 보여주는 Zen 모드**에 가깝게, 불필요한 패널을 최소화해야 한다.
 - [x] “초안 생성/재생성” 버튼은 항상 Primary 스타일이어야 하며, 클릭 후 로딩 상태를 명확히 보여줘야 한다.
+- [x] Issue #57 — CaseDetailClient Evidence API 연동:
+  - CaseDetailClient/Draft 탭 컴포넌트에서 Mock 데이터 제거.
+  - `GET /cases/{id}/evidence` 연동 및 업로드 진행 상태 표시.
+  - 관련 Jest 테스트(`draft-tab.test.tsx`)에서 API mock을 통한 act 경고 제거.
+- [x] Issue #73 — 웹 편집기(Hancom/대체) 통합 1단계:
+  - DraftPreviewPanel → Draft EditorPanel 확장 (웹 WYSIWYG, Tip-less Zen UI).
+  - 자동 저장(5분), 수동 저장, 버전 히스토리(10개) 로컬 보관.
+  - 증거 인용 data-evidence-id 보존 + Traceability Panel 연동 유지.
+  - DOCX/HWP 내보내기 시 실시간 편집본 전달, 새 Jest 케이스로 버전 히스토리 검증.
+- [x] Issue #73 — Phase2/3 확장:
+  - 법률 문서 템플릿 모달 + 즉시 적용 기능.
+  - 증거 인용 삽입 UX, 코멘트 패널, 변경 추적 로그, BroadcastChannel 기반 협업 상태 표시.
+  - 코멘트/변경 로그/트랙체인지/템플릿 관련 Jest 추가.
 
 ### 3.7 의뢰인 증거 제출 포털
 
@@ -523,6 +563,13 @@
 - [x] 권한 설정 페이지 (/admin/roles):
   - 역할별(Admin, Attorney, Staff) 권한 매트릭스 UI (토글 스위치).
   - 권한 변경 시 즉시 반영 및 알림.
+- [x] Issue #59 — AdminRoles API 연동:
+  - Mock 데이터 사용 제거, `GET /admin/roles`, `PUT /admin/roles/{role}` 연동.
+  - 권한 토글 시 Optimistic Update + 실패시 롤백 처리.
+- [x] Issue #58 — AdminUsers API 연동:
+  - Mock 사용자 목록 제거, `GET /admin/users`, `DELETE /admin/users/{id}` 연동.
+  - 사용자 삭제/초대 UI에 로딩 스피너, 에러/리트라이 메시지 추가.
+  - `admin-users-page.test.tsx`에서 API mock + 대기 로직 반영.
 - [x] 케이스 공유 모달:
   - 팀원 검색 및 선택.
   - 읽기/쓰기 권한 설정.
@@ -869,6 +916,65 @@
 
 ---
 
+### 3.21 Frontend API 연동 ✅ **완료 (2025-12-01)**
+
+> **담당: H (Backend)**
+> **목표**: Mock 데이터 제거 및 실제 Backend API 연동
+
+- [x] API 클라이언트 JWT 인증 추가:
+  - `frontend/src/lib/api/client.ts` 수정
+  - localStorage에서 `authToken` 읽어 `Authorization: Bearer` 헤더 추가
+  - 에러 응답 형식 통일 (`error.message` + `detail` 모두 처리)
+- [x] 사건 목록 API 연동:
+  - `frontend/src/pages/cases/index.tsx` 수정
+  - Mock 데이터(`MOCK_CASES`) 제거
+  - `getCases()` API 호출로 실제 데이터 로드
+  - `useAuth` 훅 연동 (인증 상태 확인)
+  - API 응답 형식 매핑 (`snake_case` → `camelCase`)
+- [x] 테스트 Mock 업데이트:
+  - `frontend/src/tests/case-list-dashboard.test.tsx` 수정
+  - `useAuth` 훅 mock 추가 (isAuthenticated, isLoading, logout)
+  - `getCases` API mock 추가
+  - `getByRole` → `findByRole` 변경 (비동기 로딩 대기)
+
+**변경된 파일:**
+- `frontend/src/lib/api/client.ts` - JWT 인증 헤더 추가
+- `frontend/src/pages/cases/index.tsx` - 실제 API 연동
+- `frontend/src/tests/case-list-dashboard.test.tsx` - 테스트 mock 수정
+- `frontend/src/tests/draft-tab.test.tsx` - 업로드 상태 assertion 수정
+
+---
+
+### 3.22 비밀번호 재설정 UI ✅ **완료 (2025-12-01)**
+
+> **담당: H (Frontend)**
+> **목표**: 비밀번호 찾기/재설정 페이지 구현
+
+- [x] 비밀번호 찾기 페이지 (`/forgot-password`):
+  - 이메일 입력 폼
+  - `POST /auth/forgot-password` API 연동
+  - 성공 시 "이메일 확인" 안내 화면 표시
+- [x] 비밀번호 재설정 페이지 (`/reset-password?token=xxx`):
+  - URL에서 토큰 파싱 (`useSearchParams`)
+  - 새 비밀번호 입력 + 확인 폼
+  - 비밀번호 일치 검증, 최소 8자 검증
+  - `POST /auth/reset-password` API 연동
+  - 성공 시 로그인 페이지로 리다이렉트 (3초 후 자동)
+  - 토큰 없거나 유효하지 않은 경우 에러 화면
+- [x] 로그인 폼에 링크 추가:
+  - `LoginForm.tsx`에 "비밀번호를 잊으셨나요?" 링크 추가
+- [x] API 클라이언트 함수 추가:
+  - `forgotPassword(email)`: 비밀번호 재설정 요청
+  - `resetPassword(token, newPassword)`: 비밀번호 변경
+
+**변경된 파일:**
+- `frontend/src/app/forgot-password/page.tsx` - 신규
+- `frontend/src/app/reset-password/page.tsx` - 신규
+- `frontend/src/lib/api/auth.ts` - API 함수 추가
+- `frontend/src/components/auth/LoginForm.tsx` - 링크 추가
+
+---
+
 ## 4. 보안 관련 테스트 (전 계층 공통) ✅ **완료**
 
 - [x] HTTP 응답 헤더에는:
@@ -937,6 +1043,47 @@
 - [x] Secrets 사용 시:
   - `secrets.XXX` 참조만 사용
   - ✅ **확인 완료**: `secrets.AWS_ROLE_ARN`, `secrets.S3_FRONTEND_BUCKET`, `secrets.CLOUDFRONT_DISTRIBUTION_ID`, `secrets.BACKEND_API_URL`
+
+### 5.5 GitHub Secrets & Variables 설정 ✅ **완료 (2025-12-01)**
+
+> **담당: H (Backend)**
+> **목표**: GitHub Actions에서 사용할 환경 변수 및 Secrets 설정
+> **관련 이슈**: Issue #30, Issue #33
+
+#### 5.5.1 GitHub Secrets (민감 정보) - 11개
+
+| Secret | 용도 | 상태 |
+|--------|------|------|
+| `AWS_ACCESS_KEY_ID` | AWS IAM 인증 | ✅ |
+| `AWS_SECRET_ACCESS_KEY` | AWS IAM 인증 | ✅ |
+| `DATABASE_URL` | PostgreSQL RDS 연결 | ✅ |
+| `JWT_SECRET` | JWT 토큰 서명 | ✅ |
+| `OPENAI_API_KEY` | OpenAI API | ✅ |
+| `QDRANT_API_KEY` | Qdrant Cloud | ✅ |
+| `POSTGRES_PASSWORD` | DB 비밀번호 | ✅ |
+| `ADMIN_DEFAULT_PASSWORD` | 관리자 초기 비밀번호 | ✅ |
+| `S3_FRONTEND_BUCKET` | 프론트엔드 S3 버킷 | ✅ |
+| `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront 배포 ID | ✅ |
+| `BACKEND_API_URL` | Lambda API Gateway URL | ✅ |
+
+#### 5.5.2 GitHub Variables (비민감 정보) - 27개
+
+- [x] **AWS 설정**: `AWS_REGION`, `S3_EVIDENCE_BUCKET`, `S3_EVIDENCE_PREFIX`, `S3_PRESIGNED_URL_EXPIRE_SECONDS`
+- [x] **애플리케이션**: `APP_ENV`, `APP_DEBUG`, `LOG_LEVEL`, `CORS_ALLOW_ORIGINS`, `BACKEND_BASE_URL`
+- [x] **JWT**: `JWT_ALGORITHM`, `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`, `ADMIN_DEFAULT_EMAIL`
+- [x] **OpenAI**: `OPENAI_API_BASE`, `OPENAI_MODEL_CHAT`, `OPENAI_MODEL_EMBEDDING`, `OPENAI_MODEL_VISION`, `OPENAI_MODEL_STT`, `LLM_REQUEST_TIMEOUT_SECONDS`
+- [x] **Qdrant**: `QDRANT_HOST`, `QDRANT_PORT`, `QDRANT_COLLECTION_PREFIX`, `QDRANT_DEFAULT_TOP_K`, `QDRANT_USE_HTTPS`
+- [x] **PostgreSQL**: `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`
+- [x] **DynamoDB**: `DDB_EVIDENCE_TABLE`, `DDB_CASE_SUMMARY_TABLE`
+
+#### 5.5.3 배포 워크플로우 수정
+
+- [x] `.github/workflows/deploy_paralegal.yml` 수정:
+  - OIDC 인증 → Access Key 인증으로 변경
+  - `aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}`
+  - `aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}`
+
+**참고**: OIDC 방식이 보안상 더 권장되나, 초기 설정 간소화를 위해 Access Key 방식 사용. 추후 OIDC로 마이그레이션 권장.
 
 ---
 
@@ -1729,4 +1876,108 @@ PASS src/tests/pages/CasesPage.test.tsx
 
 Test Suites: 1 passed, 1 total
 Tests:       9 passed, 9 total
+```
+
+---
+
+## 14. AI Worker Parser 메타데이터 표준화 (2025-12-03)
+
+> **목적:** 모든 파서에서 일관된 메타데이터 구조 사용
+> **담당:** P (AI Worker)
+> **개발 방식:** TDD (Red → Green → Refactor)
+> **관련 이슈:** GitHub Issue #12
+
+### 14.1 요구사항
+
+| # | 기능 | 설명 | 상태 |
+|---|------|------|------|
+| 1 | StandardMetadata 스키마 | 공통 메타데이터 필드 정의 | ✅ 완료 |
+| 2 | PDFParser 메타데이터 | page_number 포함 | ✅ 완료 |
+| 3 | AudioParser 메타데이터 | segment_start, segment_index 포함 | ✅ 완료 |
+| 4 | VideoParser 메타데이터 | source_type='video' 오버라이드 | ✅ 완료 |
+| 5 | ImageVisionParser 메타데이터 | line_index 포함 | ✅ 완료 |
+
+### 14.2 TDD 개발 로그
+
+#### RED Phase - 테스트 작성 ✅
+- [x] `test_standard_metadata.py` 생성 (9개 테스트 케이스)
+- [x] StandardMetadata TypedDict 존재 확인 테스트
+- [x] 각 파서별 메타데이터 포함 테스트
+
+#### GREEN Phase - 구현 ✅
+- [x] `base.py`에 `StandardMetadata` TypedDict 추가
+  ```python
+  class StandardMetadata(TypedDict, total=False):
+      source_type: str    # "text", "pdf", "audio", "video", "image"
+      filename: str
+      filepath: str
+      parser_class: str
+      parsed_at: str      # ISO8601 timestamp
+  ```
+- [x] `BaseParser._create_standard_metadata()` 헬퍼 메서드 추가
+- [x] PDFParser: `metadata` 필드 추가 (page_number 포함)
+- [x] AudioParser: `metadata` 필드 추가 (segment_start, segment_index)
+- [x] VideoParser: AudioParser 결과의 메타데이터를 video 기준으로 오버라이드
+- [x] ImageVisionParser: `metadata` 필드 추가 (line_index)
+- [x] `__init__.py`: optional imports로 변경 (의존성 없어도 import 오류 방지)
+
+#### REFACTOR Phase ✅
+- [x] 코드 정리 완료
+
+### 14.3 관련 파일
+
+- `ai_worker/src/parsers/base.py` - StandardMetadata TypedDict + 헬퍼 추가
+- `ai_worker/src/parsers/pdf_parser.py` - 메타데이터 추가
+- `ai_worker/src/parsers/audio_parser.py` - 메타데이터 추가
+- `ai_worker/src/parsers/video_parser.py` - 메타데이터 오버라이드
+- `ai_worker/src/parsers/image_vision.py` - 메타데이터 추가
+- `ai_worker/src/parsers/__init__.py` - optional imports
+- `ai_worker/tests/src/test_standard_metadata.py` - 테스트 파일 (신규)
+
+### 14.4 테스트 결과
+
+```
+PASSED test_standard_metadata.py::TestStandardMetadataSchema::test_standard_metadata_exists
+PASSED test_standard_metadata.py::TestStandardMetadataSchema::test_standard_metadata_has_required_fields
+PASSED test_standard_metadata.py::TestPDFParserMetadata::test_pdf_parser_includes_standard_metadata
+PASSED test_standard_metadata.py::TestPDFParserMetadata::test_pdf_parser_includes_page_number
+PASSED test_standard_metadata.py::TestAudioParserMetadata::test_audio_parser_includes_standard_metadata
+PASSED test_standard_metadata.py::TestAudioParserMetadata::test_audio_parser_includes_segment_info
+SKIPPED test_standard_metadata.py::TestVideoParserMetadata (ffmpeg not installed)
+SKIPPED test_standard_metadata.py::TestImageVisionParserMetadata (pytesseract not installed)
+PASSED test_standard_metadata.py::TestMetadataValidation::test_create_standard_metadata_helper
+
+Test Suites: 1 passed, 1 total
+Tests: 7 passed, 2 skipped, 9 total
+```
+
+---
+
+## 15. Backend 환경변수 로딩 수정 (2025-12-03)
+
+> **목적:** boto3가 AWS 자격증명을 .env에서 로드할 수 있도록 수정
+> **담당:** P (Backend)
+> **관련 이슈:** GitHub Issue #74
+
+### 15.1 문제점
+
+- pydantic-settings의 `Settings` 클래스가 인스턴스화될 때 .env를 로드하지만
+- boto3는 모듈 임포트 시점에 환경변수를 읽음
+- 결과적으로 boto3가 AWS 자격증명을 찾지 못함
+
+### 15.2 해결책 ✅
+
+- [x] `python-dotenv>=1.0.0` 의존성 추가
+- [x] `config.py`에서 Settings 클래스 정의 전에 `load_dotenv()` 호출
+- [x] .env 파일 경로를 backend/ 또는 project root에서 찾도록 설정
+
+### 15.3 관련 파일
+
+- `backend/requirements.txt` - python-dotenv 추가
+- `backend/app/core/config.py` - load_dotenv() 조기 호출
+
+### 15.4 커밋 내역
+
+```
+824c5e2 fix(backend): load .env early for boto3 credentials (Issue #74)
 ```

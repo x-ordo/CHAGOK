@@ -1,5 +1,10 @@
 # Team H·P·L - Legal Evidence Hub (LEH)
 
+[![CI](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/ci.yml/badge.svg)](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/ci.yml)
+[![Deploy](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/deploy_paralegal.yml/badge.svg)](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/deploy_paralegal.yml)
+
+**Test Coverage:** Backend 81% | AI Worker 78% | Frontend ~30%
+
 > "변호사는 사건만 생성하고 증거를 S3에 올린다.
 > AI는 AWS 안에서 증거를 정리·분석해 '소장 초안 후보'를 보여준다.
 > 최종 문서는 언제나 변호사가 직접 결정한다."
@@ -58,19 +63,33 @@ LEH는 **이혼 사건 전용 AI 파라리걸 & 증거 허브** 플랫폼입니�
 
 ## 4. 시작하기 (Getting Started)
 
-### 4.1 사전 요구사항
+### 4.1 Quick Start (원클릭 설정)
+
+```bash
+# 1. 레포 클론
+git clone https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd.git
+cd ai-camp-2nd-llm-agent-service-project-2nd
+
+# 2. 환경 변수 설정
+cp .env.example .env
+# .env 파일 편집하여 필수 값 입력
+
+# 3. 전체 설정 (Makefile 사용)
+make setup
+
+# 4. 개발 서버 실행 (각각 별도 터미널)
+make dev-backend   # http://localhost:8000
+make dev-frontend  # http://localhost:3000
+```
+
+> **Makefile 명령어 전체 보기**: `make help`
+
+### 4.2 사전 요구사항
 
 - Python 3.11+
 - Node.js 18+
 - AWS 계정 + IAM (S3, DynamoDB 등)
 - OpenAI API 키
-
-### 4.2 레포 클론
-
-```bash
-git clone https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd.git
-cd ai-camp-2nd-llm-agent-service-project-2nd
-```
 
 ### 4.3 환경 변수 설정
 
@@ -131,23 +150,34 @@ python -m handler
 ├── backend/              # FastAPI 백엔드 (H)
 │   ├── app/
 │   │   ├── api/          # 라우터 (auth, cases, evidence, admin)
+│   │   ├── core/         # 설정, 보안, 의존성
+│   │   ├── db/           # DB 연결, 세션
+│   │   ├── middleware/   # 보안, 로깅, 에러 핸들링
+│   │   ├── models/       # SQLAlchemy 모델
+│   │   ├── schemas/      # Pydantic 스키마
 │   │   ├── services/     # 비즈니스 로직
 │   │   ├── repositories/ # 데이터 접근
-│   │   └── utils/        # AWS 어댑터
+│   │   └── utils/        # AWS 어댑터 (S3, DynamoDB, Qdrant)
 │   └── tests/
 │
 ├── ai_worker/            # AI Lambda 워커 (L)
 │   ├── handler.py        # Lambda 엔트리포인트
 │   └── src/
-│       ├── parsers/      # 파일 타입별 파서
-│       ├── analysis/     # 분석 엔진
-│       └── storage/      # DynamoDB, Qdrant
+│       ├── parsers/      # 파일 타입별 파서 (PDF, 이미지, 오디오, 카카오톡)
+│       ├── analysis/     # 분석 엔진 (요약, 점수, 840조 태깅)
+│       ├── storage/      # DynamoDB, Qdrant 저장소
+│       ├── service_rag/  # 법률 지식 RAG
+│       ├── user_rag/     # 사건별 증거 RAG
+│       └── utils/        # 임베딩, 로깅 유틸
 │
 ├── frontend/             # Next.js 대시보드 (P)
 │   └── src/
 │       ├── app/          # Next.js App Router
 │       ├── components/   # React 컴포넌트
-│       └── lib/          # API 클라이언트
+│       ├── hooks/        # 커스텀 React Hooks
+│       ├── lib/          # API 클라이언트
+│       ├── services/     # 비즈니스 로직
+│       └── types/        # TypeScript 타입
 │
 ├── docs/                 # 설계 문서
 │   ├── specs/            # PRD, Architecture, API Spec
@@ -155,6 +185,7 @@ python -m handler
 │   └── business/         # 비즈니스 문서
 │
 ├── CLAUDE.md             # AI 에이전트 규칙
+├── Makefile              # 개발 자동화 스크립트
 └── README.md             # 이 파일
 ```
 
@@ -182,7 +213,15 @@ main  ←  dev  ←  feat/*
 
 ---
 
-## 7. 문서 허브
+## 7. 최근 업데이트 (2025-12-12)
+
+- **URL 기반 모달/폼 UX**: Billing·Calendar 페이지가 `useModalState`로 전환되어 뒤로가기와 딥링크가 모두 작동합니다. InvoiceForm/EventForm에는 `useBeforeUnload`가 적용돼 입력값 유실을 방지합니다.
+- **Landing/Login 네비게이션 통합**: `LandingNav`를 로그인 화면에서도 재사용하고 인증 상태를 주입해 로그인 사용자는 즉시 로그아웃할 수 있습니다.
+- **문서 동기화**: `docs/IMPLEMENTATION_STATUS.md`와 본 README에 현행 스프린트 정보가 정리돼 있습니다.
+
+---
+
+## 8. 문서 허브
 
 | 카테고리 | 문서 |
 |----------|------|
@@ -195,7 +234,7 @@ main  ←  dev  ←  feat/*
 
 ---
 
-## 8. 최종 산출물
+## 9. 최종 산출물
 
 1. **운영 가능한 변호사 대시보드**
    - 사건 생성, 증거 업로드, 타임라인, 필터, Draft Preview

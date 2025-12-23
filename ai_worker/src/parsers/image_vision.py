@@ -13,12 +13,21 @@ from datetime import datetime
 from pathlib import Path
 import json
 import base64
+import logging
 from PIL import Image
-import pytesseract
 import openai
 from pydantic import BaseModel, Field
 
 from src.parsers.base import BaseParser, Message
+
+# Try to import pytesseract, but gracefully handle if not available
+try:
+    import pytesseract
+    TESSERACT_AVAILABLE = True
+except ImportError:
+    TESSERACT_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
 
 
 class VisionAnalysis(BaseModel):
@@ -94,8 +103,8 @@ class ImageVisionParser(BaseParser):
         # 이미지 전처리
         processed_image = self._preprocess_image(file_path)
 
-        # OCR 텍스트 추출
-        text = self._extract_text(processed_image, lang='kor+eng')
+        # OCR 텍스트 추출 (Tesseract 없으면 Vision API 사용)
+        text = self._extract_text(processed_image, lang='kor+eng', file_path=file_path)
 
         # 기본 타임스탬프 설정
         if default_timestamp is None:
@@ -104,6 +113,7 @@ class ImageVisionParser(BaseParser):
         # Message 객체 생성
         messages = self._create_messages_from_text(
             text,
+            file_path=file_path,
             sender=default_sender,
             timestamp=default_timestamp
         )
@@ -116,10 +126,17 @@ class ImageVisionParser(BaseParser):
                 # Message 객체를 직접 수정할 수 없으므로, content에 추가 정보 포함
                 first_msg = messages[0]
                 enhanced_content = f"{first_msg.content}\n[Vision: {vision_analysis.context}]"
+                # 기존 메타데이터 유지하면서 vision 정보 추가
+                enhanced_metadata = {**first_msg.metadata}
+                enhanced_metadata["vision_emotions"] = vision_analysis.emotions
+                enhanced_metadata["vision_context"] = vision_analysis.context
+                enhanced_metadata["vision_atmosphere"] = vision_analysis.atmosphere
+                enhanced_metadata["vision_confidence"] = vision_analysis.confidence
                 messages[0] = Message(
                     content=enhanced_content,
                     sender=first_msg.sender,
-                    timestamp=first_msg.timestamp
+                    timestamp=first_msg.timestamp,
+                    metadata=enhanced_metadata
                 )
 
         return messages
@@ -227,24 +244,78 @@ class ImageVisionParser(BaseParser):
     def _extract_text(
         self,
         image: Image.Image,
-        lang: str = 'kor+eng'
+        lang: str = 'kor+eng',
+        file_path: str = None
     ) -> str:
         """
-        이미지에서 텍스트 추출 (OCR)
+        이미지에서 텍스트 추출 (OCR 또는 Vision API 폴백)
 
         Args:
             image: PIL Image 객체
             lang: OCR 언어 설정
+            file_path: 원본 이미지 파일 경로 (Vision API 폴백용)
 
         Returns:
             str: 추출된 텍스트
         """
-        text = pytesseract.image_to_string(image, lang=lang)
-        return text
+        # Try Tesseract OCR first if available
+        if TESSERACT_AVAILABLE:
+            try:
+                text = pytesseract.image_to_string(image, lang=lang)
+                return text
+            except Exception as e:
+                logger.warning(f"Tesseract OCR failed: {e}, falling back to Vision API")
+
+        # Fallback to GPT-4o Vision for text extraction
+        if file_path:
+            return self._extract_text_with_vision(file_path)
+
+        return ""
+
+    def _extract_text_with_vision(self, file_path: str) -> str:
+        """
+        GPT-4o Vision API로 이미지에서 텍스트 추출
+
+        Args:
+            file_path: 이미지 파일 경로
+
+        Returns:
+            str: 추출된 텍스트
+        """
+        try:
+            with open(file_path, "rb") as image_file:
+                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+            prompt = """이 이미지에서 모든 텍스트를 추출해주세요.
+텍스트만 그대로 출력하고, 설명이나 해석은 하지 마세요.
+텍스트가 없으면 빈 문자열을 반환하세요."""
+
+            response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=1000
+            )
+
+            return response.choices[0].message.content or ""
+        except Exception as e:
+            logger.error(f"Vision API text extraction failed: {e}")
+            return ""
 
     def _create_messages_from_text(
         self,
         text: str,
+        file_path: str,
         sender: str = "Unknown",
         timestamp: Optional[datetime] = None
     ) -> List[Message]:
@@ -253,6 +324,7 @@ class ImageVisionParser(BaseParser):
 
         Args:
             text: 추출된 텍스트
+            file_path: 이미지 파일 경로
             sender: 발신자
             timestamp: 타임스탬프
 
@@ -265,12 +337,20 @@ class ImageVisionParser(BaseParser):
         messages = []
         lines = text.split('\n')
 
-        for line in lines:
+        for line_index, line in enumerate(lines):
             if line.strip():
+                # 표준 메타데이터 생성
+                metadata = self._create_standard_metadata(
+                    filepath=file_path,
+                    source_type="image",
+                    line_index=line_index
+                )
+
                 message = Message(
                     content=line.strip(),
                     sender=sender,
-                    timestamp=timestamp
+                    timestamp=timestamp,
+                    metadata=metadata
                 )
                 messages.append(message)
 

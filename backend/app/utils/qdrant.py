@@ -24,15 +24,30 @@ def _get_qdrant_client() -> QdrantClient:
     """Get or create Qdrant client (singleton pattern)"""
     global _qdrant_client
     if _qdrant_client is None:
-        if settings.QDRANT_HOST:
-            # Remote Qdrant server
+        if settings.QDRANT_URL:
             _qdrant_client = QdrantClient(
-                host=settings.QDRANT_HOST,
-                port=settings.QDRANT_PORT,
-                api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None,
-                https=settings.QDRANT_USE_HTTPS
+                url=settings.QDRANT_URL,
+                api_key=settings.QDRANT_API_KEY or None,
             )
-            logger.info(f"Connected to Qdrant at {settings.QDRANT_HOST}:{settings.QDRANT_PORT}")
+            logger.info(f"Connected to Qdrant at {settings.QDRANT_URL}")
+        elif settings.QDRANT_HOST:
+            # Remote Qdrant server
+            # Check if QDRANT_HOST contains protocol (URL format)
+            if settings.QDRANT_HOST.startswith(("http://", "https://")):
+                # Use url parameter for full URL
+                _qdrant_client = QdrantClient(
+                    url=settings.QDRANT_HOST,
+                    api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None,
+                )
+            else:
+                # Use host/port for hostname-only format
+                _qdrant_client = QdrantClient(
+                    host=settings.QDRANT_HOST,
+                    port=settings.QDRANT_PORT,
+                    api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None,
+                    https=settings.QDRANT_USE_HTTPS
+                )
+            logger.info(f"Connected to Qdrant at {settings.QDRANT_HOST}")
         else:
             # In-memory Qdrant for local development
             _qdrant_client = QdrantClient(":memory:")
@@ -204,7 +219,7 @@ def create_case_collection(case_id: str) -> bool:
         client.create_collection(
             collection_name=collection_name,
             vectors_config=VectorParams(
-                size=1536,  # OpenAI text-embedding-3-small dimension
+                size=settings.QDRANT_VECTOR_SIZE,
                 distance=Distance.COSINE
             )
         )
@@ -281,6 +296,368 @@ def get_all_documents_in_case(case_id: str) -> List[Dict]:
         return []
 
 
+# ==================================================
+# Legal Knowledge Search (법률 조문 검색)
+# ==================================================
+
+LEGAL_KNOWLEDGE_COLLECTION = "leh_legal_knowledge"
+
+
+def search_legal_knowledge(
+    query: str,
+    top_k: int = 3,
+    doc_type: Optional[str] = None
+) -> List[Dict]:
+    """
+    Search legal knowledge (법률 조문, 판례) using semantic similarity
+
+    Args:
+        query: Search query text (e.g., "이혼 사유", "재판상 이혼")
+        top_k: Number of top results to return
+        doc_type: Optional filter by document type ("statute" or "case_law")
+
+    Returns:
+        List of legal documents with similarity scores
+    """
+    client = _get_qdrant_client()
+
+    try:
+        # Check if collection exists
+        collections = client.get_collections().collections
+        if not any(c.name == LEGAL_KNOWLEDGE_COLLECTION for c in collections):
+            logger.warning(f"Legal knowledge collection {LEGAL_KNOWLEDGE_COLLECTION} does not exist")
+            return []
+
+        # Generate query embedding
+        query_embedding = generate_embedding(query)
+
+        # Build filter if doc_type specified
+        qdrant_filter = None
+        if doc_type:
+            qdrant_filter = models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="doc_type",
+                        match=models.MatchValue(value=doc_type)
+                    )
+                ]
+            )
+
+        # Execute search
+        results = client.query_points(
+            collection_name=LEGAL_KNOWLEDGE_COLLECTION,
+            query=query_embedding,
+            query_filter=qdrant_filter,
+            limit=top_k,
+            with_payload=True
+        ).points
+
+        # Parse results
+        legal_docs = []
+        for hit in results:
+            doc = hit.payload.copy() if hit.payload else {}
+            doc["_score"] = hit.score
+            legal_docs.append(doc)
+
+        logger.info(f"Legal knowledge search returned {len(legal_docs)} results for query: {query[:50]}...")
+        return legal_docs
+
+    except Exception as e:
+        logger.error(f"Legal knowledge search error: {e}")
+        return []
+
+
+# ==================================================
+# Legal Document Templates (법률 문서 템플릿)
+# ==================================================
+
+TEMPLATE_COLLECTION = "legal_templates"
+
+
+def get_template_by_type(template_type: str) -> Optional[Dict]:
+    """
+    Get legal document template by type
+
+    Args:
+        template_type: Template type (e.g., "이혼소장", "답변서")
+
+    Returns:
+        Template dict with schema and example, or None if not found
+    """
+    client = _get_qdrant_client()
+
+    try:
+        # Check if collection exists
+        collections = client.get_collections().collections
+        if not any(c.name == TEMPLATE_COLLECTION for c in collections):
+            logger.warning(f"Template collection {TEMPLATE_COLLECTION} does not exist")
+            return None
+
+        # Search by template_type filter
+        results = client.scroll(
+            collection_name=TEMPLATE_COLLECTION,
+            scroll_filter=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="template_type",
+                        match=models.MatchValue(value=template_type)
+                    )
+                ]
+            ),
+            limit=1,
+            with_payload=True,
+            with_vectors=False
+        )
+
+        points, _ = results
+        if points:
+            payload = points[0].payload
+            return {
+                "id": str(points[0].id),
+                "template_type": payload.get("template_type"),
+                "version": payload.get("version"),
+                "description": payload.get("description"),
+                "schema": payload.get("schema"),
+                "example": payload.get("example"),
+                "applicable_cases": payload.get("applicable_cases", [])
+            }
+
+        logger.info(f"Template '{template_type}' not found")
+        return None
+
+    except Exception as e:
+        logger.error(f"Get template error: {e}")
+        return None
+
+
+def get_template_schema_for_prompt(template_type: str) -> Optional[str]:
+    """
+    Get template schema as formatted JSON string for GPT prompt
+
+    Args:
+        template_type: Template type
+
+    Returns:
+        JSON schema string, or None if not found
+    """
+    import json
+
+    template = get_template_by_type(template_type)
+    if template and template.get("schema"):
+        return json.dumps(template["schema"], ensure_ascii=False, indent=2)
+    return None
+
+
+def get_template_example_for_prompt(template_type: str) -> Optional[str]:
+    """
+    Get template example as formatted JSON string for GPT prompt
+
+    Args:
+        template_type: Template type
+
+    Returns:
+        JSON example string, or None if not found
+    """
+    import json
+
+    template = get_template_by_type(template_type)
+    if template and template.get("example"):
+        return json.dumps(template["example"], ensure_ascii=False, indent=2)
+    return None
+
+
+# ==================================================
+# Consultation Search (상담내용 검색 - Issue #403)
+# ==================================================
+
+def index_consultation_document(case_id: str, consultation: Dict) -> str:
+    """
+    Index a consultation document in Qdrant for RAG search
+
+    Args:
+        case_id: Case ID
+        consultation: Consultation data dict with id, summary, notes, date, type, participants
+
+    Returns:
+        Document ID in Qdrant
+    """
+    client = _get_qdrant_client()
+    collection_name = _get_collection_name(case_id)
+
+    try:
+        # Ensure collection exists
+        collections = client.get_collections().collections
+        if not any(c.name == collection_name for c in collections):
+            create_case_collection(case_id)
+
+        consultation_id = consultation.get("id")
+        if not consultation_id:
+            raise ValueError("Consultation must have 'id' field")
+
+        # Build content for embedding
+        summary = consultation.get("summary", "")
+        notes = consultation.get("notes", "") or ""
+        participants = consultation.get("participants", [])
+        consultation_date = consultation.get("date", "")
+        consultation_type = consultation.get("type", "")
+
+        # Combine for embedding
+        content = f"[상담내용] {consultation_date} ({consultation_type})\n"
+        content += f"참석자: {', '.join(participants) if participants else 'N/A'}\n"
+        content += f"요약: {summary}\n"
+        if notes:
+            content += f"메모: {notes}"
+
+        # Generate embedding
+        vector = generate_embedding(content)
+
+        # Prepare payload
+        payload = {
+            "consultation_id": consultation_id,
+            "case_id": case_id,
+            "doc_type": "consultation",
+            "document": content,
+            "summary": summary,
+            "notes": notes,
+            "date": str(consultation_date) if consultation_date else "",
+            "type": consultation_type,
+            "participants": participants,
+        }
+
+        # Use consultation ID hash as point ID
+        point_id = hash(f"consultation_{consultation_id}") % (2**63)
+
+        # Upsert point
+        client.upsert(
+            collection_name=collection_name,
+            points=[
+                PointStruct(
+                    id=point_id,
+                    vector=vector,
+                    payload=payload
+                )
+            ]
+        )
+
+        logger.info(f"Indexed consultation {consultation_id} in collection {collection_name}")
+        return consultation_id
+
+    except Exception as e:
+        logger.error(f"Qdrant index consultation error for case {case_id}: {e}")
+        raise
+
+
+def delete_consultation_document(case_id: str, consultation_id: str) -> bool:
+    """
+    Delete a consultation document from Qdrant
+
+    Args:
+        case_id: Case ID
+        consultation_id: Consultation ID to delete
+
+    Returns:
+        True if deleted successfully
+    """
+    client = _get_qdrant_client()
+    collection_name = _get_collection_name(case_id)
+
+    try:
+        # Check if collection exists
+        collections = client.get_collections().collections
+        if not any(c.name == collection_name for c in collections):
+            logger.warning(f"Collection {collection_name} does not exist")
+            return False
+
+        # Calculate point ID (same hash as in index)
+        point_id = hash(f"consultation_{consultation_id}") % (2**63)
+
+        # Delete point
+        client.delete(
+            collection_name=collection_name,
+            points_selector=models.PointIdsList(
+                points=[point_id]
+            )
+        )
+
+        logger.info(f"Deleted consultation {consultation_id} from collection {collection_name}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Qdrant delete consultation error for case {case_id}: {e}")
+        return False
+
+
+def search_consultations(
+    case_id: str,
+    query: str = "",
+    top_k: int = 5
+) -> List[Dict]:
+    """
+    Search consultation documents for a case
+
+    Args:
+        case_id: Case ID
+        query: Optional search query (if empty, returns recent consultations)
+        top_k: Number of results to return
+
+    Returns:
+        List of consultation documents with similarity scores
+    """
+    client = _get_qdrant_client()
+    collection_name = _get_collection_name(case_id)
+
+    try:
+        # Check if collection exists
+        collections = client.get_collections().collections
+        if not any(c.name == collection_name for c in collections):
+            logger.warning(f"Collection {collection_name} does not exist")
+            return []
+
+        # Filter for consultation documents only
+        qdrant_filter = models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="doc_type",
+                    match=models.MatchValue(value="consultation")
+                )
+            ]
+        )
+
+        if query:
+            # Semantic search with query
+            query_embedding = generate_embedding(query)
+            results = client.query_points(
+                collection_name=collection_name,
+                query=query_embedding,
+                query_filter=qdrant_filter,
+                limit=top_k,
+                with_payload=True
+            ).points
+        else:
+            # Scroll to get all consultations (no semantic search)
+            results, _ = client.scroll(
+                collection_name=collection_name,
+                scroll_filter=qdrant_filter,
+                limit=top_k,
+                with_payload=True,
+                with_vectors=False
+            )
+
+        # Parse results
+        consultation_list = []
+        for hit in results:
+            doc = hit.payload.copy() if hit.payload else {}
+            doc["_score"] = getattr(hit, 'score', 1.0)
+            consultation_list.append(doc)
+
+        logger.info(f"Consultation search returned {len(consultation_list)} results for case {case_id}")
+        return consultation_list
+
+    except Exception as e:
+        logger.error(f"Consultation search error for case {case_id}: {e}")
+        return []
+
+
 # Backward compatibility aliases (for gradual migration)
 def delete_case_index(case_id: str) -> bool:
     """Alias for delete_case_collection (backward compatibility)"""
@@ -290,3 +667,8 @@ def delete_case_index(case_id: str) -> bool:
 def create_case_index(case_id: str) -> bool:
     """Alias for create_case_collection (backward compatibility)"""
     return create_case_collection(case_id)
+
+
+def get_qdrant_client() -> QdrantClient:
+    """Public accessor for Qdrant client (for health checks, etc.)"""
+    return _get_qdrant_client()

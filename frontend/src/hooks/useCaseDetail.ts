@@ -1,0 +1,150 @@
+'use client';
+
+/**
+ * useCaseDetail Hook
+ * Encapsulates case detail fetching, loading state, error handling, and mapping.
+ *
+ * Following CTO feedback: Complete separation of data fetching from UI rendering.
+ *
+ * Extended to support role-based API paths:
+ * - /lawyer/cases/{id} (default)
+ * - /client/cases/{id}
+ * - /detective/cases/{id}
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/api/client';
+import { CaseDetailApiResponse } from '@/lib/api/caseDetail';
+import { CaseDetail } from '@/types/caseDetail';
+import { mapApiCaseDetailToCaseDetail } from '@/lib/utils/caseDetailMapper';
+
+// =============================================================================
+// Types
+// =============================================================================
+
+export type RoleBasePath = '/lawyer' | '/client' | '/detective' | '/staff';
+
+export interface UseCaseDetailOptions {
+  /**
+   * API base path for role-specific endpoints
+   * @default '/lawyer'
+   *
+   * @example
+   * - '/lawyer' → fetches from /lawyer/cases/{id}
+   * - '/client' → fetches from /client/cases/{id}
+   * - '/detective' → fetches from /detective/cases/{id}
+   */
+  apiBasePath?: RoleBasePath;
+}
+
+export interface UseCaseDetailReturn {
+  /** Case detail data (null while loading or on error) */
+  data: CaseDetail | null;
+  /** Whether the data is currently being fetched */
+  isLoading: boolean;
+  /** Error message if fetch failed */
+  error: string | null;
+  /** Refetch case detail data */
+  refetch: () => Promise<void>;
+}
+
+// =============================================================================
+// Constants
+// =============================================================================
+
+const DEFAULT_API_BASE_PATH: RoleBasePath = '/lawyer';
+
+// =============================================================================
+// Hook
+// =============================================================================
+
+/**
+ * Hook to fetch and manage case detail data
+ *
+ * @param caseId - The case ID to fetch details for (can be null during URL parsing)
+ * @param options - Configuration options including apiBasePath for role-specific endpoints
+ * @returns Object with data, loading state, error, and refetch function
+ *
+ * @example
+ * ```tsx
+ * // Lawyer portal (default)
+ * const { data: caseDetail, isLoading, error, refetch } = useCaseDetail(caseId);
+ *
+ * // Client portal
+ * const { data: caseDetail } = useCaseDetail(caseId, { apiBasePath: '/client' });
+ *
+ * // Detective portal
+ * const { data: caseDetail } = useCaseDetail(caseId, { apiBasePath: '/detective' });
+ *
+ * if (isLoading) return <PageSkeleton />;
+ * if (error) return <ErrorState message={error} onRetry={refetch} />;
+ * if (!caseDetail) return null;
+ *
+ * return <CaseDetailView caseDetail={caseDetail} />;
+ * ```
+ */
+export function useCaseDetail(
+  caseId: string | null,
+  options?: UseCaseDetailOptions
+): UseCaseDetailReturn {
+  const { apiBasePath = DEFAULT_API_BASE_PATH } = options || {};
+  const router = useRouter();
+  const [data, setData] = useState<CaseDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchCaseDetail = useCallback(async () => {
+    if (!caseId) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await apiClient.get<CaseDetailApiResponse>(`${apiBasePath}/cases/${caseId}`);
+
+      if (response.error || !response.data) {
+        // Handle authentication errors
+        if (response.status === 401) {
+          router.push('/login');
+          return;
+        }
+
+        throw new Error(response.error || '케이스 정보를 불러오는데 실패했습니다.');
+      }
+
+      setData(mapApiCaseDetailToCaseDetail(response.data));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
+      setData(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [caseId, apiBasePath, router]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchData = async () => {
+      if (isCancelled) return;
+      await fetchCaseDetail();
+    };
+
+    fetchData();
+
+    // Cleanup: prevent state updates after unmount or caseId change
+    return () => {
+      isCancelled = true;
+    };
+  }, [fetchCaseDetail]);
+
+  return {
+    data,
+    isLoading,
+    error,
+    refetch: fetchCaseDetail,
+  };
+}

@@ -3,16 +3,23 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { Case } from '@/types/case';
-import { FileText, Clock, AlertCircle, CheckCircle2, ChevronDown } from 'lucide-react';
+import { FileText, Clock, AlertCircle, CheckCircle2, ChevronDown, Trash2 } from 'lucide-react';
+import { deleteCase } from '@/lib/api/cases';
+import { getCaseDetailPath } from '@/lib/portalPaths';
 
 interface CaseCardProps {
   caseData: Case;
+  /** Optional override for the destination URL when the card is clicked */
+  href?: string;
   onStatusChange?: (caseId: string, newStatus: 'open' | 'closed') => void;
+  onDelete?: () => void;
 }
 
-export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
+export default function CaseCard({ caseData, href, onStatusChange, onDelete }: CaseCardProps) {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,26 +58,57 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       setIsStatusDropdownOpen(false);
+      setShowDeleteConfirm(false);
     }
   };
 
-  return (
-    <Link href={`/cases/${caseData.id}`}>
-      <div className="relative card p-6 h-full flex flex-col justify-between group cursor-pointer bg-neutral-50 border border-neutral-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg">
-        {/* Border Beam Glow Effect - Magic UI Style */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-          <div className="absolute inset-[-2px] bg-gradient-to-r from-transparent via-primary to-transparent rounded-lg blur-sm animate-border-beam" />
-        </div>
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowDeleteConfirm(true);
+  };
 
-        {/* Content wrapper to ensure proper z-index layering */}
-        <div className="relative z-10 flex flex-col h-full justify-between">
+  const handleDeleteConfirm = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDeleting(true);
+
+    try {
+      const response = await deleteCase(caseData.id);
+      if (response.error) {
+        alert(`삭제 실패: ${response.error}`);
+        return;
+      }
+      onDelete?.();
+    } catch {
+      alert('삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleDeleteCancel = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowDeleteConfirm(false);
+  };
+
+  const resolvedHref = href ?? getCaseDetailPath('lawyer', caseData.id);
+
+  return (
+    <Link href={resolvedHref} prefetch={false}>
+      <div className="card p-6 h-full flex flex-col justify-between group cursor-pointer bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary" style={{ position: 'relative', zIndex: 1 }}>
+
+        {/* Content wrapper */}
+        <div className="relative flex flex-col h-full justify-between">
           <div>
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-xl font-bold text-secondary group-hover:text-primary transition-colors">
                   {caseData.title}
                 </h3>
-                <p className="text-sm text-neutral-500 mt-1">{caseData.clientName}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{caseData.clientName}</p>
               </div>
 
               {/* Status Dropdown */}
@@ -88,7 +126,7 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
                       caseData.status === 'open'
                         ? 'bg-primary-light text-primary'
                         : 'bg-neutral-100 text-neutral-700'
-                    }`}
+                    } dark:bg-opacity-30`}
                 >
                   <span>{caseData.status === 'open' ? '진행 중' : '종결'}</span>
                   <ChevronDown
@@ -101,15 +139,15 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
                 {isStatusDropdownOpen && (
                   <div
                     role="listbox"
-                    className="absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg z-dropdown border border-neutral-200 overflow-hidden"
+                    className="absolute right-0 mt-1 w-32 bg-white dark:bg-neutral-800 rounded-lg shadow-lg z-dropdown border border-neutral-200 dark:border-neutral-700 overflow-hidden"
                   >
                     <button
                       type="button"
                       role="option"
                       aria-selected={caseData.status === 'open'}
                       onClick={(e) => handleStatusChange(e, 'open')}
-                      className="block w-full text-left px-4 py-2 text-sm text-neutral-700
-                        hover:bg-neutral-100 focus:bg-neutral-100 focus:outline-none"
+                      className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300
+                        hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:bg-neutral-100 dark:focus:bg-neutral-700 focus:outline-none"
                     >
                       진행 중
                     </button>
@@ -118,8 +156,8 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
                       role="option"
                       aria-selected={caseData.status === 'closed'}
                       onClick={(e) => handleStatusChange(e, 'closed')}
-                      className="block w-full text-left px-4 py-2 text-sm text-neutral-700
-                        hover:bg-neutral-100 focus:bg-neutral-100 focus:outline-none"
+                      className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300
+                        hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:bg-neutral-100 dark:focus:bg-neutral-700 focus:outline-none"
                     >
                       종결
                     </button>
@@ -129,11 +167,11 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center text-sm text-neutral-600">
+              <div className="flex items-center text-sm text-neutral-600 dark:text-neutral-400">
                 <FileText className="w-4 h-4 mr-2" aria-hidden="true" />
                 <span>증거 {caseData.evidenceCount}건</span>
               </div>
-              <div className="flex items-center text-sm text-neutral-600">
+              <div className="flex items-center text-sm text-neutral-600 dark:text-neutral-400">
                 <Clock className="w-4 h-4 mr-2" aria-hidden="true" />
                 <span>
                   최근 업데이트:{' '}
@@ -145,10 +183,10 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
             </div>
           </div>
 
-          {/* Draft Status */}
-          <div className="mt-6 pt-4 border-t border-neutral-100 flex items-center justify-between">
+          {/* Draft Status and Delete Button */}
+          <div className="mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-neutral-500">Draft 상태:</span>
+              <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Draft 상태:</span>
               {caseData.draftStatus === 'ready' ? (
                 <div className="flex items-center text-success text-sm font-bold">
                   <CheckCircle2 className="w-4 h-4 mr-1" aria-hidden="true" />
@@ -166,8 +204,52 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
                 </div>
               )}
             </div>
+
+            {/* Delete Button */}
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              disabled={isDeleting}
+              className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors
+                focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              aria-label="사건 삭제"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
           </div>
         </div>
+
+        {/* Delete Confirmation Overlay */}
+        {showDeleteConfirm && (
+          <div
+            className="absolute inset-0 bg-white dark:bg-neutral-800 rounded-lg flex flex-col items-center justify-center p-6"
+            style={{ zIndex: 5 }}
+            onClick={(e) => e.preventDefault()}
+          >
+            <p className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-2">사건을 삭제하시겠습니까?</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 text-center">
+              &quot;{caseData.title}&quot; 사건이 삭제됩니다.<br />
+              이 작업은 되돌릴 수 없습니다.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleDeleteCancel}
+                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-lg transition-colors"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? '삭제 중...' : '삭제'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </Link>
   );

@@ -7,12 +7,17 @@ POST /auth/logout - Logout and clear cookies
 GET /auth/me - Get current user info
 """
 
-from fastapi import APIRouter, Depends, status, Response, Cookie, Header
+from fastapi import APIRouter, Depends, status, Response, Cookie, Header, Request
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.db.session import get_db
-from app.db.schemas import LoginRequest, SignupRequest, TokenResponse, UserOut
+from app.db.schemas import (
+    LoginRequest, SignupRequest, TokenResponse, UserOut,
+    ForgotPasswordRequest, ForgotPasswordResponse,
+    ResetPasswordRequest, ResetPasswordResponse
+)
 from app.services.auth_service import AuthService
+from app.services.password_reset_service import PasswordResetService
 from app.core.config import settings
 from app.core.security import (
     create_refresh_token,
@@ -127,8 +132,9 @@ def login(
 
 @router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def signup(
-    request: SignupRequest,
+    signup_request: SignupRequest,
     response: Response,
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """
@@ -162,13 +168,21 @@ def signup(
     - JWT tokens are signed with HS256 algorithm
     - Token expiration is configurable via JWT_ACCESS_TOKEN_EXPIRE_MINUTES
     - Tokens are stored in HTTP-only cookies (XSS protection)
+    - User agreement records are stored for legal compliance (FR-025)
     """
+    # Extract client info for agreement record
+    client_ip = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+
     auth_service = AuthService(db)
     token_response = auth_service.signup(
-        email=request.email,
-        password=request.password,
-        name=request.name,
-        accept_terms=request.accept_terms
+        email=signup_request.email,
+        password=signup_request.password,
+        name=signup_request.name,
+        accept_terms=signup_request.accept_terms,
+        role=signup_request.role,
+        ip_address=client_ip,
+        user_agent=user_agent
     )
 
     # Create refresh token
@@ -342,4 +356,58 @@ def get_current_user(
         role=user.role,
         status=user.status,
         created_at=user.created_at
+    )
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse, status_code=status.HTTP_200_OK)
+def forgot_password(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Request password reset email
+
+    **Request Body:**
+    - email: User's email address
+
+    **Response:**
+    - message: Success message (always returns success to prevent user enumeration)
+
+    **Behavior:**
+    - If email exists, sends password reset email
+    - If email doesn't exist, returns success anyway (security)
+    - Reset link expires in 1 hour
+    """
+    password_reset_service = PasswordResetService(db)
+    password_reset_service.request_password_reset(request.email)
+
+    # Always return success to prevent user enumeration
+    return ForgotPasswordResponse(
+        message="비밀번호 재설정 이메일이 발송되었습니다. 이메일을 확인해주세요."
+    )
+
+
+@router.post("/reset-password", response_model=ResetPasswordResponse, status_code=status.HTTP_200_OK)
+def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Reset password with token from email
+
+    **Request Body:**
+    - token: Password reset token from email link
+    - new_password: New password (min 8 characters)
+
+    **Response:**
+    - message: Success message
+
+    **Errors:**
+    - 400: Invalid or expired token
+    """
+    password_reset_service = PasswordResetService(db)
+    password_reset_service.reset_password(request.token, request.new_password)
+
+    return ResetPasswordResponse(
+        message="비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해주세요."
     )

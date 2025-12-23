@@ -10,6 +10,14 @@ from src.parsers.audio_parser import AudioParser
 from src.parsers.base import Message
 
 
+def create_mock_segment(start: float, text: str) -> MagicMock:
+    """Helper to create mock TranscriptionSegment with attribute access"""
+    segment = MagicMock()
+    segment.start = start
+    segment.text = text
+    return segment
+
+
 class TestAudioParserInitialization:
     """Test AudioParser initialization"""
 
@@ -38,11 +46,11 @@ class TestAudioParsing:
         # Mock file exists
         mock_path.return_value.exists.return_value = True
 
-        # Mock Whisper response
+        # Mock Whisper response (OpenAI SDK v1.0+: Pydantic objects)
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
             segments=[
-                {'start': 0.0, 'text': '안녕하세요'},
-                {'start': 2.5, 'text': '이혼 상담 부탁드립니다'}
+                create_mock_segment(0.0, '안녕하세요'),
+                create_mock_segment(2.5, '이혼 상담 부탁드립니다')
             ]
         )
 
@@ -63,7 +71,7 @@ class TestAudioParsing:
 
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
             segments=[
-                {'start': 0.0, 'text': '테스트 메시지'}
+                create_mock_segment(0.0, '테스트 메시지')
             ]
         )
 
@@ -90,9 +98,9 @@ class TestTimestampHandling:
 
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
             segments=[
-                {'start': 0.0, 'text': '첫 번째'},
-                {'start': 5.5, 'text': '두 번째'},
-                {'start': 12.3, 'text': '세 번째'}
+                create_mock_segment(0.0, '첫 번째'),
+                create_mock_segment(5.5, '두 번째'),
+                create_mock_segment(12.3, '세 번째')
             ]
         )
 
@@ -119,7 +127,7 @@ class TestTimestampHandling:
 
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
             segments=[
-                {'start': 0.0, 'text': '테스트'}
+                create_mock_segment(0.0, '테스트')
             ]
         )
 
@@ -143,7 +151,7 @@ class TestWhisperAPICall:
         mock_path.return_value.exists.return_value = True
 
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
-            segments=[{'start': 0.0, 'text': '테스트'}]
+            segments=[create_mock_segment(0.0, '테스트')]
         )
 
         parser = AudioParser()
@@ -171,8 +179,8 @@ class TestMultipleSpeakers:
 
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
             segments=[
-                {'start': 0.0, 'text': '첫 번째 발언'},
-                {'start': 3.0, 'text': '두 번째 발언'}
+                create_mock_segment(0.0, '첫 번째 발언'),
+                create_mock_segment(3.0, '두 번째 발언')
             ]
         )
 
@@ -189,7 +197,7 @@ class TestMultipleSpeakers:
         mock_path.return_value.exists.return_value = True
 
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
-            segments=[{'start': 0.0, 'text': '발언'}]
+            segments=[create_mock_segment(0.0, '발언')]
         )
 
         parser = AudioParser()
@@ -231,9 +239,9 @@ class TestEdgeCases:
 
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
             segments=[
-                {'start': 0.0, 'text': '   '},
-                {'start': 1.0, 'text': '유효한 텍스트'},
-                {'start': 2.0, 'text': '\n\n'}
+                create_mock_segment(0.0, '   '),
+                create_mock_segment(1.0, '유효한 텍스트'),
+                create_mock_segment(2.0, '\n\n')
             ]
         )
 
@@ -268,7 +276,7 @@ class TestFileFormats:
         """MP3 형식 테스트"""
         mock_path.return_value.exists.return_value = True
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
-            segments=[{'start': 0.0, 'text': 'MP3 테스트'}]
+            segments=[create_mock_segment(0.0, 'MP3 테스트')]
         )
 
         parser = AudioParser()
@@ -284,7 +292,7 @@ class TestFileFormats:
         """M4A 형식 테스트"""
         mock_path.return_value.exists.return_value = True
         mock_openai.audio.transcriptions.create.return_value = MagicMock(
-            segments=[{'start': 0.0, 'text': 'M4A 테스트'}]
+            segments=[create_mock_segment(0.0, 'M4A 테스트')]
         )
 
         parser = AudioParser()

@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { login } from '@/lib/api/auth';
+import Link from 'next/link';
 import { Button, Input } from '@/components/primitives';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginForm() {
-  const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,27 +18,13 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      // Real API call to backend
-      const response = await login(email, password);
+      const result = await login(email, password);
 
-      if (response.error || !response.data) {
-        setError(response.error || '아이디 또는 비밀번호를 확인해 주세요.');
+      if (!result.success) {
+        setError(result.error || '아이디 또는 비밀번호를 확인해 주세요.');
         return;
       }
-
-      // Store auth token in localStorage
-      // TODO: Consider HTTP-only cookie for better security
-      localStorage.setItem('authToken', response.data.access_token);
-
-      // Store user info for display purposes
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
-
-      // Redirect to cases page
-      router.push('/cases');
-    } catch (err) {
-      console.error('Login error:', err);
+    } catch {
       setError('로그인 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -57,15 +43,25 @@ export default function LoginForm() {
         error={error && email === '' ? '이메일을 입력해주세요' : undefined}
       />
 
-      <Input
-        id="password"
-        type="password"
-        label="비밀번호"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        error={error && password === '' ? '비밀번호를 입력해주세요' : undefined}
-      />
+      <div>
+        <Input
+          id="password"
+          type="password"
+          label="비밀번호"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={error && password === '' ? '비밀번호를 입력해주세요' : undefined}
+        />
+        <div className="mt-1 text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-secondary hover:underline"
+          >
+            비밀번호를 잊으셨나요?
+          </Link>
+        </div>
+      </div>
 
       {error && (
         <div className="text-sm text-error text-center" role="alert">

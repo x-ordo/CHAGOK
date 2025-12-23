@@ -76,6 +76,19 @@ class TestSettings:
 
         assert "http://localhost:3000" in origins  # No trailing/leading spaces
         assert " http://localhost:5173 " not in origins
+        assert origins[-1] == "https://example.com"
+
+    def test_backend_cors_override(self, test_env):
+        """Test BACKEND_CORS_ORIGINS overrides legacy setting"""
+        from app.core.config import Settings
+        override = "https://cloudfront.example.com,https://app.example.com"
+        settings = Settings(
+            BACKEND_CORS_ORIGINS=override,
+            CORS_ALLOW_ORIGINS="http://localhost:3000"
+        )
+
+        origins = settings.cors_origins_list
+        assert origins == ["https://cloudfront.example.com", "https://app.example.com"]
 
     def test_database_url_computed_property_uses_explicit_url(self, test_env):
         """Test that database_url_computed uses explicit DATABASE_URL if provided"""
@@ -141,20 +154,41 @@ class TestSettings:
 
         assert settings.LOG_LEVEL == "INFO"
 
-    def test_settings_validation_empty_jwt_secret_in_prod(self):
-        """Test that JWT_SECRET should not be empty in production (future validation)"""
-        # This test documents expected behavior for future validation
-        # TODO: Add pydantic validator to enforce strong JWT_SECRET in prod
+    def test_settings_validation_weak_jwt_secret_in_prod_raises_error(self):
+        """Test that weak JWT_SECRET raises validation error in production"""
+        from app.core.config import Settings
+        import pytest
+
+        # Short secret (less than 32 chars) should raise error
+        with pytest.raises(ValueError, match="at least 32 characters"):
+            Settings(
+                APP_ENV="prod",
+                JWT_SECRET="weak"
+            )
+
+    def test_settings_validation_default_jwt_secret_in_prod_raises_error(self):
+        """Test that default JWT_SECRET raises validation error in production"""
+        from app.core.config import Settings
+        import pytest
+
+        # Default secret should raise error in production
+        with pytest.raises(ValueError, match="must be changed from default"):
+            Settings(
+                APP_ENV="prod",
+                JWT_SECRET="local-dev-secret-change-in-prod-min-32-chars"
+            )
+
+    def test_settings_validation_strong_jwt_secret_in_prod_succeeds(self):
+        """Test that strong JWT_SECRET succeeds in production"""
         from app.core.config import Settings
 
+        # Strong secret (64+ chars, not default) should work
         settings = Settings(
             APP_ENV="prod",
-            JWT_SECRET="weak"  # Should trigger validation error in future
+            JWT_SECRET="a-very-strong-secret-key-that-is-at-least-32-characters-long"
         )
 
-        # For now, just verify it loads (validation to be added)
-        assert settings.JWT_SECRET == "weak"
-        # Future: should raise ValidationError
+        assert len(settings.JWT_SECRET) >= 32
 
     def test_qdrant_collection_prefix(self, test_env):
         """Test that Qdrant collection prefix is correct"""

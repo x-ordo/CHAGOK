@@ -3,7 +3,7 @@
  * Plan 3.19.1 - Solution (3가지 핵심 기능)
  *
  * Requirements:
- * - Section title: "Legal Evidence Hub가 해결합니다"
+ * - Section title: "{BRAND.name}이 해결합니다"
  * - 3-column layout with core features:
  *   1. 자동 증거 분석: 이미지/음성/PDF를 AI가 자동 분류 및 요약
  *   2. 스마트 타임라인: 시간순 증거 정리, 유책사유 자동 태깅
@@ -14,27 +14,28 @@
 
 import { render, screen } from '@testing-library/react';
 import SolutionSection from '../SolutionSection';
+import { BRAND } from '@/config/brand';
 
 describe('SolutionSection Component', () => {
   describe('Section Title', () => {
     it('should render the section title', () => {
       render(<SolutionSection />);
 
-      const title = screen.getByRole('heading', { name: /legal evidence hub가 해결합니다/i });
+      const title = screen.getByRole('heading', { name: new RegExp(`${BRAND.name}이 해결합니다`, 'i') });
       expect(title).toBeInTheDocument();
     });
 
     it('should style title with Deep Trust Blue', () => {
       render(<SolutionSection />);
 
-      const title = screen.getByRole('heading', { name: /legal evidence hub가 해결합니다/i });
+      const title = screen.getByRole('heading', { name: new RegExp(`${BRAND.name}이 해결합니다`, 'i') });
       expect(title).toHaveClass('text-secondary');
     });
 
     it('should use appropriate heading level (h2)', () => {
       render(<SolutionSection />);
 
-      const title = screen.getByRole('heading', { name: /legal evidence hub가 해결합니다/i });
+      const title = screen.getByRole('heading', { name: new RegExp(`${BRAND.name}이 해결합니다`, 'i') });
       expect(title.tagName).toBe('H2');
     });
   });
@@ -267,7 +268,7 @@ describe('SolutionSection Component', () => {
     it('should have proper heading hierarchy', () => {
       render(<SolutionSection />);
 
-      const mainHeading = screen.getByRole('heading', { name: /legal evidence hub가 해결합니다/i });
+      const mainHeading = screen.getByRole('heading', { name: new RegExp(`${BRAND.name}이 해결합니다`, 'i') });
       expect(mainHeading.tagName).toBe('H2');
 
       const featureHeadings = screen.getAllByRole('heading', { level: 3 });

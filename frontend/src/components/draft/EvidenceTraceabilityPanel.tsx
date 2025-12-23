@@ -90,9 +90,9 @@ export default function EvidenceTraceabilityPanel({
             className="fixed right-0 top-0 h-full w-96 max-w-md bg-white shadow-2xl z-50 transition-opacity duration-300 ease-in-out overflow-y-auto"
         >
             {/* Header */}
-            <header className="sticky top-0 bg-deep-trust-blue text-white px-6 py-4 flex items-center justify-between">
+            <header className="sticky top-0 bg-secondary text-white px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-accent" />
+                    <Sparkles className="w-5 h-5 text-primary-contrast" />
                     <h2 className="text-lg font-semibold">AI 근거 추적</h2>
                 </div>
                 <button
@@ -145,7 +145,7 @@ export default function EvidenceTraceabilityPanel({
                                         {evidence.labels.map((label) => (
                                             <span
                                                 key={label}
-                                                className="px-2 py-0.5 bg-accent/10 text-accent text-xs rounded-full"
+                                                className="px-2 py-0.5 bg-primary-light text-primary text-xs rounded-full"
                                             >
                                                 {label}
                                             </span>

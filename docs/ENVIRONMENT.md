@@ -9,7 +9,7 @@ This document outlines the technical environment, dependencies, and infrastructu
 ## 1. Core Technology Stack
 
 ### Backend (`/backend`)
-- **Language:** Python 3.11+
+- **Language:** Python 3.12+
 - **Framework:** FastAPI (>=0.110)
 - **Server:** Uvicorn (ASGI)
 - **Database ORM:** SQLAlchemy 2.0+
@@ -26,7 +26,7 @@ This document outlines the technical environment, dependencies, and infrastructu
 - **Testing:** Jest, React Testing Library
 
 ### AI Worker (`/ai_worker`)
-- **Language:** Python 3.11+
+- **Language:** Python 3.12+
 - **Key Libraries:**
     - `openai`: LLM integration
     - `qdrant-client`: Vector search
@@ -124,7 +124,7 @@ Some variables have different names between services for historical reasons. The
 ## 4. Development Environment Setup
 
 ### Prerequisites
-- Python 3.11+
+- Python 3.12+
 - Node.js 18+
 - Git
 
@@ -222,6 +222,50 @@ python -m handler
 - Enable VPC endpoints for AWS services
 - Configure strict CORS policies
 - Use HTTPS everywhere
+
+### CloudFront + Cross-Origin Authentication
+
+When deploying frontend on CloudFront with a separate backend API domain, cross-origin cookie authentication requires specific configuration:
+
+#### Backend Environment (`.env.production`)
+```bash
+# CORS - Must include your CloudFront distribution URL
+BACKEND_CORS_ORIGINS=https://d1234abcd.cloudfront.net
+
+# Cookie settings for cross-origin auth
+COOKIE_SECURE=true          # Required for HTTPS
+COOKIE_SAMESITE=none        # Required for cross-origin cookies
+COOKIE_DOMAIN=              # Empty = current domain (recommended)
+```
+
+#### Frontend Environment
+```bash
+# Must point to actual backend URL (API Gateway or custom domain)
+NEXT_PUBLIC_API_BASE_URL=https://api.yourbackend.com
+```
+
+#### CloudFront SPA Fallback
+The Terraform config (`infra/terraform/main.tf`) includes custom error responses for SPA routing:
+- 404 errors → `/index.html` (200 response)
+- 403 errors → `/index.html` (200 response)
+
+This allows Next.js client-side routing to handle all paths.
+
+#### Troubleshooting Auth Flow
+
+1. **Cookies not being sent:**
+   - Check `COOKIE_SAMESITE=none` and `COOKIE_SECURE=true`
+   - Verify CloudFront URL is in `BACKEND_CORS_ORIGINS`
+   - Ensure frontend uses `credentials: 'include'` in fetch calls
+
+2. **CORS errors:**
+   - Backend must expose `Set-Cookie` header (already configured)
+   - Backend `allow_credentials=True` (already configured)
+   - Origins must match exactly (include protocol, no trailing slash)
+
+3. **404 on page refresh:**
+   - CloudFront custom error responses should return index.html with 200
+   - Check S3 bucket website configuration has error document set
 
 ---
 

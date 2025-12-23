@@ -36,22 +36,13 @@ def sample_case():
     case = Mock(spec=Case)
     case.id = "case_123abc"
     case.title = "테스트 사건"
+    case.client_name = "홍길동"
     case.description = "테스트 설명"
     case.status = "active"
     case.created_by = "user_456"
     case.created_at = datetime.now(timezone.utc)
     case.updated_at = datetime.now(timezone.utc)
     return case
-
-
-@pytest.fixture
-def sample_member():
-    """Sample CaseMember model instance"""
-    member = Mock(spec=CaseMember)
-    member.case_id = "case_123abc"
-    member.user_id = "user_456"
-    member.role = CaseMemberRole.OWNER
-    return member
 
 
 @pytest.fixture
@@ -63,6 +54,17 @@ def sample_user():
     user.name = "테스트 사용자"
     user.role = UserRole.LAWYER
     return user
+
+
+@pytest.fixture
+def sample_member(sample_user):
+    """Sample CaseMember model instance"""
+    member = Mock(spec=CaseMember)
+    member.case_id = "case_123abc"
+    member.user_id = "user_456"
+    member.role = CaseMemberRole.OWNER
+    member.user = sample_user  # Link user for get_case_members
+    return member
 
 
 class TestCaseServiceCreate:
@@ -82,6 +84,7 @@ class TestCaseServiceCreate:
         # Assert
         case_service.case_repo.create.assert_called_once_with(
             title="새 사건",
+            client_name=None,
             description="새 사건 설명",
             created_by=user_id
         )
@@ -109,6 +112,7 @@ class TestCaseServiceCreate:
         # Assert
         case_service.case_repo.create.assert_called_once_with(
             title="새 사건",
+            client_name=None,
             description=None,
             created_by=user_id
         )
@@ -212,16 +216,17 @@ class TestCaseServiceUpdate:
         mock_db.commit.assert_called_once()
 
     def test_update_case_not_found(self, case_service):
-        """Test updating non-existent case"""
+        """Test updating non-existent case returns PermissionError (prevents info leakage)"""
         # Arrange
         case_id = "nonexistent"
         user_id = "user_456"
         update_data = CaseUpdate(title="수정된 제목")
 
-        case_service.case_repo.get_by_id.return_value = None
+        # No member found means no access
+        case_service.member_repo.get_member.return_value = None
 
-        # Act & Assert
-        with pytest.raises(NotFoundError):
+        # Act & Assert: PermissionError instead of NotFoundError to prevent info leakage
+        with pytest.raises(PermissionError):
             case_service.update_case(case_id, update_data, user_id)
 
     def test_update_case_viewer_no_permission(self, case_service, sample_case):

@@ -12,7 +12,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import LandingNav from '@/components/landing/LandingNav';
 import HeroSection from '@/components/landing/HeroSection';
 import SocialProofSection from '@/components/landing/SocialProofSection';
@@ -27,16 +27,9 @@ import FinalCTASection from '@/components/landing/FinalCTASection';
 import LandingFooter from '@/components/landing/LandingFooter';
 
 export default function LandingPage() {
-  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
+  const { isAuthenticated, logout, isLoading } = useAuth();
 
-  // Navigation Guard: Redirect authenticated users to /cases
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      router.push('/cases');
-    }
-  }, [router]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,7 +71,12 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <LandingNav isScrolled={isScrolled} />
+      <LandingNav
+        isScrolled={isScrolled}
+        isAuthenticated={isAuthenticated}
+        authLoading={isLoading}
+        onLogout={logout}
+      />
 
       {/* Main Content */}
       <main>

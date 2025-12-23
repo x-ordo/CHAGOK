@@ -88,10 +88,12 @@ class TestDraftServicePreview:
     """Tests for generate_draft_preview method"""
 
     @patch("app.services.draft_service.generate_chat_completion")
-    @patch("app.services.draft_service.search_evidence_by_semantic")
+    @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     @patch("app.services.draft_service.get_evidence_by_case")
+    @patch("app.services.draft_service.get_case_fact_summary")
     def test_generate_draft_preview_success(
         self,
+        mock_get_fact_summary,
         mock_get_evidence,
         mock_rag_search,
         mock_gpt,
@@ -100,7 +102,7 @@ class TestDraftServicePreview:
         sample_evidence_list,
         sample_rag_results
     ):
-        """Test successful draft preview generation"""
+        """Test successful draft preview generation (016-draft-fact-summary)"""
         # Arrange
         case_id = "case_123abc"
         user_id = "user_456"
@@ -112,6 +114,7 @@ class TestDraftServicePreview:
 
         draft_service.case_repo.get_by_id.return_value = sample_case
         draft_service.member_repo.has_access.return_value = True
+        mock_get_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약입니다."}
         mock_get_evidence.return_value = sample_evidence_list
         mock_rag_search.return_value = sample_rag_results
         mock_gpt.return_value = "생성된 초안 내용입니다."
@@ -122,7 +125,8 @@ class TestDraftServicePreview:
         # Assert
         assert result.case_id == case_id
         assert result.draft_text == "생성된 초안 내용입니다."
-        assert len(result.citations) > 0
+        # Citations may be empty per 016-draft-fact-summary (uses fact summary instead of evidence RAG)
+        assert isinstance(result.citations, list)
         mock_gpt.assert_called_once()
 
     @patch("app.services.draft_service.get_evidence_by_case")
@@ -158,11 +162,11 @@ class TestDraftServicePreview:
         with pytest.raises(PermissionError):
             draft_service.generate_draft_preview(case_id, request, user_id)
 
-    @patch("app.services.draft_service.get_evidence_by_case")
-    def test_generate_draft_preview_no_evidence(
-        self, mock_get_evidence, draft_service, sample_case
+    @patch("app.services.draft_service.get_case_fact_summary")
+    def test_generate_draft_preview_no_fact_summary(
+        self, mock_get_fact_summary, draft_service, sample_case
     ):
-        """Test draft preview when case has no evidence"""
+        """Test draft preview when case has no fact summary (016-draft-fact-summary)"""
         # Arrange
         case_id = "case_123abc"
         user_id = "user_456"
@@ -170,54 +174,58 @@ class TestDraftServicePreview:
 
         draft_service.case_repo.get_by_id.return_value = sample_case
         draft_service.member_repo.has_access.return_value = True
-        mock_get_evidence.return_value = []
+        mock_get_fact_summary.return_value = None
 
         # Act & Assert
         with pytest.raises(ValidationError) as exc_info:
             draft_service.generate_draft_preview(case_id, request, user_id)
 
-        assert "증거가 하나도 없습니다" in str(exc_info.value)
+        assert "사실관계 요약" in str(exc_info.value)
 
 
 class TestDraftServiceRagSearch:
     """Tests for _perform_rag_search method"""
 
-    @patch("app.services.draft_service.search_evidence_by_semantic")
+    @patch("app.services.draft.rag_orchestrator.search_legal_knowledge")
+    @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     def test_rag_search_with_claim_section(
-        self, mock_search, draft_service
+        self, mock_evidence_search, mock_legal_search, draft_service
     ):
         """Test RAG search includes fault keywords for 청구원인 section"""
         # Arrange
         case_id = "case_123abc"
         sections = ["청구원인"]
 
-        mock_search.return_value = []
+        mock_evidence_search.return_value = []
+        mock_legal_search.return_value = []
 
         # Act
         draft_service._perform_rag_search(case_id, sections)
 
         # Assert
-        call_args = mock_search.call_args
-        assert "귀책사유" in call_args.kwargs.get("query", call_args[1].get("query", ""))
-        assert call_args.kwargs.get("top_k", call_args[1].get("top_k")) == 10
+        call_args = mock_evidence_search.call_args
+        assert "귀책사유" in call_args.kwargs.get("query", "")
+        assert call_args.kwargs.get("top_k") == 5
 
-    @patch("app.services.draft_service.search_evidence_by_semantic")
+    @patch("app.services.draft.rag_orchestrator.search_legal_knowledge")
+    @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     def test_rag_search_general_sections(
-        self, mock_search, draft_service
+        self, mock_evidence_search, mock_legal_search, draft_service
     ):
         """Test RAG search for general sections"""
         # Arrange
         case_id = "case_123abc"
         sections = ["당사자", "사건경위"]
 
-        mock_search.return_value = []
+        mock_evidence_search.return_value = []
+        mock_legal_search.return_value = []
 
         # Act
         draft_service._perform_rag_search(case_id, sections)
 
         # Assert
-        call_args = mock_search.call_args
-        assert call_args.kwargs.get("top_k", call_args[1].get("top_k")) == 5
+        call_args = mock_evidence_search.call_args
+        assert call_args.kwargs.get("top_k") == 3
 
 
 class TestDraftServicePromptBuilding:
@@ -227,13 +235,16 @@ class TestDraftServicePromptBuilding:
         """Test prompt structure has system and user messages"""
         # Arrange
         sections = ["청구원인"]
-        rag_context = [{"id": "ev_001", "content": "증거 내용"}]
+        evidence_context = [{"id": "ev_001", "content": "증거 내용"}]
+        legal_context = [{"article": "840", "content": "이혼 사유"}]
 
         # Act
         messages = draft_service._build_draft_prompt(
             case=sample_case,
             sections=sections,
-            rag_context=rag_context,
+            evidence_context=evidence_context,
+            legal_context=legal_context,
+            precedent_context=[],
             language="ko",
             style="formal"
         )
@@ -308,9 +319,8 @@ class TestDraftServiceExport:
     """Tests for export_draft method"""
 
     @patch.object(DraftService, "generate_draft_preview")
-    @patch.object(DraftService, "_generate_docx")
     def test_export_draft_docx_success(
-        self, mock_generate_docx, mock_preview, draft_service, sample_case
+        self, mock_preview, draft_service, sample_case
     ):
         """Test successful DOCX export"""
         # Arrange
@@ -327,18 +337,19 @@ class TestDraftServiceExport:
             generated_at=datetime.now(timezone.utc)
         )
 
-        mock_generate_docx.return_value = (
+        # Mock the document_exporter.generate_docx method on the instance
+        draft_service.document_exporter.generate_docx = MagicMock(return_value=(
             BytesIO(b"docx content"),
             "draft_test.docx",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
+        ))
 
         # Act
         result = draft_service.export_draft(case_id, user_id, DraftExportFormat.DOCX)
 
         # Assert
         assert result[1].endswith(".docx")
-        mock_generate_docx.assert_called_once()
+        draft_service.document_exporter.generate_docx.assert_called_once()
 
     def test_export_draft_case_not_found(self, draft_service):
         """Test export with non-existent case"""
@@ -369,8 +380,8 @@ class TestDraftServiceExport:
 class TestDraftServiceDocxGeneration:
     """Tests for _generate_docx method"""
 
-    @patch("app.services.draft_service.DOCX_AVAILABLE", True)
-    @patch("app.services.draft_service.Document")
+    @patch("app.services.draft.document_exporter.DOCX_AVAILABLE", True)
+    @patch("app.services.draft.document_exporter.Document")
     def test_generate_docx_creates_document(
         self, mock_document_class, draft_service, sample_case
     ):
@@ -401,7 +412,7 @@ class TestDraftServiceDocxGeneration:
         mock_doc.save.assert_called_once()
         assert result[1].endswith(".docx")
 
-    @patch("app.services.draft_service.DOCX_AVAILABLE", False)
+    @patch("app.services.draft.document_exporter.DOCX_AVAILABLE", False)
     def test_generate_docx_not_available(self, draft_service, sample_case):
         """Test DOCX generation raises error when python-docx not installed"""
         # Arrange
@@ -417,3 +428,127 @@ class TestDraftServiceDocxGeneration:
             draft_service._generate_docx(sample_case, draft_response)
 
         assert "python-docx" in str(exc_info.value)
+
+
+class TestDraftServicePdfGeneration:
+    """Tests for _generate_pdf method"""
+
+    def test_generate_pdf_creates_document(self, draft_service, sample_case):
+        """Test PDF generation creates proper document with Korean support"""
+        # Arrange
+        draft_response = DraftPreviewResponse(
+            case_id="case_123abc",
+            draft_text="초안 본문 내용입니다.\n\n두 번째 문단입니다.",
+            citations=[
+                DraftCitation(
+                    evidence_id="ev_001",
+                    snippet="증거 내용",
+                    labels=["폭언"]
+                )
+            ],
+            generated_at=datetime.now(timezone.utc)
+        )
+
+        # Act
+        try:
+            result = draft_service._generate_pdf(sample_case, draft_response)
+
+            # Assert
+            file_buffer, filename, content_type = result
+            assert filename.endswith(".pdf")
+            assert content_type == "application/pdf"
+            assert file_buffer.read(4) == b"%PDF"  # PDF magic bytes
+        except ValidationError as e:
+            # reportlab not installed - this is acceptable
+            assert "reportlab" in str(e)
+
+    def test_generate_pdf_with_citations(self, draft_service, sample_case):
+        """Test PDF generation includes citations section"""
+        # Arrange
+        draft_response = DraftPreviewResponse(
+            case_id="case_123abc",
+            draft_text="초안 내용",
+            citations=[
+                DraftCitation(
+                    evidence_id="ev_001",
+                    snippet="첫 번째 증거",
+                    labels=["폭언", "불화"]
+                ),
+                DraftCitation(
+                    evidence_id="ev_002",
+                    snippet="두 번째 증거",
+                    labels=["부정행위"]
+                )
+            ],
+            generated_at=datetime.now(timezone.utc)
+        )
+
+        # Act
+        try:
+            result = draft_service._generate_pdf(sample_case, draft_response)
+
+            # Assert
+            file_buffer, filename, content_type = result
+            assert content_type == "application/pdf"
+            # PDF should be generated without errors
+            assert file_buffer.tell() == 0  # Buffer should be at start
+            content = file_buffer.read()
+            assert len(content) > 0
+        except ValidationError as e:
+            # reportlab not installed - this is acceptable
+            assert "reportlab" in str(e)
+
+    def test_generate_pdf_escapes_special_characters(self, draft_service, sample_case):
+        """Test PDF generation handles XML special characters"""
+        # Arrange
+        draft_response = DraftPreviewResponse(
+            case_id="case_123abc",
+            draft_text="특수문자 테스트: <tag> & \"quote\" > less",
+            citations=[
+                DraftCitation(
+                    evidence_id="ev_001",
+                    snippet="<script>alert('xss')</script>",
+                    labels=[]
+                )
+            ],
+            generated_at=datetime.now(timezone.utc)
+        )
+
+        # Act - should not raise XML parsing errors
+        try:
+            result = draft_service._generate_pdf(sample_case, draft_response)
+            assert result[1].endswith(".pdf")
+        except ValidationError as e:
+            # reportlab not installed - this is acceptable
+            assert "reportlab" in str(e)
+
+    def test_generate_pdf_without_citations(self, draft_service, sample_case):
+        """Test PDF generation without citations"""
+        # Arrange
+        draft_response = DraftPreviewResponse(
+            case_id="case_123abc",
+            draft_text="초안 내용만 있는 문서",
+            citations=[],
+            generated_at=datetime.now(timezone.utc)
+        )
+
+        # Act
+        try:
+            result = draft_service._generate_pdf(sample_case, draft_response)
+            assert result[1].endswith(".pdf")
+        except ValidationError as e:
+            # reportlab not installed - this is acceptable
+            assert "reportlab" in str(e)
+
+    def test_register_korean_font_returns_bool(self, draft_service):
+        """Test _register_korean_font returns boolean"""
+        # This test verifies the method signature and return type
+        # Actual font registration depends on system fonts
+        from unittest.mock import MagicMock
+
+        mock_pdfmetrics = MagicMock()
+        mock_ttfont = MagicMock()
+
+        result = draft_service._register_korean_font(mock_pdfmetrics, mock_ttfont)
+
+        assert isinstance(result, bool)
