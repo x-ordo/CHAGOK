@@ -106,15 +106,15 @@ class DraftService:
         user_id: str
     ) -> DraftPreviewResponse:
         """
-        Generate draft preview using RAG + GPT-4o
+        Generate draft preview using Fact-Summary + GPT-4o
 
-        Process:
+        Process (016-draft-fact-summary):
         1. Validate case access
-        2. Retrieve evidence metadata from DynamoDB
-        3. Perform semantic search in Qdrant (RAG)
-        4. Build GPT-4o prompt with RAG context
+        2. Get fact summary context (REQUIRED)
+        3. Get legal knowledge and precedents (optional RAG)
+        4. Build GPT-4o prompt with fact summary as primary context
         5. Generate draft text
-        6. Extract citations
+        6. Return with empty citations (no evidence RAG)
 
         Args:
             case_id: Case ID
@@ -126,7 +126,7 @@ class DraftService:
 
         Raises:
             PermissionError: User does not have access (also for non-existent cases)
-            ValidationError: No evidence in case
+            ValidationError: No fact summary exists for case
         """
         # 1. Validate case access
         if not self.member_repo.has_access(case_id, user_id):
@@ -136,16 +136,19 @@ class DraftService:
         if not case:
             raise NotFoundError("Case")
 
-        # 2. Retrieve evidence metadata from DynamoDB
-        evidence_list = get_evidence_by_case(case_id)
+        # 2. Get fact summary context (REQUIRED - 016-draft-fact-summary)
+        fact_summary_context = self._get_fact_summary_context(case_id)
+        if not fact_summary_context:
+            raise ValidationError(
+                "사실관계 요약을 먼저 생성해주세요. "
+                "[사건 상세] → [사실관계 요약] 탭에서 생성할 수 있습니다."
+            )
 
-        if not evidence_list:
-            raise ValidationError("사건에 증거가 하나도 없습니다. 증거를 업로드한 후 초안을 생성해 주세요.")
-
-        # 3. Perform semantic RAG search in Qdrant (evidence + legal)
+        # 3. Get legal knowledge (keep RAG for legal references)
         rag_results = self.rag_orchestrator.perform_rag_search(case_id, request.sections)
-        evidence_results = rag_results.get("evidence", [])
         legal_results = rag_results.get("legal", [])
+        # Skip evidence RAG - use fact summary instead (016-draft-fact-summary)
+        evidence_results = []
 
         # 3.5 Search similar precedents
         precedent_results = self.rag_orchestrator.search_precedents(case_id)
@@ -153,8 +156,7 @@ class DraftService:
         # 3.6 Search consultation records (Issue #403)
         consultation_results = self.rag_orchestrator.search_case_consultations(case_id)
 
-        # 3.7 Get fact summary context (014-case-fact-summary T023)
-        fact_summary_context = self._get_fact_summary_context(case_id)
+        # fact_summary_context already retrieved and validated above (016-draft-fact-summary)
 
         # 4. Check if template exists for JSON output mode
         template = get_template_by_type("이혼소장")
