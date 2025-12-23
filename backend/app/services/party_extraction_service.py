@@ -138,6 +138,7 @@ class PartyExtractionService:
     ) -> Tuple[List[ExtractedPerson], List[ExtractedRelationship]]:
         """
         Call Gemini API to extract persons and relationships from fact summary.
+        Uses 2-step verification to filter out non-person names.
 
         Returns:
             Tuple of (persons, relationships)
@@ -145,6 +146,7 @@ class PartyExtractionService:
         prompt_messages = self._build_extraction_prompt(fact_summary)
 
         try:
+            # Step 1: Extract persons and relationships
             response = generate_chat_completion_gemini(
                 messages=prompt_messages,
                 model=settings.GEMINI_MODEL_CHAT,
@@ -154,11 +156,99 @@ class PartyExtractionService:
 
             # Parse JSON response
             persons, relationships = self._parse_extraction_response(response)
-            return persons, relationships
+
+            if not persons:
+                return persons, relationships
+
+            # Step 2: Verify extracted names are actual person names
+            verified_persons = self._verify_person_names(persons)
+
+            # Filter relationships to only include verified persons
+            verified_names = {p.name for p in verified_persons}
+            verified_relationships = [
+                r for r in relationships
+                if r.from_name in verified_names and r.to_name in verified_names
+            ]
+
+            logger.info(
+                f"[PartyExtraction] Verification: {len(persons)} -> {len(verified_persons)} persons, "
+                f"{len(relationships)} -> {len(verified_relationships)} relationships"
+            )
+
+            return verified_persons, verified_relationships
 
         except Exception as e:
             logger.error(f"[PartyExtraction] Gemini API error: {e}")
             raise ValidationError(f"인물 추출 중 오류가 발생했습니다: {str(e)}")
+
+    def _verify_person_names(
+        self,
+        persons: List[ExtractedPerson]
+    ) -> List[ExtractedPerson]:
+        """
+        Step 2: Verify extracted names are actual person names using Gemini.
+        Filters out time expressions, legal terms, and other non-person words.
+        """
+        if not persons:
+            return []
+
+        names = [p.name for p in persons]
+        names_str = ", ".join(names)
+
+        verification_prompt = [
+            {
+                "role": "system",
+                "content": """당신은 텍스트에서 실제 사람 이름만 식별하는 전문가입니다.
+
+## 규칙
+1. 실제 사람 이름만 선택 (한국 이름, 외국 이름, 별명 포함)
+2. 다음은 사람 이름이 아님:
+   - 시간 표현: 오전, 오후, 저녁, 새벽, 아침
+   - 법률 용어: 이혼, 결혼, 합의, 조정, 소송
+   - 상태 표현: 정됨, 완료, 진행, 확인
+   - 일반 명사: 자녀, 부모, 배우자, 친구
+3. "원고", "피고"는 역할이므로 사람 이름이 아님 (단, "원고 김철수"에서 "김철수"는 이름)
+
+## 출력 형식 (JSON만 출력)
+{"valid_names": ["실제 이름1", "실제 이름2"]}"""
+            },
+            {
+                "role": "user",
+                "content": f"다음 중 실제 사람 이름만 선택하세요: [{names_str}]"
+            }
+        ]
+
+        try:
+            response = generate_chat_completion_gemini(
+                messages=verification_prompt,
+                model=settings.GEMINI_MODEL_CHAT,
+                temperature=0.0,  # Deterministic for verification
+                max_tokens=500
+            )
+
+            # Parse response
+            cleaned = response.strip()
+            if cleaned.startswith("```json"):
+                cleaned = cleaned[7:]
+            if cleaned.startswith("```"):
+                cleaned = cleaned[3:]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
+
+            data = json.loads(cleaned)
+            valid_names = set(data.get("valid_names", []))
+
+            # Filter persons to only include verified names
+            verified_persons = [p for p in persons if p.name in valid_names]
+
+            logger.info(f"[PartyExtraction] Name verification: {names} -> {list(valid_names)}")
+            return verified_persons
+
+        except Exception as e:
+            logger.warning(f"[PartyExtraction] Name verification failed, using all names: {e}")
+            # Fallback: return all persons if verification fails
+            return persons
 
     def _build_extraction_prompt(self, fact_summary: str) -> List[Dict[str, str]]:
         """Build Gemini prompt for structured extraction"""
