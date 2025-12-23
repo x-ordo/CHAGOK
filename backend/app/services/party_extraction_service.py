@@ -181,6 +181,23 @@ class PartyExtractionService:
             logger.error(f"[PartyExtraction] Gemini API error: {e}")
             raise ValidationError(f"인물 추출 중 오류가 발생했습니다: {str(e)}")
 
+    # Non-person words to filter out (fallback list)
+    NON_PERSON_WORDS = {
+        # Time expressions
+        "오전", "오후", "저녁", "새벽", "아침", "밤", "점심",
+        # Legal terms
+        "이혼", "결혼", "합의", "조정", "소송", "재판", "판결", "위자료",
+        # Status expressions
+        "정됨", "완료", "진행", "확인", "승인", "거부", "취소",
+        # General nouns
+        "자녀", "부모", "배우자", "친구", "동료", "직장", "회사",
+        # Roles (not names)
+        "원고", "피고", "증인", "참고인",
+        # Other common misidentifications
+        "이혼아", "결혼식", "법원", "변호사", "판사",
+    }
+
+
     def _verify_person_names(
         self,
         persons: List[ExtractedPerson]
@@ -192,7 +209,18 @@ class PartyExtractionService:
         if not persons:
             return []
 
-        names = [p.name for p in persons]
+        # Pre-filter: Remove obvious non-person words before Gemini verification
+        pre_filtered = [
+            p for p in persons
+            if p.name.strip() not in self.NON_PERSON_WORDS
+            and len(p.name.strip()) >= 2  # Names should be at least 2 chars
+        ]
+
+        if not pre_filtered:
+            logger.info("[PartyExtraction] All names filtered by pre-filter")
+            return []
+
+        names = [p.name for p in pre_filtered]
         names_str = ", ".join(names)
 
         verification_prompt = [
@@ -246,9 +274,9 @@ class PartyExtractionService:
             return verified_persons
 
         except Exception as e:
-            logger.warning(f"[PartyExtraction] Name verification failed, using all names: {e}")
-            # Fallback: return all persons if verification fails
-            return persons
+            logger.warning(f"[PartyExtraction] Name verification failed, using pre-filtered names: {e}")
+            # Fallback: return pre-filtered persons (already filtered by NON_PERSON_WORDS)
+            return pre_filtered
 
     def _build_extraction_prompt(self, fact_summary: str) -> List[Dict[str, str]]:
         """Build Gemini prompt for structured extraction"""
@@ -283,7 +311,13 @@ class PartyExtractionService:
 3. 관계는 명확한 증거가 있을 때만 추출
 4. 중복 인물 없이 추출
 5. 이름이 없는 인물은 역할로 표시 (예: "원고 자녀", "피고 어머니")
-6. JSON 외의 텍스트는 출력하지 마세요"""
+6. JSON 외의 텍스트는 출력하지 마세요
+7. 다음은 인물이 아니므로 절대 추출하지 마세요:
+   - 시간 표현: 오전, 오후, 저녁, 새벽, 아침
+   - 법률 용어: 이혼, 결혼, 합의, 조정, 소송, 위자료
+   - 상태 표현: 정됨, 완료, 진행, 확인
+   - 일반 명사: 자녀, 부모, 배우자, 친구, 동료
+   - 역할명: 원고, 피고, 증인, 판사, 변호사"""
 
         user_prompt = f"""다음 사실관계 요약에서 등장 인물과 관계를 추출해주세요.
 
