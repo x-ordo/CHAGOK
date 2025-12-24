@@ -147,8 +147,10 @@ const preserveSpaces = (html: string): string => {
 
 const sanitizeDraftHtml = (html: string) => {
     if (typeof window === 'undefined') return html;
+    // Pre-process: Convert &nbsp; text literals to actual spaces (AI sometimes outputs these)
+    const cleanedInput = html.replace(/&nbsp;/g, ' ');
     // First convert to HTML, then preserve spaces (order matters to avoid escaping)
-    const converted = textToHtml(html);
+    const converted = textToHtml(cleanedInput);
     const withPreservedSpaces = preserveSpaces(converted);
     return DOMPurify.sanitize(withPreservedSpaces, SANITIZE_OPTIONS);
 };
