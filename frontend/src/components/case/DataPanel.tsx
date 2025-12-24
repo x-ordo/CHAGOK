@@ -11,8 +11,7 @@
  */
 
 import { useState, ReactNode } from 'react';
-import { ChevronDown, ChevronRight, FileText, Upload } from 'lucide-react';
-import { PrecedentPopover } from '@/components/precedent/PrecedentPopover';
+import { ChevronDown, ChevronRight, FileText, MessageSquare, Wallet, Plus, Upload } from 'lucide-react';
 
 interface AccordionSection {
   id: string;
@@ -54,10 +53,10 @@ export function DataPanel({ sections, defaultOpenSections = ['evidence'] }: Data
 
         return (
           <div key={section.id}>
-            {/* Section Header - Lightning Compact */}
+            {/* Section Header */}
             <button
               onClick={() => toggleSection(section.id)}
-              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-neutral-750 transition-all duration-100"
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-neutral-750 transition-colors"
             >
               <div className="flex items-center gap-2">
                 <span className="text-[var(--color-text-secondary)]">
@@ -87,9 +86,9 @@ export function DataPanel({ sections, defaultOpenSections = ['evidence'] }: Data
               )}
             </button>
 
-            {/* Section Content - Lightning Compact */}
+            {/* Section Content */}
             {isOpen && (
-              <div className="px-3 pb-3">
+              <div className="px-4 pb-3">
                 {section.content}
               </div>
             )}
@@ -101,17 +100,28 @@ export function DataPanel({ sections, defaultOpenSections = ['evidence'] }: Data
 }
 
 // Convenience wrapper for case detail page
-// 상담내역, 재산목록은 모달에만 존재 (DataPanel에서 제거)
 interface CaseDataPanelProps {
   evidenceContent: ReactNode;
   evidenceCount: number;
   onUploadEvidence: () => void;
+  consultationContent: ReactNode;
+  consultationCount?: number;
+  onAddConsultation: () => void;
+  assetsContent: ReactNode;
+  assetsCount?: number;
+  onAddAsset: () => void;
 }
 
 export function CaseDataPanel({
   evidenceContent,
   evidenceCount,
   onUploadEvidence,
+  consultationContent,
+  consultationCount = 0,
+  onAddConsultation,
+  assetsContent,
+  assetsCount = 0,
+  onAddAsset,
 }: CaseDataPanelProps) {
   const sections: AccordionSection[] = [
     {
@@ -126,19 +136,33 @@ export function CaseDataPanel({
         onClick: onUploadEvidence,
       },
     },
+    {
+      id: 'consultation',
+      title: '상담 내역',
+      icon: <MessageSquare className="w-4 h-4" />,
+      count: consultationCount,
+      content: consultationContent,
+      action: {
+        label: '상담 추가',
+        icon: <Plus className="w-4 h-4" />,
+        onClick: onAddConsultation,
+      },
+    },
+    {
+      id: 'assets',
+      title: '재산 목록',
+      icon: <Wallet className="w-4 h-4" />,
+      count: assetsCount,
+      content: assetsContent,
+      action: {
+        label: '재산 추가',
+        icon: <Plus className="w-4 h-4" />,
+        onClick: onAddAsset,
+      },
+    },
   ];
 
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1">
-        <DataPanel sections={sections} defaultOpenSections={['evidence']} />
-      </div>
-      {/* Similar Precedents Popover - Lightning Related Records */}
-      <div className="px-3 py-2 border-t border-gray-200 dark:border-neutral-700">
-        <PrecedentPopover />
-      </div>
-    </div>
-  );
+  return <DataPanel sections={sections} defaultOpenSections={['evidence']} />;
 }
 
 export default DataPanel;
