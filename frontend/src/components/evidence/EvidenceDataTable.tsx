@@ -469,12 +469,6 @@ export function EvidenceDataTable({ items, onRetry, parties = [], onSpeakerMappi
                       <div className="text-sm font-medium text-gray-900">
                         {evidence.filename}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {(evidence.size / 1024 / 1024).toFixed(2)} MB
-                      </div>
-                      <div className="text-[11px] text-gray-400 hidden group-hover:block mt-1">
-                        클릭하여 상세 · 타임라인 연결 옵션 보기
-                      </div>
                     </td>
 
                     {/* AI Summary */}
