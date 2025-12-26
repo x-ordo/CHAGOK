@@ -9,7 +9,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { MessageSquare, Phone, Video, Users, Calendar, Edit2, Trash2, Plus, X, Loader2 } from 'lucide-react';
+import { MessageSquare, Phone, Video, Users, Calendar, Clock, Edit2, Trash2, Plus, X, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Consultation, ConsultationType } from '@/types/consultation';
 import {
