@@ -114,6 +114,14 @@ class PartyExtractionService:
         if not self.member_repo.has_access(case_id, user_id):
             raise PermissionError("사건 접근 권한이 없습니다")
 
+        # 019-party-extraction-prompt: 기존 자동추출 인물/관계 삭제 (재생성 시)
+        deleted_rels = self.party_repo.delete_auto_extracted_relationships(case_id)
+        deleted_parties = self.party_repo.delete_auto_extracted_parties(case_id)
+        logger.info(
+            f"[PartyExtraction] Deleted {deleted_parties} auto-extracted parties "
+            f"and {deleted_rels} relationships for case_id={case_id}"
+        )
+
         # 2. Get fact summary - use provided text or fetch from DynamoDB
         if fact_summary_text:
             fact_summary = fact_summary_text
