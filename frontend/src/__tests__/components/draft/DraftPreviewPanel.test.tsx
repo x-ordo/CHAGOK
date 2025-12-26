@@ -179,7 +179,9 @@ describe('DraftPreviewPanel', () => {
     });
   });
 
-  describe('Download/Export Functionality', () => {
+  // Download buttons are currently hidden (다운로드 버튼 숨김 처리)
+  // This entire describe block is skipped until the feature is re-enabled
+  describe.skip('Download/Export Functionality', () => {
     it('renders download buttons for DOCX, PDF, HWP', () => {
       render(<DraftPreviewPanel {...defaultProps} />);
 
@@ -700,7 +702,9 @@ describe('DraftPreviewPanel', () => {
   });
 
   describe('Error States', () => {
-    it('handles onDownload returning void', async () => {
+    // Download buttons are currently hidden (다운로드 버튼 숨김 처리)
+    // These tests are skipped until the feature is re-enabled
+    it.skip('handles onDownload returning void', async () => {
       const onDownload = jest.fn(() => undefined);
 
       render(<DraftPreviewPanel {...defaultProps} onDownload={onDownload} />);
@@ -713,7 +717,7 @@ describe('DraftPreviewPanel', () => {
       });
     });
 
-    it('handles missing onDownload prop', () => {
+    it.skip('handles missing onDownload prop', () => {
       // Should render without error
       render(<DraftPreviewPanel {...defaultProps} onDownload={undefined} />);
 
