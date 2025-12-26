@@ -230,8 +230,9 @@ class FactSummaryService:
             if e.get("status") == "completed" and e.get("ai_summary")
         ]
 
-        # Sort by timestamp (oldest first for chronological story)
-        filtered.sort(key=lambda x: x.get("timestamp") or x.get("created_at") or "", reverse=False)
+        # Sort by created_at (oldest first for consistent ordering with frontend)
+        # Note: timestamp field may be empty/inconsistent, created_at is always set on upload
+        filtered.sort(key=lambda x: x.get("created_at") or "", reverse=False)
 
         logger.info(f"[FactSummary] Collected {len(filtered)} evidence summaries for case_id={case_id}")
         return filtered
@@ -310,7 +311,6 @@ class FactSummaryService:
         # Format evidence summaries
         evidence_text = ""
         for i, evidence in enumerate(evidence_list, 1):
-            timestamp = evidence.get("timestamp") or evidence.get("created_at") or "날짜 미상"
             summary = evidence.get("ai_summary", "")
             evidence_type = evidence.get("type", "")
             labels = evidence.get("labels", [])
@@ -331,7 +331,7 @@ class FactSummaryService:
                     speaker_info = f"[화자 정보: {', '.join(mapping_parts)}]"
 
             evidence_text += f"""
-[증거{i}] ({evidence_type}) {timestamp}
+[증거{i}] ({evidence_type})
 {speaker_info}
 {summary}
 {f"관련 태그: {labels_str}" if labels_str else ""}
