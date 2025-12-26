@@ -17,15 +17,22 @@ import {
 import { Evidence } from '@/types/evidence';
 
 export function useEvidenceTable(data: Evidence[]) {
-  // 기본 정렬: uploadDate 오름차순 (사실관계 요약의 [증거N] 번호와 일치)
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: 'uploadDate', desc: false }
-  ]);
+  // 기본 정렬 없음 - 데이터를 미리 정렬해서 전달
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
+
+  // 사실관계 요약과 동일한 정렬: timestamp 우선, 없으면 uploadDate 사용 (오름차순)
+  const sortedData = useMemo(() => {
+    return [...data].sort((a, b) => {
+      const dateA = a.timestamp || a.uploadDate || '';
+      const dateB = b.timestamp || b.uploadDate || '';
+      return dateA.localeCompare(dateB);
+    });
+  }, [data]);
 
   // Column definitions
   const columns = useMemo<ColumnDef<Evidence>[]>(
@@ -67,7 +74,7 @@ export function useEvidenceTable(data: Evidence[]) {
   );
 
   const table = useReactTable({
-    data,
+    data: sortedData,
     columns,
     state: {
       sorting,
