@@ -1,4 +1,4 @@
-# Process State Machine V2.14 (LSSP/LEH)
+# Process State Machine V2.14 (LSSP/CHAGOK)
 
 이 문서는 '이혼 업무 보조 서비스'의 절차를 **상태 머신(State Machine)** 으로 고정하기 위한 규격이다.
 목표:

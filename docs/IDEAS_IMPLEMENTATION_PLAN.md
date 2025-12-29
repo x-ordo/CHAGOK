@@ -1,6 +1,6 @@
 # IDEAS_IMPLEMENTATION_PLAN.md
 
-### *LEH 서비스 신규 기능 구현 계획*
+### *CHAGOK 서비스 신규 기능 구현 계획*
 
 **버전:** v1.0
 **작성일:** 2025-12-03

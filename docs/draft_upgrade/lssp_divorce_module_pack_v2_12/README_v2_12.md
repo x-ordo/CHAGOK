@@ -1,4 +1,4 @@
-# LSSP/LEH Module Pack v2.12
+# LSSP/CHAGOK Module Pack v2.12
 주제: 법령/판례 추천 + 초안 자동 인용 삽입
 
 포함

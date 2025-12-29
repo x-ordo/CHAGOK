@@ -1,4 +1,4 @@
-# test_template.md — LEH 테스트 작성 템플릿
+# test_template.md — CHAGOK 테스트 작성 템플릿
 
 > 이 템플릿은 **백엔드, AI Worker, 프론트엔드, CI/CD** 전 구간에서  
 > Kent Beck 스타일 TDD를 적용하기 위한 공통 양식이다.
@@ -122,7 +122,7 @@
 
 ---
 
-## 7. 스타일 가이드 (LEH 전용)
+## 7. 스타일 가이드 (CHAGOK 전용)
 
 ### 7.1 행동 중심 이름
 

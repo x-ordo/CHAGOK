@@ -1,6 +1,6 @@
-# LEH AI Worker
+# CHAGOK AI Worker
 
-**Legal Evidence Hub - AI Processing Pipeline**
+**CHAGOK - AI Processing Pipeline**
 
 AWS Lambda 기반 AI Worker로, S3에 업로드된 증거 파일을 자동으로 파싱·분석·임베딩하여 구조화된 데이터로 변환합니다.
 
@@ -339,7 +339,7 @@ chore: 빌드/설정 변경
 
 ## 📚 참고 문서
 
-- [LEH 프로젝트 README](../README.md)
+- [CHAGOK 프로젝트 README](../README.md)
 - [PRD](../docs/specs/PRD.md)
 - [Architecture](../docs/specs/ARCHITECTURE.md)
 - [AI Pipeline Design](../docs/specs/AI_PIPELINE_DESIGN.md)

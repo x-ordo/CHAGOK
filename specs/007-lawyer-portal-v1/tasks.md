@@ -1,4 +1,4 @@
-# Tasks: LEH Lawyer Portal v1
+# Tasks: CHAGOK Lawyer Portal v1
 
 **Input**: Design documents from `/specs/007-lawyer-portal-v1/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/

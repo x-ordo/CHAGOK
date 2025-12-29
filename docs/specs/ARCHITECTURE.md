@@ -21,7 +21,7 @@
 
 ## 📌 0. 문서 목적
 
-본 문서는 **LEH(Legal Evidence Hub)** 서비스의:
+본 문서는 **CHAGOK** 서비스의:
 
 * 전체 기술 아키텍처
 * 데이터 흐름
@@ -36,7 +36,7 @@
 
 ## 🧭 1. 시스템 전체 개요
 
-LEH는 **이혼 사건 전용 AI 파라리걸 플랫폼**이다.
+CHAGOK은 **이혼 사건 전용 AI 파라리걸 플랫폼**이다.
 
 * 변호사는 웹 대시보드에서 **사건을 생성**하고,
 * 변호사·의뢰인은 **S3 Presigned URL**로 증거를 업로드한다.
@@ -59,7 +59,7 @@ LEH는 **이혼 사건 전용 AI 파라리걸 플랫폼**이다.
 
 ```mermaid
 ---
-title: LEH 유스케이스 다이어그램
+title: CHAGOK 유스케이스 다이어그램
 ---
 flowchart TB
     subgraph Actors
@@ -69,7 +69,7 @@ flowchart TB
         W[🤖 AI Worker]
     end
 
-    subgraph "Legal Evidence Hub (LEH)"
+    subgraph "CHAGOK (CHAGOK)"
         UC1[UC1: 로그인/인증]
         UC2[UC2: 사건 생성/관리]
         UC3[UC3: 당사자 관리]

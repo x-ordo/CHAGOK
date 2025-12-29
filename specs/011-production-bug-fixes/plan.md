@@ -123,7 +123,7 @@ frontend/
     └── hooks/
 ```
 
-**Structure Decision**: Web application (Backend + Frontend) 구조 사용. 기존 LEH 아키텍처 유지하며 신규 API 엔드포인트와 컴포넌트 추가.
+**Structure Decision**: Web application (Backend + Frontend) 구조 사용. 기존 CHAGOK 아키텍처 유지하며 신규 API 엔드포인트와 컴포넌트 추가.
 
 ## Complexity Tracking
 

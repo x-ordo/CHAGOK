@@ -2,7 +2,7 @@
 
 **작성일:** 2025-12-18  
 **작성자:** Claude (AI Assistant)  
-**프로젝트:** LEH (Legal Evidence Hub)  
+**프로젝트:** CHAGOK (CHAGOK)  
 **환경:** Next.js 14 + S3 + CloudFront
 
 ---

@@ -37,7 +37,7 @@ main 브랜치에 병합
 
 ---
 
-## LEH의 CI/CD 구조
+## CHAGOK의 CI/CD 구조
 
 ### 파일 위치
 

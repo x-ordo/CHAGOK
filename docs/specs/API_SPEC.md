@@ -11,13 +11,13 @@
 
 # 📌 0. 목적 & 범위
 
-이 문서는 **LEH 백엔드 REST API**의 공식 스펙이다.
+이 문서는 **CHAGOK 백엔드 REST API**의 공식 스펙이다.
 
 - 클라이언트(Frontend)와 백엔드 간 통신 규약 정의
 - 주요 리소스(Cases, Evidence, Draft)의 요청/응답 형식 정의
 - 인증/에러 공통 규칙 정의
 
-> 참고: 기존 Paralegal API 설계의 엔드포인트 구조와 에러 처리 원칙을 계승하되, S3 Presigned URL, 사건별 RAG, Preview-only Draft 등 LEH 아키텍처에 맞게 재구성했다.
+> 참고: 기존 Paralegal API 설계의 엔드포인트 구조와 에러 처리 원칙을 계승하되, S3 Presigned URL, 사건별 RAG, Preview-only Draft 등 CHAGOK 아키텍처에 맞게 재구성했다.
 
 ---
 
@@ -258,7 +258,7 @@ json
 
 # 📎 4. 증거(Evidence) API
 
-LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
+CHAGOK은 **Presigned URL + S3 직접 업로드**를 사용한다.
 
 ## 4.1 업로드용 Presigned URL 발급
 
@@ -393,7 +393,7 @@ json
 
 # 🧠 5. Draft(소장 초안) API
 
-LEH는 **“Preview 전용 Draft”**만 제공하며,
+CHAGOK은 **“Preview 전용 Draft”**만 제공하며,
 실제 제출/최종 편집은 변호사가 Word 등에서 처리한다.
 
 ## 5.1 Draft Preview 생성

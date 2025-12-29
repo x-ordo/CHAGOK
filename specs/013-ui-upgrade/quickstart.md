@@ -291,5 +291,5 @@ npx tsc --noEmit
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 - [jest-axe Documentation](https://github.com/nickcolley/jest-axe)
 - [Radix UI Primitives](https://www.radix-ui.com/primitives) (reference for accessible patterns)
-- [LEH Design Tokens](./data-model.md)
+- [CHAGOK Design Tokens](./data-model.md)
 - [Component Interfaces](./contracts/components.md)

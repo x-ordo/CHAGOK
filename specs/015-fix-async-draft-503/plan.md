@@ -144,7 +144,7 @@ S3 버킷의 정적 웹사이트 호스팅에서 에러 페이지를 처리하�
 - **Domain**: dpbf86zqulqfy.cloudfront.net
 - **Origins**:
   - `api-gateway`: zhfiuntwj0.execute-api.ap-northeast-2.amazonaws.com
-  - `s3-frontend`: leh-frontend-prod.s3.ap-northeast-2.amazonaws.com
+  - `s3-frontend`: chagok-frontend-prod.s3.ap-northeast-2.amazonaws.com
 
 ---
 
@@ -166,7 +166,7 @@ aws cloudfront update-distribution --id E2ZX184AQP0EL5 \
 **변경 전**: 403/404 에러 → `/index.html` (HTTP 200)
 **변경 후**: 403/404 에러 → 원본 API 응답 (올바른 HTTP 상태 코드 + JSON)
 
-#### 2. CloudFront Function 수정 (leh-url-rewrite)
+#### 2. CloudFront Function 수정 (chagok-url-rewrite)
 
 SPA 동적 라우팅을 지원하기 위해 CloudFront Function을 업데이트했습니다.
 
@@ -198,7 +198,7 @@ if (isStaticRoute) {
 ### 생성된 파일
 
 - `specs/015-fix-async-draft-503/cloudfront-update.json` - CloudFront 설정 파일
-- `specs/015-fix-async-draft-503/leh-url-rewrite-updated.js` - CloudFront Function 코드
+- `specs/015-fix-async-draft-503/chagok-url-rewrite-updated.js` - CloudFront Function 코드
 
 ### 결론
 

@@ -1,7 +1,7 @@
 # Integrated Recompute Pipeline v2.15
 
 ## Why this exists
-LSSP/LEH has **many derived outputs**:
+LSSP/CHAGOK has **many derived outputs**:
 - 프로세스 상태 머신 결과(현재 단계/다음 단계/필수 행위)
 - 마감/경고(협의이혼 3개월 유효기간, 재판상 이혼 신고 1개월/과태료 등)
 - 타임라인(사건 진행 + 증거 타임라인)

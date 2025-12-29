@@ -99,7 +99,7 @@ frontend/
         └── precedent.ts              # TypeScript 타입
 ```
 
-**Structure Decision**: 기존 LEH 프로젝트 구조 (backend/frontend/ai_worker) 유지. 판례 관련 코드는 각 계층에 분산되어 Clean Architecture 원칙 준수.
+**Structure Decision**: 기존 CHAGOK 프로젝트 구조 (backend/frontend/ai_worker) 유지. 판례 관련 코드는 각 계층에 분산되어 Clean Architecture 원칙 준수.
 
 ## Complexity Tracking
 

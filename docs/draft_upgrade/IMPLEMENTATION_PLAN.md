@@ -1,8 +1,8 @@
-# LSSP v2.01-v2.15 Integration Plan for LEH
+# LSSP v2.01-v2.15 Integration Plan for CHAGOK
 
 **생성일**: 2025-12-18  
 **대상**: 3인 개발팀  
-**목표**: 기존 LEH 프로젝트에 LSSP 이혼 모듈 통합
+**목표**: 기존 CHAGOK 프로젝트에 LSSP 이혼 모듈 통합
 
 ---
 
@@ -10,7 +10,7 @@
 
 ### 1.1 Backend Models 비교
 
-| LSSP 개념 | 현재 LEH 상태 | Gap |
+| LSSP 개념 | 현재 CHAGOK 상태 | Gap |
 |-----------|--------------|-----|
 | `draft_templates` (seed) | `document_templates` 존재 | 스키마 차이, 병합 필요 |
 | `draft_blocks` (seed) | ❌ 없음 | 신규 추가 |
@@ -27,7 +27,7 @@
 
 ### 1.2 서비스 레이어 비교
 
-| LSSP 서비스 | 현재 LEH |
+| LSSP 서비스 | 현재 CHAGOK |
 |------------|---------|
 | Draft Engine (v2.04/06) | `services/draft/` 존재 (RAG 기반) |
 | Keypoint Extractor (v2.10) | `ai_worker/article_840_tagger` (부분적) |

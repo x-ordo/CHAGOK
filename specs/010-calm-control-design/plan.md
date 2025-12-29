@@ -5,7 +5,7 @@
 
 ## Summary
 
-이 기능은 LEH 플랫폼에 "Calm-Control" 디자인 시스템을 구현합니다. 저채도 색상 팔레트, 안정적인 타이포그래피, 최소한의 애니메이션으로 변호사에게 "전문적이고 신뢰할 수 있는" 사용자 경험을 제공합니다.
+이 기능은 CHAGOK 플랫폼에 "Calm-Control" 디자인 시스템을 구현합니다. 저채도 색상 팔레트, 안정적인 타이포그래피, 최소한의 애니메이션으로 변호사에게 "전문적이고 신뢰할 수 있는" 사용자 경험을 제공합니다.
 
 **주요 구현 항목**:
 1. 디자인 토큰 시스템 (색상, 타이포그래피, 간격, 그림자)
@@ -105,7 +105,7 @@ backend/
         └── test_assets.py
 ```
 
-**Structure Decision**: Web application 구조 (Frontend + Backend). 기존 LEH 프로젝트 구조를 따르며, 새 컴포넌트는 기능별 폴더(dashboard/, case/)에 배치.
+**Structure Decision**: Web application 구조 (Frontend + Backend). 기존 CHAGOK 프로젝트 구조를 따르며, 새 컴포넌트는 기능별 폴더(dashboard/, case/)에 배치.
 
 ## Complexity Tracking
 

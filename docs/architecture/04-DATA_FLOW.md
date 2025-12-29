@@ -6,7 +6,7 @@
 
 ## 주요 데이터 흐름
 
-LEH에서 가장 중요한 3가지 데이터 흐름을 살펴봅니다:
+CHAGOK에서 가장 중요한 3가지 데이터 흐름을 살펴봅니다:
 
 1. **증거 업로드 파이프라인** - 파일 업로드 → AI 분석 → 저장
 2. **초안 생성 흐름** - RAG 검색 → AI 생성 → 미리보기
@@ -63,7 +63,7 @@ Frontend → Backend → S3
 ```
 
 ```
-[Presigned URL 방식 - LEH가 사용]
+[Presigned URL 방식 - CHAGOK이 사용]
 Frontend → S3 (직접 업로드)
 Backend는 URL만 발급
 
@@ -211,7 +211,7 @@ def route_parser(key: str):
             우리 데이터에서!
 ```
 
-**LEH에서 RAG가 필요한 이유**:
+**CHAGOK에서 RAG가 필요한 이유**:
 - AI는 우리 케이스의 증거를 모름
 - 검색으로 관련 증거를 찾아서 AI에게 전달
 - AI가 증거를 참고해서 초안 작성

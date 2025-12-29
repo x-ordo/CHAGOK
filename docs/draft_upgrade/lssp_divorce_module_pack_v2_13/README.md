@@ -1,4 +1,4 @@
-# LSSP / LEH Divorce Module Pack v2.13
+# LSSP / CHAGOK Divorce Module Pack v2.13
 ## Timeline Consolidation & Risk Scoring
 
 This pack extends the case timeline into a single canonical event stream that merges:

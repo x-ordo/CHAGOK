@@ -132,7 +132,7 @@ frontend/
         └── useInvestigators.test.ts # NEW
 ```
 
-**Structure Decision**: Web application structure following existing LEH patterns. Backend uses Clean Architecture (Routers → Services → Repositories). Frontend uses Next.js App Router with hooks pattern.
+**Structure Decision**: Web application structure following existing CHAGOK patterns. Backend uses Clean Architecture (Routers → Services → Repositories). Frontend uses Next.js App Router with hooks pattern.
 
 ## Implementation Phases
 

@@ -1,4 +1,4 @@
-# LEH Lawyer Portal v1 Quick Start Guide
+# CHAGOK Lawyer Portal v1 Quick Start Guide
 
 **Feature Branch**: `feat/007-lawyer-portal-v1`
 **Version**: v1.0

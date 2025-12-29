@@ -211,7 +211,7 @@ Request body:
 
 ## 8. Constitution Compliance
 
-This feature adheres to all LEH Constitution principles:
+This feature adheres to all CHAGOK Constitution principles:
 
 - **I. Evidence Integrity**: Read-only aggregation, no mutations
 - **II. Case Isolation**: Queries scoped by case_id

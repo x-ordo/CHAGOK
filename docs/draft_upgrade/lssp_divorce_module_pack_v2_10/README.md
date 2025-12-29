@@ -1,4 +1,4 @@
-# LSSP / LEH Divorce Module Pack v2.10
+# LSSP / CHAGOK Divorce Module Pack v2.10
 Focus: Keypoint Extraction Pipeline (Evidence -> Keypoints -> Checklist/Drafts/Issues)
 
 This pack adds a deterministic, reviewable keypoint pipeline:

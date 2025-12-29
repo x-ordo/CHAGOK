@@ -17,7 +17,7 @@ This guide helps developers quickly set up and start working on the Role-Based U
 
 ### Accounts/Keys
 - Kakao Developers account (for Maps API)
-- Existing LEH development environment
+- Existing CHAGOK development environment
 
 ---
 

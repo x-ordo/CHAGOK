@@ -7,7 +7,7 @@
 
 # 🧭 0. 문서 목적
 
-본 문서는 **Legal Evidence Hub (LEH)** MVP 개발을 위한 **단일 기준 문서(Single Source of Truth)**이다.
+본 문서는 **CHAGOK (CHAGOK)** MVP 개발을 위한 **단일 기준 문서(Single Source of Truth)**이다.
 
 이 문서는
 
@@ -26,9 +26,9 @@
 
 **“변호사에게 증거 정리 시간을 90% 이상 절감시키고, 소장 초안을 3분 내 제공하는 AI 파라리걸 시스템.”**
 
-LEH는 기존 Paralegal 시스템(PDF 기반)보다 진화하여 다음을 핵심 가치로 한다:
+CHAGOK은 기존 Paralegal 시스템(PDF 기반)보다 진화하여 다음을 핵심 가치로 한다:
 
-| 기능    | 기존 Paralegal(PDF)  | LEH(최신)                              |
+| 기능    | 기존 Paralegal(PDF)  | CHAGOK(최신)                              |
 | ----- | ------------------ | ------------------------------------ |
 | 저장소   | S3 + Google Drive  | **S3 단일화**                           |
 | 처리    | SQS Worker 기반 분석   | **S3 Event 기반 AI Worker**            |
@@ -296,7 +296,7 @@ feature/* = 기능 단위
 # 📌 12. 참고 문서
 
 * Paralegal PRD(원본 PDF) 전체 문서 참고하여 기능·용어 통합
-* LEH PRD_v2 (2025-11-17)
+* CHAGOK PRD_v2 (2025-11-17)
 
 ---
 

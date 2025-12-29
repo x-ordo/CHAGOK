@@ -7,7 +7,7 @@
 
 - Node.js 18+ installed
 - Python 3.11+ installed
-- LEH repository cloned and dependencies installed
+- CHAGOK repository cloned and dependencies installed
 
 ## Quick Validation Steps
 

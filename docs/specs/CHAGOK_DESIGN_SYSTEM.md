@@ -1,4 +1,4 @@
-# LEH Design System - Calm-Control
+# CHAGOK Design System - Calm-Control
 
 > **Version**: 1.0.0
 > **Last Updated**: 2025-12-09
@@ -8,7 +8,7 @@
 
 ### 1.1 Philosophy
 
-LEH의 디자인 시스템은 **"Calm-Control"** 원칙을 따릅니다. 이혼 전문 변호사가 복잡한 사건 데이터를 다루면서도 **심리적 안정감**과 **완전한 통제감**을 동시에 느낄 수 있도록 설계되었습니다.
+CHAGOK의 디자인 시스템은 **"Calm-Control"** 원칙을 따릅니다. 이혼 전문 변호사가 복잡한 사건 데이터를 다루면서도 **심리적 안정감**과 **완전한 통제감**을 동시에 느낄 수 있도록 설계되었습니다.
 
 ### 1.2 Core Principles
 
@@ -34,7 +34,7 @@ LEH의 디자인 시스템은 **"Calm-Control"** 원칙을 따릅니다. 이혼 
 | Secondary | Microsoft Fluent 2 | 포커스, 호버, 모션 강도 |
 | Implementation | shadcn/ui + Tailwind CSS | 실제 구현 레이어 |
 
-**왜 이 조합이 LEH에 적합한가?**
+**왜 이 조합이 CHAGOK에 적합한가?**
 
 1. **Carbon**: 데이터 중심 엔터프라이즈 앱에 최적화. 복잡한 테이블, 폼, 대시보드 패턴이 풍부함
 2. **Fluent 2**: 자연스럽고 절제된 인터랙션. 과도한 애니메이션 없이 명확한 피드백 제공

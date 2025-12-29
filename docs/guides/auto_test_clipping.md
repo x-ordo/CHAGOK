@@ -1,4 +1,4 @@
-# auto_test_clipping.md — LEH 자동 테스트 클리핑 규칙
+# auto_test_clipping.md — CHAGOK 자동 테스트 클리핑 규칙
 
 > 목적:  
 > AI가 테스트를 생성하거나 사람이 테스트를 추가할 때,  

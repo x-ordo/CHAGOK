@@ -1,5 +1,5 @@
 
-## Legal Evidence Hub (LEH) — Frontend Clean Code & Pattern Guide
+## CHAGOK (CHAGOK) — Frontend Clean Code & Pattern Guide
 
 > **대상:** P(Frontend 담당), FE 코드 생성 AI  
 > **스택:** React + TypeScript + Tailwind (디자인 토큰 기반)  
@@ -106,7 +106,7 @@ export interface CaseSummary {
 
 # 4. UI/UX 디자인 원칙 (FE 전용)
 
-LEH는 “Calm Control” + “법률 도메인 UX”가 핵심이다.
+CHAGOK은 “Calm Control” + “법률 도메인 UX”가 핵심이다.
 
 ---
 
@@ -263,6 +263,6 @@ it("shows AI disclaimer in draft tab", () => {
 
 # 결론
 
-이 문서는 LEH Frontend 개발의 **일관성과 유지보수성**을 보장하기 위한 상위 규칙이며,
+이 문서는 CHAGOK Frontend 개발의 **일관성과 유지보수성**을 보장하기 위한 상위 규칙이며,
 P(Frontend 담당) 및 FE 관련 AI 생성기는
 **여기 정의된 Clean Code & UX 원칙을 절대 기준으로 준수**해야 한다.

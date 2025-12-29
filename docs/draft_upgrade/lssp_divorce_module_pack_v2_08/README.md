@@ -1,4 +1,4 @@
-# LSSP / LEH Divorce Module Pack v2.08
+# LSSP / CHAGOK Divorce Module Pack v2.08
 Key Issues Dashboard (주요쟁점 대시보드)
 
 ## What this adds

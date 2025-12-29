@@ -15,7 +15,7 @@
 
 ## 배경 (Background)
 
-현재 LEH 프로젝트는 엔터프라이즈급 문서/설계가 완성되어 있으나, 실제 구현과의 갭이 존재:
+현재 CHAGOK 프로젝트는 엔터프라이즈급 문서/설계가 완성되어 있으나, 실제 구현과의 갭이 존재:
 
 - **AI Worker**: 코드/테스트 완성, S3 권한 미비로 배포 차단
 - **Backend**: RAG 검색/Draft Preview API 미구현, 권한/감사로그 부분 적용
@@ -34,7 +34,7 @@
 
 **Acceptance Scenarios**:
 
-1. **Given** S3 버킷 `leh-evidence-dev`가 존재하고, **When** 증거 파일이 `cases/{case_id}/raw/` 경로에 업로드되면, **Then** AI Worker Lambda가 트리거되어 5분 내 분석 완료
+1. **Given** S3 버킷 `chagok-evidence-dev`가 존재하고, **When** 증거 파일이 `cases/{case_id}/raw/` 경로에 업로드되면, **Then** AI Worker Lambda가 트리거되어 5분 내 분석 완료
 2. **Given** AI Worker가 분석 완료하면, **When** DynamoDB를 조회하면, **Then** 증거 메타데이터(요약, 840조 태그, 증거력 점수)가 저장됨
 3. **Given** AI Worker가 분석 완료하면, **When** Qdrant를 조회하면, **Then** 임베딩 벡터가 `case_rag_{case_id}` 컬렉션에 저장됨
 
@@ -134,7 +134,7 @@
 ### Functional Requirements
 
 **AI Worker (US1)**
-- **FR-001**: S3 버킷 `leh-evidence-dev`, `leh-evidence-prod` 생성 및 Lambda 실행 역할에 권한 부여
+- **FR-001**: S3 버킷 `chagok-evidence-dev`, `chagok-evidence-prod` 생성 및 Lambda 실행 역할에 권한 부여
 - **FR-002**: AI Worker Lambda가 S3 `ObjectCreated` 이벤트에 의해 자동 트리거됨
 - **FR-003**: 분석 결과가 DynamoDB `leh_evidence` 테이블에 저장됨
 - **FR-004**: 임베딩 벡터가 Qdrant `case_rag_{case_id}` 컬렉션에 저장됨

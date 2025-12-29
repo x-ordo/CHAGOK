@@ -1,4 +1,4 @@
-# plan.md — LEH TDD 개발 플랜 (Kent Beck + AI + CI/CD)
+# plan.md — CHAGOK TDD 개발 플랜 (Kent Beck + AI + CI/CD)
 
 **Last Updated:** 2025-12-01
 
@@ -187,7 +187,7 @@
   - Auto-deploy 활성화
 
 **테스트 결과:**
-- ✅ Health check 성공: `GET /health` → `{"status":"ok","service":"Legal Evidence Hub API","version":"0.2.0"}`
+- ✅ Health check 성공: `GET /health` → `{"status":"ok","service":"CHAGOK API","version":"0.2.0"}`
 
 ---
 
@@ -639,7 +639,7 @@
     - 🔍 "중요한 증거를 놓칠까 불안하신가요?"
 
 - [x] **5. Solution (3가지 핵심 기능)**
-  - 제목: "Legal Evidence Hub가 해결합니다"
+  - 제목: "CHAGOK가 해결합니다"
   - 3-Column 레이아웃:
     - **자동 증거 분석**: 이미지/음성/PDF를 AI가 자동 분류 및 요약
     - **스마트 타임라인**: 시간순 증거 정리, 유책사유 자동 태깅
@@ -732,7 +732,7 @@
   - ✅ **구현 완료**: `accessibility.test.tsx` 26개 테스트, Skip Navigation Link, aria-labels, focus-visible 스타일 추가
 
 - [x] **SEO 최적화**
-  - `<title>`: "Legal Evidence Hub - AI 이혼 소송 증거 분석 솔루션"
+  - `<title>`: "CHAGOK - AI 이혼 소송 증거 분석 솔루션"
   - `<meta description>`: 160자 이내, 핵심 키워드 포함
   - `<meta keywords>`: "이혼소송, 증거분석, AI법률, 답변서"
   - Open Graph 태그 (소셜 공유용)
@@ -771,7 +771,7 @@
   - FAQ Accordion 펼침/접힘 동작
 
 - [x] **네비게이션 개선**
-  - Navigation 메뉴바의 LEH 로고 클릭 → 홈(/) 페이지로 이동
+  - Navigation 메뉴바의 CHAGOK 로고 클릭 → 홈(/) 페이지로 이동
   - Footer의 회사명/로고 클릭 → 홈(/) 페이지로 이동
 
 - [x] **반응형 테스트**

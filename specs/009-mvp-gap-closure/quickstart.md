@@ -15,7 +15,7 @@ JWT_SECRET=your-secret-key
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
 AWS_REGION=ap-northeast-2
-S3_EVIDENCE_BUCKET=leh-evidence-dev
+S3_EVIDENCE_BUCKET=chagok-evidence-dev
 DYNAMODB_TABLE=leh_evidence_dev
 QDRANT_HOST=your-qdrant-host
 QDRANT_API_KEY=your-qdrant-key
@@ -26,7 +26,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
 ### AWS Resources
-- [ ] S3 bucket `leh-evidence-dev` exists
+- [ ] S3 bucket `chagok-evidence-dev` exists
 - [ ] Lambda execution role has S3:GetObject, S3:PutObject permissions
 - [ ] DynamoDB table `leh_evidence_dev` exists with GSIs
 - [ ] Qdrant Cloud cluster accessible
@@ -48,12 +48,12 @@ npm install react-hot-toast @aws-sdk/client-s3 @aws-sdk/lib-storage
 
 1. **Upload test file**
 ```bash
-aws s3 cp test-evidence.pdf s3://leh-evidence-dev/cases/test-case-id/raw/EV-test1234_test.pdf
+aws s3 cp test-evidence.pdf s3://chagok-evidence-dev/cases/test-case-id/raw/EV-test1234_test.pdf
 ```
 
 2. **Check Lambda trigger** (wait 1-2 minutes)
 ```bash
-aws logs tail /aws/lambda/leh-ai-worker --follow
+aws logs tail /aws/lambda/chagok-ai-worker --follow
 ```
 
 3. **Verify DynamoDB entry**

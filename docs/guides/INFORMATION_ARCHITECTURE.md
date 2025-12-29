@@ -2,7 +2,7 @@
 
 ## Overview
 
-Legal Evidence Hub의 정보 구조(Information Architecture) 가이드입니다.
+CHAGOK의 정보 구조(Information Architecture) 가이드입니다.
 사용자가 원하는 기능에 쉽게 접근할 수 있도록 설계된 화면 간 연결 관계를 문서화합니다.
 
 **Last Updated**: 2025-12-10
@@ -178,7 +178,7 @@ Legal Evidence Hub의 정보 구조(Information Architecture) 가이드입니다
 
 ```
 이용약관 | 개인정보처리방침 | 문의하기
-© 2025 Legal Evidence Hub. All Rights Reserved. 무단 활용 금지.
+© 2025 CHAGOK. All Rights Reserved. 무단 활용 금지.
 ```
 
 ## Mobile Considerations

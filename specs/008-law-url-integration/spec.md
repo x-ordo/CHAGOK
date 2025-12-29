@@ -3,7 +3,7 @@
 **Feature Branch**: `008-law-url-integration`
 **Created**: 2025-12-08
 **Status**: Draft
-**Input**: 국가법령정보센터 법령한글주소 API를 LEH 프로젝트에 통합하여 법령/판례 인용 시 클릭 가능한 law.go.kr 딥링크를 생성
+**Input**: 국가법령정보센터 법령한글주소 API를 CHAGOK 프로젝트에 통합하여 법령/판례 인용 시 클릭 가능한 law.go.kr 딥링크를 생성
 
 ## User Scenarios & Testing *(mandatory)*
 

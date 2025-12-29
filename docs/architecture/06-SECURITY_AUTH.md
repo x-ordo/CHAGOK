@@ -29,7 +29,7 @@
 
 ---
 
-## LEH의 인증 시스템
+## CHAGOK의 인증 시스템
 
 ### JWT (JSON Web Token) 방식
 
@@ -66,7 +66,7 @@ SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 - Lambda는 상태 저장 불가!
 ```
 
-**JWT 방식 (LEH 사용)**:
+**JWT 방식 (CHAGOK 사용)**:
 ```
 1. 로그인 → 서버가 JWT 생성 → 클라이언트에 전달
 2. 요청마다 JWT 전송 → 서버가 서명 검증만 (DB 조회 불필요)
@@ -642,7 +642,7 @@ class Settings(BaseSettings):
 
 ## 요약
 
-| 개념 | 설명 | LEH 구현 |
+| 개념 | 설명 | CHAGOK 구현 |
 |------|------|---------|
 | **인증** | 누구인가 확인 | JWT 토큰 + HTTP-only Cookie |
 | **역할 인가** | 무슨 역할인가 | UserRole (Admin/Lawyer/Staff/...) |
@@ -654,7 +654,7 @@ class Settings(BaseSettings):
 
 **축하합니다!** 🎉
 
-LEH 프로젝트 아키텍처 가이드를 모두 읽었습니다.
+CHAGOK 프로젝트 아키텍처 가이드를 모두 읽었습니다.
 
 **다시 보고 싶다면**:
 - [ARCHITECTURE_GUIDE.md](ARCHITECTURE_GUIDE.md) - 메인 가이드로 돌아가기

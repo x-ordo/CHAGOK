@@ -1,4 +1,4 @@
-# LEH Lawyer Portal v1 데이터 모델
+# CHAGOK Lawyer Portal v1 데이터 모델
 
 **Feature Branch**: `007-lawyer-portal-v1`
 **버전**: v1.0
@@ -8,7 +8,7 @@
 
 ## 1. 개요
 
-본 문서는 LEH Lawyer Portal v1의 **데이터 모델 상세 설계**를 정의한다.
+본 문서는 CHAGOK Lawyer Portal v1의 **데이터 모델 상세 설계**를 정의한다.
 
 **SSOT 준수 원칙**:
 - 기존 테이블(`users`, `cases`, `case_members`, `audit_log`)은 수정하지 않음

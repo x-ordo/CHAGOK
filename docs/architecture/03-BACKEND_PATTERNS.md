@@ -73,7 +73,7 @@ def login(email: str, password: str):
 
 ---
 
-## LEH의 Clean Architecture
+## CHAGOK의 Clean Architecture
 
 ### 계층 구조
 

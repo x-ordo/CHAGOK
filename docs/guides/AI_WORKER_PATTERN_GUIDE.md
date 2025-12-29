@@ -1,5 +1,5 @@
 
-## LEH AI Worker 고급 패턴 & 클린코드 가이드
+## CHAGOK AI Worker 고급 패턴 & 클린코드 가이드
 
 > 대상: **L(AI Worker 담당)**, AI 코드 생성기
 > 범위: **S3 Event → 텍스트/이미지/음성 분석 → DynamoDB/Qdrant 저장**

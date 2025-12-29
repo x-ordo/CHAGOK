@@ -1,6 +1,6 @@
 # QA Test Report
 
-**Project:** Legal Evidence Hub (LEH)
+**Project:** CHAGOK (CHAGOK)
 **Report Date:** YYYY-MM-DD
 **Report Version:** 1.0
 **QA Framework Version:** 4.0

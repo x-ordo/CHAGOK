@@ -55,12 +55,12 @@
 
 **⚠️ CRITICAL**: AI Worker cannot process files until this phase is complete
 
-- [x] T005 Create S3 bucket `leh-evidence-dev` via AWS CLI: `aws s3 mb s3://leh-evidence-dev --region ap-northeast-2` ✅ #142
-- [x] T006 [P] Create S3 bucket `leh-evidence-prod` via AWS CLI: `aws s3 mb s3://leh-evidence-prod --region ap-northeast-2` ✅ #143
-- [x] T007 Attach S3 policy to Lambda execution role `leh-ai-worker-role` ✅ #144
-- [x] T008 Configure S3 event notification on `leh-evidence-dev` to trigger `leh-ai-worker` Lambda ✅ #145
-- [x] T009 [P] Configure S3 event notification on `leh-evidence-prod` to trigger production Lambda ✅ #146
-- [x] T010 Verify Lambda function `leh-ai-worker` exists and has correct handler ✅ #147
+- [x] T005 Create S3 bucket `chagok-evidence-dev` via AWS CLI: `aws s3 mb s3://chagok-evidence-dev --region ap-northeast-2` ✅ #142
+- [x] T006 [P] Create S3 bucket `chagok-evidence-prod` via AWS CLI: `aws s3 mb s3://chagok-evidence-prod --region ap-northeast-2` ✅ #143
+- [x] T007 Attach S3 policy to Lambda execution role `chagok-ai-worker-role` ✅ #144
+- [x] T008 Configure S3 event notification on `chagok-evidence-dev` to trigger `chagok-ai-worker` Lambda ✅ #145
+- [x] T009 [P] Configure S3 event notification on `chagok-evidence-prod` to trigger production Lambda ✅ #146
+- [x] T010 Verify Lambda function `chagok-ai-worker` exists and has correct handler ✅ #147
 
 **Checkpoint**: S3 → Lambda trigger chain is complete - US1 can now function
 
@@ -70,7 +70,7 @@
 
 **Goal**: Evidence files uploaded to S3 automatically trigger AI analysis
 
-**Independent Test**: Upload file to `s3://leh-evidence-dev/cases/test-case/raw/test.jpg` and verify DynamoDB record created
+**Independent Test**: Upload file to `s3://chagok-evidence-dev/cases/test-case/raw/test.jpg` and verify DynamoDB record created
 
 ### Implementation for User Story 1
 

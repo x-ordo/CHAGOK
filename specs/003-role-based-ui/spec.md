@@ -8,7 +8,7 @@
 
 ## Overview
 
-Legal Evidence Hub의 역할 기반 UI 시스템 구현. 변호사(Lawyer), 의뢰인(Client), 탐정(Detective) 3가지 역할에 대한 전용 포털 및 화면 구현.
+CHAGOK의 역할 기반 UI 시스템 구현. 변호사(Lawyer), 의뢰인(Client), 탐정(Detective) 3가지 역할에 대한 전용 포털 및 화면 구현.
 
 ## User Stories
 
@@ -92,7 +92,7 @@ Legal Evidence Hub의 역할 기반 UI 시스템 구현. 변호사(Lawyer), 의�
 
 **Screen Reference:** D-01 ~ D-06 in SCREEN_DEFINITION.md
 
-**Note:** GPS 추적 및 현장 기록 기능은 플랫폼 범위 외로 제외됨. LEH는 증거 수집/관리/분석 플랫폼이며, 현장 채집 도구가 아님.
+**Note:** GPS 추적 및 현장 기록 기능은 플랫폼 범위 외로 제외됨. CHAGOK은 증거 수집/관리/분석 플랫폼이며, 현장 채집 도구가 아님.
 
 ---
 

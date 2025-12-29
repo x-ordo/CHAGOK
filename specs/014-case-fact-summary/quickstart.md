@@ -155,7 +155,7 @@ aws dynamodb get-item \
 
 ```bash
 # Lambda 로그 (배포 후)
-aws logs tail /aws/lambda/leh-backend --follow
+aws logs tail /aws/lambda/chagok-backend --follow
 
 # 로컬 개발 시 uvicorn 로그에서 확인
 ```

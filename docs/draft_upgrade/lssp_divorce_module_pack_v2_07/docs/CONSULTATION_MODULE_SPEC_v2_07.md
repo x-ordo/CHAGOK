@@ -1,4 +1,4 @@
-# LSSP / LEH Consultation Module v2.07
+# LSSP / CHAGOK Consultation Module v2.07
 
 Purpose: turn 상담(상담/미팅/전화/카톡 상담) 기록을 **사건 진행 데이터**로 바꾼다.
 - 상담 로그 -> (1) 쟁점(issues) (2) 사실(facts/keypoints) (3) 증거요청(evidence requests) (4) 할일(next actions) (5) 리스크/마감(warnings/deadlines)

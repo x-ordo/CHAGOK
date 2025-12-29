@@ -1,6 +1,6 @@
-# CloudFront Functions for LEH
+# CloudFront Functions for CHAGOK
 
-This directory contains CloudFront Functions for handling dynamic routing in the LEH frontend.
+This directory contains CloudFront Functions for handling dynamic routing in the CHAGOK frontend.
 
 ## Dynamic Route Handler
 

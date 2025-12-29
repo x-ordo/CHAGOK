@@ -1,6 +1,6 @@
 # Testing Strategy Guide
 
-LEH 프로젝트의 테스트 전략을 통합 정리합니다.
+CHAGOK 프로젝트의 테스트 전략을 통합 정리합니다.
 
 **TDD 상세 규칙:** [plan.md](plan.md) 참조
 

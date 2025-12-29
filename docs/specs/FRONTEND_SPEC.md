@@ -10,14 +10,14 @@
 * `ARCHITECTURE.md`
 * `BACKEND_DESIGN.md`
 * `AI_PIPELINE_DESIGN.md`
-* `LEH_DESIGN_SYSTEM.md` ← **디자인 토큰 및 컴포넌트 가이드**
+* `CHAGOK_DESIGN_SYSTEM.md` ← **디자인 토큰 및 컴포넌트 가이드**
 * `.github` 템플릿
 
 ---
 
 # 📌 **0. 문서 목적**
 
-본 문서는 LEH(Legal Evidence Hub)의 **프론트엔드(웹 대시보드)** 전체 구조와 화면 설계를 정의한다.
+본 문서는 CHAGOK의 **프론트엔드(웹 대시보드)** 전체 구조와 화면 설계를 정의한다.
 이 문서는 다음을 목표로 한다:
 
 * 개발자(P/H/L)가 동일한 UI/UX 기준을 이해하도록 한다.
@@ -51,7 +51,7 @@
 
    * AI가 생성한 초안은 자동 제출 X
    * 변호사가 편집·확정해야 법적 효력
-2. **Calm-Control 디자인 원칙** (상세: `LEH_DESIGN_SYSTEM.md`)
+2. **Calm-Control 디자인 원칙** (상세: `CHAGOK_DESIGN_SYSTEM.md`)
 
    * **Calm**: 저채도 컬러, 안정적 타이포, 불필요한 애니메이션 최소화
    * **Control**: 정보 구조화, 명확한 상호작용, 대시보드 중심 UI
@@ -69,7 +69,7 @@
 
 ---
 
-# 🗂 **2. 디렉토리 구조 (통일된 LEH 표준)**
+# 🗂 **2. 디렉토리 구조 (통일된 CHAGOK 표준)**
 
 Next.js 14 App Router 기반 구조:
 
@@ -209,7 +209,7 @@ frontend/
 
 ## 3.4 사건 상세 페이지 (`/lawyer/cases/{id}`)
 
-LEH의 핵심 UX. 탭 기반 네비게이션.
+CHAGOK의 핵심 UX. 탭 기반 네비게이션.
 
 ### 탭 구조
 

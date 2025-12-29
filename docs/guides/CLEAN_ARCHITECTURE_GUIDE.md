@@ -1,13 +1,13 @@
 
-### LEH 유지보수성 / 확장성 / 디자인 패턴 / 클린 코드 지침서
+### CHAGOK 유지보수성 / 확장성 / 디자인 패턴 / 클린 코드 지침서
 
-**Legal Evidence Hub (LEH) 전 구성요소(Frontend · Backend · AI Worker · CI/CD)를 위한 통합 설계 규칙**
+**CHAGOK (CHAGOK) 전 구성요소(Frontend · Backend · AI Worker · CI/CD)를 위한 통합 설계 규칙**
 
 ---
 
 # 0. 목적
 
-이 문서는 LEH 프로젝트 전체에 걸쳐 다음을 일관되게 유지하기 위한 **최상위 품질 기준서**다:
+이 문서는 CHAGOK 프로젝트 전체에 걸쳐 다음을 일관되게 유지하기 위한 **최상위 품질 기준서**다:
 
 * 유지보수성(maintainability)
 * 확장성(extensibility)
@@ -23,7 +23,7 @@
 
 # 1. 아키텍처 기본 규칙 (Architecture Principles)
 
-LEH는 다음 구조를 따른다.
+CHAGOK은 다음 구조를 따른다.
 
 Frontend  →  Backend(FastAPI) → S3 / DynamoDB / Qdrant / RDS
                       ↑
@@ -69,7 +69,7 @@ Frontend  →  Backend(FastAPI) → S3 / DynamoDB / Qdrant / RDS
 
 # 3. Clean Code 원칙
 
-다음은 **LEH 전체 공통 클린코드 표준**이다.
+다음은 **CHAGOK 전체 공통 클린코드 표준**이다.
 
 ## 3.1 작게, 더 작게
 
@@ -331,5 +331,5 @@ def handle_file(f):
 
 # 12. 결론
 
-이 문서는 LEH 프로젝트의 **아키텍처·클린코드·패턴·확장성**의 표준을 제공하며
+이 문서는 CHAGOK 프로젝트의 **아키텍처·클린코드·패턴·확장성**의 표준을 제공하며
 AI(L/Claude/GPT)와 사람이 함께 일할 때 **일관성 있는 코드 품질**을 유지하는 기반이 된다.

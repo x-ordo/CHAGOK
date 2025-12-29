@@ -1,5 +1,5 @@
 
-## LEH Backend Service / Repository 패턴 & 클린코드 가이드
+## CHAGOK Backend Service / Repository 패턴 & 클린코드 가이드
 
 > **대상:** H(Backend 담당), AI 코드 생성기  
 > **기술 스택:** FastAPI · SQLAlchemy · Pydantic · AWS Adapter Layer  

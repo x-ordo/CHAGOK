@@ -1,4 +1,4 @@
-# LEH Backend Tests
+# CHAGOK Backend Tests
 
 TDD (Test-Driven Development) 방식으로 작성된 테스트 코드입니다.
 
@@ -125,7 +125,7 @@ pytest.ini에 정의된 마커들:
 - ✅ AWS/OpenAI 설정 검증
 
 #### test_error_handler.py (20개)
-- ✅ 커스텀 예외 클래스 (LEHException, AuthenticationError 등)
+- ✅ 커스텀 예외 클래스 (CHAGOKException, AuthenticationError 등)
 - ✅ 에러 핸들러 응답 형식 (JSON, error_id, timestamp)
 - ✅ HTTP 예외 처리
 - ✅ Validation 에러 처리

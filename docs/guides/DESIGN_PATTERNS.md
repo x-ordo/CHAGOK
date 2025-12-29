@@ -1,6 +1,6 @@
 # Design Patterns Guide
 
-LEH 프로젝트에서 사용하는 핵심 디자인 패턴을 정의합니다.
+CHAGOK 프로젝트에서 사용하는 핵심 디자인 패턴을 정의합니다.
 
 **적용 대상:** Backend, AI Worker
 **참고:** [CLEAN_ARCHITECTURE_GUIDE.md](CLEAN_ARCHITECTURE_GUIDE.md), [AI_WORKER_PATTERN_GUIDE.md](AI_WORKER_PATTERN_GUIDE.md)
@@ -116,7 +116,7 @@ def create_evidence_metadata(
 
 쓰기와 읽기 데이터소스를 분리하여 각 워크로드에 최적화합니다.
 
-### LEH 적용
+### CHAGOK 적용
 
 | 작업 | 데이터소스 | 이유 |
 |------|-----------|------|

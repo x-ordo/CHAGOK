@@ -19,7 +19,7 @@ Templates validated:
 Follow-up TODOs: None
 -->
 
-# Legal Evidence Hub (LEH) Constitution
+# CHAGOK (CHAGOK) Constitution
 
 ## Core Principles
 

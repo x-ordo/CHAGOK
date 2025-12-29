@@ -204,7 +204,7 @@ curl "http://localhost:8000/api/cases/case_xyz789/parties" \
 # "speaker_mapping" 관련 로그 확인
 
 # Lambda 로그 (배포 후)
-aws logs tail /aws/lambda/leh-backend --follow --filter-pattern "speaker_mapping"
+aws logs tail /aws/lambda/chagok-backend --follow --filter-pattern "speaker_mapping"
 ```
 
 ---

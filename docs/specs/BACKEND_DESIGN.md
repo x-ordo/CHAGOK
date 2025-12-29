@@ -15,7 +15,7 @@
 
 # 📌 0. 문서 목적
 
-이 문서는 **LEH Backend(FastAPI)**의 전체적인 기술 구조, API 설계 원칙, DB 스키마, 서비스 레이어, 인증 방식, S3 Presigned URL 정책, AI Worker 연동 방식을 기술한다.
+이 문서는 **CHAGOK Backend(FastAPI)**의 전체적인 기술 구조, API 설계 원칙, DB 스키마, 서비스 레이어, 인증 방식, S3 Presigned URL 정책, AI Worker 연동 방식을 기술한다.
 
 Backend 개발자(H)가 **전체 서버를 구현할 때 절대적인 기준(Single Source of Truth)**이 된다.
 
@@ -23,7 +23,7 @@ Backend 개발자(H)가 **전체 서버를 구현할 때 절대적인 기준(Sin
 
 # 🧭 1. Backend 전체 구조
 
-LEH 백엔드는 **FastAPI 기반의 Stateless API 서버**로 구성되며, 주요 책임은 다음 5가지다:
+CHAGOK 백엔드는 **FastAPI 기반의 Stateless API 서버**로 구성되며, 주요 책임은 다음 5가지다:
 
 1. **인증/인가 (JWT)**
 2. **사건/유저/멤버십 관리 (RDS PostgreSQL)**
@@ -159,7 +159,7 @@ json
 
 # 🗄 5. 비정형 데이터 저장 — DynamoDB 설계
 
-> Paralegal PDF 설계에서 “증거 메타데이터 분리”가 제안된 내용을 LEH에서 DynamoDB로 확장했다.
+> Paralegal PDF 설계에서 “증거 메타데이터 분리”가 제안된 내용을 CHAGOK에서 DynamoDB로 확장했다.
 
 ### DynamoDB 구조
 
@@ -208,7 +208,7 @@ json
 
 # 📡 7. 증거 업로드 프로세스 (Presigned URL)
 
-> 기존 Paralegal 시스템은 “API 서버로 파일 전달 → S3 저장” 구조였으나, LEH에서는 성능·비용을 위해 Presigned URL 방식으로 전환한다.
+> 기존 Paralegal 시스템은 “API 서버로 파일 전달 → S3 저장” 구조였으나, CHAGOK에서는 성능·비용을 위해 Presigned URL 방식으로 전환한다.
 
 ## 7.1 요청 Flow
 

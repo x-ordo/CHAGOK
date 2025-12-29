@@ -1,4 +1,4 @@
-# LEH Lawyer Portal v1 기능 명세서
+# CHAGOK Lawyer Portal v1 기능 명세서
 
 **Feature Branch**: `007-lawyer-portal-v1`
 **버전**: v1.0
@@ -10,7 +10,7 @@
 
 ## 0. 문서 개요
 
-본 문서는 LEH(Legal Evidence Hub) Lawyer Portal의 **v1 완성형 설계**를 정의한다.
+본 문서는 CHAGOK(CHAGOK) Lawyer Portal의 **v1 완성형 설계**를 정의한다.
 
 **핵심 신규 기능**:
 1. **당사자 관계도 (Party Relationship Graph)** - React Flow 기반 시각화
@@ -1234,7 +1234,7 @@ src/components/
 - [React Flow Documentation](https://reactflow.dev/)
 - [한국 민법 제840조 (재판상 이혼원인)](https://www.law.go.kr/법령/민법/제840조)
 - [가사소송법](https://www.law.go.kr/법령/가사소송법)
-- LEH SSOT: `docs/specs/PRD.md`, `docs/specs/ARCHITECTURE.md`, `docs/specs/API_SPEC.md`, `docs/specs/FRONTEND_SPEC.md`
+- CHAGOK SSOT: `docs/specs/PRD.md`, `docs/specs/ARCHITECTURE.md`, `docs/specs/API_SPEC.md`, `docs/specs/FRONTEND_SPEC.md`
 
 ---
 

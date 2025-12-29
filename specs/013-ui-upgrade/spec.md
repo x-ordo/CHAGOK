@@ -9,7 +9,7 @@
 
 ### User Story 1 - Design System Consistency (Priority: P1)
 
-Users experience a consistent, professional visual design across all pages of the Legal Evidence Hub, building trust and reducing cognitive load when working with sensitive legal matters.
+Users experience a consistent, professional visual design across all pages of the CHAGOK, building trust and reducing cognitive load when working with sensitive legal matters.
 
 **Why this priority**: Design inconsistency erodes user trust in a legal application. Lawyers and staff need a polished, predictable interface when handling divorce evidence. This is foundational for all other UI improvements.
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-이 문서는 LEH(Legal Evidence Hub) 프론트엔드의 UI/UX 개선 사항을 기록합니다.
+이 문서는 CHAGOK 프론트엔드의 UI/UX 개선 사항을 기록합니다.
 `UI_UX_DESIGN.md`의 "Calm Control(차분한 통제감)" 철학을 구현하기 위해 Magic UI와 Shadcn/ui 스타일을 통합했습니다.
 
 ---
@@ -378,7 +378,7 @@ function CustomEvidencePage() {
 
 ## 결론
 
-이번 UI/UX 개선으로 LEH 프론트엔드는:
+이번 UI/UX 개선으로 CHAGOK 프론트엔드는:
 1. ✅ **더 전문적인 시각적 경험** (Border Beam 효과)
 2. ✅ **더 강력한 데이터 관리 기능** (정렬, 페이지네이션)
 3. ✅ **더 유지보수하기 쉬운 코드 구조** (Clean Architecture)

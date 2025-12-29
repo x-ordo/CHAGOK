@@ -1,4 +1,4 @@
-# LEH Lawyer Portal v1 Research Notes
+# CHAGOK Lawyer Portal v1 Research Notes
 
 **Feature Branch**: `007-lawyer-portal-v1`
 **Date**: 2025-12-08
@@ -296,7 +296,7 @@ Support up to 50 nodes with smooth rendering (SC-002)
 ## 8. API Response Format
 
 ### Decision
-Follow existing LEH API patterns
+Follow existing CHAGOK API patterns
 
 ### Standard Response
 ```json

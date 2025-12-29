@@ -1,4 +1,4 @@
-# VERSIONING.md — LEH 버전 관리 규칙
+# VERSIONING.md — CHAGOK 버전 관리 규칙
 
 **버전:** v1.0
 **작성일:** 2025-11-27
@@ -10,7 +10,7 @@
 
 ### 1.1 Semantic Versioning (SemVer)
 
-LEH 프로젝트는 **Semantic Versioning 2.0.0**을 따릅니다:
+CHAGOK 프로젝트는 **Semantic Versioning 2.0.0**을 따릅니다:
 
 ```
 MAJOR.MINOR.PATCH

@@ -1,4 +1,4 @@
-# LEH Lawyer Portal v1 구현 계획
+# CHAGOK Lawyer Portal v1 구현 계획
 
 **Feature Branch**: `007-lawyer-portal-v1`
 **버전**: v1.0
@@ -10,7 +10,7 @@
 
 ### 1.1 목표
 
-LEH Lawyer Portal v1의 핵심 기능을 구현하여 변호사가 이혼 사건의 당사자 관계를 시각적으로 파악하고, 재산분할 계산 및 절차 진행 상황을 관리할 수 있도록 한다.
+CHAGOK Lawyer Portal v1의 핵심 기능을 구현하여 변호사가 이혼 사건의 당사자 관계를 시각적으로 파악하고, 재산분할 계산 및 절차 진행 상황을 관리할 수 있도록 한다.
 
 ### 1.2 범위
 
@@ -533,7 +533,7 @@ alembic downgrade -1
 - [React Flow 공식 문서](https://reactflow.dev/)
 - [한국 민법 제840조](https://www.law.go.kr/법령/민법/제840조)
 - [가사소송법](https://www.law.go.kr/법령/가사소송법)
-- LEH SSOT 문서들
+- CHAGOK SSOT 문서들
 
 ---
 

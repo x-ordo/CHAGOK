@@ -1,5 +1,5 @@
 # Button Audit Report
-## Legal Evidence Hub Frontend - 전체 버튼 기능 및 안내 검증
+## CHAGOK Frontend - 전체 버튼 기능 및 안내 검증
 
 **감사 일자:** 2025-11-24
 **감사자:** Frontend Lead P (Claude Code)
@@ -676,7 +676,7 @@
 
 ### 전체 평가: 우수 (A+)
 
-Legal Evidence Hub의 버튼 구현은 **전반적으로 매우 우수**합니다:
+CHAGOK의 버튼 구현은 **전반적으로 매우 우수**합니다:
 
 1. **100% 기능 구현:** 모든 버튼이 명확한 목적과 onClick 핸들러를 가짐 (미구현 2개는 TODO 상태)
 2. **92.6% 접근성 준수:** 대부분의 버튼에 aria-label 제공
