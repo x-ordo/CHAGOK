@@ -1,7 +1,7 @@
 # Team H·P·L - Legal Evidence Hub (LEH)
 
-[![CI](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/ci.yml/badge.svg)](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/ci.yml)
-[![Deploy](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/deploy_paralegal.yml/badge.svg)](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/deploy_paralegal.yml)
+[![CI](https://github.com/x-ordo/CHAGOK/actions/workflows/ci.yml/badge.svg)](https://github.com/x-ordo/CHAGOK/actions/workflows/ci.yml)
+[![Deploy](https://github.com/x-ordo/CHAGOK/actions/workflows/deploy_paralegal.yml/badge.svg)](https://github.com/x-ordo/CHAGOK/actions/workflows/deploy_paralegal.yml)
 
 **Test Coverage:** Backend 81% | AI Worker 78% | Frontend ~30%
 
@@ -67,8 +67,8 @@ LEH는 **이혼 사건 전용 AI 파라리걸 & 증거 허브** 플랫폼입니�
 
 ```bash
 # 1. 레포 클론
-git clone https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd.git
-cd ai-camp-2nd-llm-agent-service-project-2nd
+git clone https://github.com/x-ordo/CHAGOK.git
+cd CHAGOK
 
 # 2. 환경 변수 설정
 cp .env.example .env
