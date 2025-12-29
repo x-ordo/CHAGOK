@@ -1,5 +1,11 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
-  - name: 📄 General Questions / Discussion
-    url: https://github.com/TEAM-HPL/legal-evidence-hub/discussions
-    about: 사용 방법, 아이디어, 논의는 Discussion 탭을 사용해주세요.
+  - name: 💬 General Questions / Discussion
+    url: https://github.com/x-ordo/CHAGOK/discussions
+    about: 사용 방법, 아이디어, 일반 논의는 Discussion 탭을 사용해주세요.
+  - name: 📧 Business Inquiry
+    url: mailto:contact@chagok.io
+    about: 비즈니스 문의, 파트너십, 라이선스 관련 문의
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/x-ordo/CHAGOK/security/advisories/new
+    about: 보안 취약점은 Security Advisory를 통해 비공개로 제보해주세요.
