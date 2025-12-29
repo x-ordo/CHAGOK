@@ -1,0 +1,64 @@
+# Release Drafter Configuration
+# CHAGOK - Team H·P·L
+# https://github.com/release-drafter/release-drafter
+
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'type: feature'
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'type: bug'
+      - 'bug'
+  - title: '🔒 Security'
+    labels:
+      - 'type: security'
+  - title: '⚡ Performance'
+    labels:
+      - 'type: performance'
+  - title: '🔧 Maintenance'
+    labels:
+      - 'type: refactor'
+      - 'chore'
+  - title: '📚 Documentation'
+    labels:
+      - 'documentation'
+  - title: '🧪 Testing'
+    labels:
+      - 'type: test'
+
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&'
+
+version-resolver:
+  major:
+    labels:
+      - 'major'
+  minor:
+    labels:
+      - 'minor'
+      - 'type: feature'
+  patch:
+    labels:
+      - 'patch'
+      - 'type: bug'
+  default: patch
+
+template: |
+  # CHAGOK $RESOLVED_VERSION
+
+  ## What's Changed
+
+  $CHANGES
+
+  ## Contributors
+
+  $CONTRIBUTORS
+
+  ---
+
+  **Full Changelog**: https://github.com/x-ordo/CHAGOK/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

@@ -1,6 +1,6 @@
-# Security Policy — Legal Evidence Hub (LEH)
+# Security Policy — CHAGOK
 
-LEH는 이혼 사건 관련 민감 데이터를 다루는 서비스입니다.  
+CHAGOK은 이혼 사건 관련 민감 데이터를 다루는 서비스입니다.  
 취약점을 발견했다면, 아래 절차에 따라 **조용히(private)** 알려주세요.
 
 ---
@@ -40,7 +40,7 @@ LEH는 이혼 사건 관련 민감 데이터를 다루는 서비스입니다.
 
 ## 🔐 3. 기대하는 보안 기준
 
-LEH는 다음과 같은 보안 목표를 가진다:
+CHAGOK은 다음과 같은 보안 목표를 가진다:
 
 - 민감 사건/증거 데이터에 대한 **무단 접근 차단**
 - Presigned URL 오·남용 방지
@@ -65,5 +65,12 @@ LEH는 다음과 같은 보안 목표를 가진다:
 
 ---
 
-감사합니다.  
-LEH 보안을 함께 지켜주셔서 감사합니다.
+감사합니다.
+CHAGOK 보안을 함께 지켜주셔서 감사합니다.
+
+---
+
+## 📧 5. 보안 연락처
+
+- **Email**: security@chagok.io
+- **GitHub Security Advisories**: https://github.com/x-ordo/CHAGOK/security/advisories
