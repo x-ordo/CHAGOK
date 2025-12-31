@@ -187,8 +187,8 @@ describe('ProcedureTimeline', () => {
         />
       );
 
-      // Click on a stage card
-      const stageCard = screen.getByText('소장 접수').closest('[role="button"]');
+      // Click on a stage card - StageCard is a native button element
+      const stageCard = screen.getByText('소장 접수').closest('button');
       expect(stageCard).toBeInTheDocument();
 
       if (stageCard) {

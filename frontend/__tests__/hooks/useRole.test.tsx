@@ -58,8 +58,6 @@ jest.mock('@/types/user', () => ({
 describe('useRole', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset localStorage mock
-    (global.localStorage.getItem as jest.Mock).mockReturnValue(null);
   });
 
   it('returns null values when not authenticated', () => {
