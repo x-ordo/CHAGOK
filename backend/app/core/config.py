@@ -12,7 +12,7 @@ import logging
 import os
 import warnings
 from functools import lru_cache
-from typing import Dict, List, Optional
+from typing import Dict, List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, model_validator
 

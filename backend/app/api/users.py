@@ -14,7 +14,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.db.models import AuditAction
 from app.db.schemas import UserOut
 from app.core.dependencies import get_current_user_id
 from app.repositories.user_repository import UserRepository
@@ -68,15 +67,6 @@ class PersonalDataExport(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-class DataDeletionRequest(BaseModel):
-    """Response for data deletion request"""
-    request_id: str
-    status: str  # PENDING, PROCESSING, COMPLETED
-    requested_at: datetime
-    estimated_completion: datetime
-    message: str
 
 
 # ============================================
