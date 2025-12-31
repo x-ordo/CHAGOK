@@ -83,7 +83,7 @@ describe('LandingNav Component', () => {
 
   describe('Scroll Effects', () => {
     it('should accept isScrolled prop for scroll state', () => {
-      const { rerender } = render(<LandingNav isScrolled={false} />);
+      render(<LandingNav isScrolled={false} />);
       const { container } = render(<LandingNav isScrolled={true} />);
 
       // Component should accept prop without error

@@ -274,7 +274,6 @@ class TestSecretsManager:
 
     def test_get_secrets_handles_boto3_import_error(self, test_env, monkeypatch):
         """Test graceful handling when boto3 is not installed"""
-        import sys
         from app.core.config import get_secrets_from_aws
 
         get_secrets_from_aws.cache_clear()

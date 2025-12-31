@@ -190,8 +190,6 @@ class CaseRepository:
         Returns:
             List of tuples (Case, role_string)
         """
-        from typing import Tuple
-
         query = (
             self.session.query(Case, CaseMember.role)
             .join(CaseMember, Case.id == CaseMember.case_id)

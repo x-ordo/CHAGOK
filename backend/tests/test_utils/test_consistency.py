@@ -3,7 +3,7 @@ Tests for ConsistencyManager (DynamoDB/Qdrant Saga Pattern)
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from datetime import datetime, timezone
 
 from app.utils.consistency import (

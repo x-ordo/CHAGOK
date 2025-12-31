@@ -21,13 +21,12 @@ Usage:
 """
 
 import logging
-from typing import Dict, Optional, List, Callable, Any
+from typing import Dict, Optional, List, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime, timezone
 from functools import wraps
 import time
-import asyncio
 
 from app.utils import dynamo, qdrant
 

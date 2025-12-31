@@ -41,10 +41,10 @@ jest.mock('next/navigation', () => ({
   useParams: () => ({}),
 }));
 
-// Mock next/link
+// Mock next/link - forward all props including className
 jest.mock('next/link', () => {
-  return function MockLink({ children, href }) {
-    return <a href={href}>{children}</a>;
+  return function MockLink({ children, href, className, ...props }) {
+    return <a href={href} className={className} {...props}>{children}</a>;
   };
 });
 
