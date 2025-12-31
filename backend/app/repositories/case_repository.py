@@ -178,3 +178,33 @@ class CaseRepository:
             .first()
         )
         return membership is not None
+
+    def get_user_cases(self, user_id: str, include_deleted: bool = False) -> List[tuple]:
+        """
+        Get all cases for a user with their role (for privacy data export)
+
+        Args:
+            user_id: User ID
+            include_deleted: If True, include soft-deleted cases
+
+        Returns:
+            List of tuples (Case, role_string)
+        """
+        from typing import Tuple
+
+        query = (
+            self.session.query(Case, CaseMember.role)
+            .join(CaseMember, Case.id == CaseMember.case_id)
+            .filter(CaseMember.user_id == user_id)
+        )
+
+        if not include_deleted:
+            query = query.filter(Case.deleted_at.is_(None))
+
+        results = query.all()
+
+        # Convert role enum to string
+        return [
+            (case, role.value if hasattr(role, 'value') else str(role))
+            for case, role in results
+        ]

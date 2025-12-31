@@ -148,3 +148,38 @@ class AuditLogRepository:
 
         # Return all logs (no pagination) ordered by timestamp
         return query.order_by(AuditLog.timestamp.desc()).all()
+
+    def get_user_activity(
+        self,
+        user_id: str,
+        days: int = 90,
+        limit: int = 1000
+    ) -> List[AuditLog]:
+        """
+        Get user activity logs for privacy data export (PIPA compliance)
+
+        Args:
+            user_id: User ID to get activity for
+            days: Number of days to look back (default: 90)
+            limit: Maximum number of entries (default: 1000)
+
+        Returns:
+            List of AuditLog instances for the user
+        """
+        from datetime import timedelta
+
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+
+        query = (
+            self.session.query(AuditLog)
+            .filter(
+                and_(
+                    AuditLog.user_id == user_id,
+                    AuditLog.timestamp >= cutoff_date
+                )
+            )
+            .order_by(AuditLog.timestamp.desc())
+            .limit(limit)
+        )
+
+        return query.all()

@@ -32,6 +32,7 @@ from app.utils.dynamo import (
     update_evidence_status,
     update_evidence_speaker_mapping
 )
+from app.utils.consistency import get_consistency_manager, ConsistencyError
 from app.utils.lambda_client import invoke_ai_worker
 from app.utils.evidence import generate_evidence_id, extract_filename_from_s3_key
 from app.core.config import settings
@@ -800,3 +801,100 @@ class EvidenceService:
                 raise ValidationError(
                     "선택한 인물이 이 사건에 속하지 않습니다"
                 )
+
+    # ============================================
+    # Consistency-Aware Operations (014)
+    # ============================================
+
+    def delete_evidence(
+        self,
+        evidence_id: str,
+        user_id: str,
+        hard_delete: bool = False
+    ) -> dict:
+        """
+        Delete evidence with DynamoDB/Qdrant consistency
+
+        Args:
+            evidence_id: Evidence ID to delete
+            user_id: User ID performing deletion
+            hard_delete: If True, permanently delete from both stores
+
+        Returns:
+            dict with deletion status
+
+        Raises:
+            NotFoundError: Evidence not found
+            PermissionError: User does not have access
+            ConsistencyError: Deletion failed with consistency issues
+        """
+        # Get evidence metadata from DynamoDB
+        evidence = get_evidence_by_id(evidence_id)
+        if not evidence:
+            raise NotFoundError("Evidence")
+
+        # Check if user has access to the case
+        case_id = evidence["case_id"]
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
+        if hard_delete:
+            # Use ConsistencyManager for atomic deletion
+            try:
+                consistency_manager = get_consistency_manager()
+                success = consistency_manager.delete_evidence_with_index(
+                    case_id=case_id,
+                    evidence_id=evidence_id
+                )
+
+                if success:
+                    # Log audit event
+                    log_audit_event(
+                        db=self.db,
+                        user_id=user_id,
+                        action=AuditAction.DELETE,
+                        object_id=evidence_id
+                    )
+                    self.db.commit()
+                    logger.info(f"Evidence {evidence_id} hard deleted by user {user_id}")
+
+                return {
+                    "success": success,
+                    "evidence_id": evidence_id,
+                    "action": "hard_delete",
+                    "message": "Evidence permanently deleted from all stores"
+                }
+            except ConsistencyError as e:
+                logger.error(f"Consistency error deleting evidence {evidence_id}: {e}")
+                return {
+                    "success": False,
+                    "evidence_id": evidence_id,
+                    "action": "hard_delete",
+                    "message": str(e),
+                    "partial_success": e.partial_success,
+                    "details": e.details
+                }
+        else:
+            # Soft delete - just mark as deleted in DynamoDB
+            success = update_evidence_status(
+                evidence_id=evidence_id,
+                status=evidence.get("status", "pending"),
+                additional_fields={"deleted": True, "deleted_at": datetime.utcnow().isoformat(), "deleted_by": user_id}
+            )
+
+            if success:
+                log_audit_event(
+                    db=self.db,
+                    user_id=user_id,
+                    action=AuditAction.DELETE,
+                    object_id=evidence_id
+                )
+                self.db.commit()
+                logger.info(f"Evidence {evidence_id} soft deleted by user {user_id}")
+
+            return {
+                "success": success,
+                "evidence_id": evidence_id,
+                "action": "soft_delete",
+                "message": "Evidence marked as deleted"
+            }

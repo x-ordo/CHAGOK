@@ -1,12 +1,100 @@
 """
 CHAGOK - Configuration
 Environment variables and application settings using Pydantic Settings
+
+Secrets Management:
+- Local/Test: Uses environment variables directly
+- Dev/Prod: Fetches secrets from AWS Secrets Manager (if available)
 """
 
+import json
+import logging
+import os
 import warnings
-from typing import List
+from functools import lru_cache
+from typing import Dict, List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, model_validator
+
+logger = logging.getLogger(__name__)
+
+
+# ============================================
+# AWS Secrets Manager Integration
+# ============================================
+@lru_cache(maxsize=1)
+def get_secrets_from_aws(secret_name: str = "chagok/secrets") -> Dict[str, str]:
+    """
+    Fetch secrets from AWS Secrets Manager.
+    Returns empty dict if not available or in local environment.
+
+    Secret Structure in AWS Secrets Manager:
+    {
+        "JWT_SECRET": "...",
+        "OPENAI_API_KEY": "...",
+        "GEMINI_API_KEY": "...",
+        "DATABASE_URL": "...",
+        "QDRANT_API_KEY": "...",
+        "INTERNAL_API_KEY": "..."
+    }
+    """
+    app_env = os.environ.get("APP_ENV", "local")
+
+    # Skip AWS Secrets Manager for local development
+    if app_env in ("local", "test"):
+        logger.debug("Skipping AWS Secrets Manager in local/test environment")
+        return {}
+
+    try:
+        import boto3
+        from botocore.exceptions import ClientError, NoCredentialsError
+
+        region = os.environ.get("AWS_REGION", "ap-northeast-2")
+        client = boto3.client("secretsmanager", region_name=region)
+
+        response = client.get_secret_value(SecretId=secret_name)
+        secret_string = response.get("SecretString", "{}")
+        secrets = json.loads(secret_string)
+
+        logger.info(f"Loaded {len(secrets)} secrets from AWS Secrets Manager")
+        return secrets
+
+    except ImportError:
+        logger.warning("boto3 not installed, skipping AWS Secrets Manager")
+        return {}
+    except NoCredentialsError:
+        logger.warning("No AWS credentials found, using environment variables")
+        return {}
+    except ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code", "Unknown")
+        if error_code == "ResourceNotFoundException":
+            logger.warning(f"Secret '{secret_name}' not found in AWS Secrets Manager")
+        else:
+            logger.warning(f"Failed to fetch secrets from AWS: {error_code}")
+        return {}
+    except Exception as e:
+        logger.warning(f"Unexpected error fetching secrets: {e}")
+        return {}
+
+
+def get_secret_value(key: str, default: str = "") -> str:
+    """
+    Get a secret value with priority:
+    1. Environment variable (highest priority for overrides)
+    2. AWS Secrets Manager
+    3. Default value
+    """
+    # Environment variable takes precedence (allows overrides)
+    env_value = os.environ.get(key)
+    if env_value is not None:
+        return env_value
+
+    # Try AWS Secrets Manager
+    secrets = get_secrets_from_aws()
+    if key in secrets:
+        return secrets[key]
+
+    return default
 
 
 class Settings(BaseSettings):
@@ -231,6 +319,43 @@ class Settings(BaseSettings):
         case_sensitive=True,
         extra="ignore"
     )
+
+    @model_validator(mode='after')
+    def load_secrets_from_aws(self):
+        """
+        Load sensitive secrets from AWS Secrets Manager in dev/prod environments.
+        Environment variables take precedence over AWS Secrets Manager.
+        """
+        if self.APP_ENV in ("local", "test"):
+            return self
+
+        # List of fields that should be loaded from Secrets Manager
+        secret_fields = [
+            "JWT_SECRET",
+            "OPENAI_API_KEY",
+            "GEMINI_API_KEY",
+            "DATABASE_URL",
+            "QDRANT_API_KEY",
+            "INTERNAL_API_KEY",
+        ]
+
+        secrets = get_secrets_from_aws()
+        if not secrets:
+            return self
+
+        for field_name in secret_fields:
+            # Only update if not explicitly set in environment
+            if not os.environ.get(field_name) and field_name in secrets:
+                current_value = getattr(self, field_name, None)
+                # Only update if current value is empty or default
+                if not current_value or current_value in (
+                    "",
+                    "local-dev-secret-change-in-prod-min-32-chars"
+                ):
+                    setattr(self, field_name, secrets[field_name])
+                    logger.debug(f"Loaded {field_name} from AWS Secrets Manager")
+
+        return self
 
 
 # ============================================

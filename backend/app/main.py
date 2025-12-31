@@ -50,6 +50,7 @@ from app.api import (  # noqa: E402
     settings as settings_router,
     staff_progress,
     summary,
+    users,
 )
 from app.api.lssp import router as lssp_router  # noqa: E402 - LSSP v2.01-v2.15
 from app.core.dependencies import require_admin  # noqa: E402
@@ -238,6 +239,9 @@ API_PREFIX = "/api"
 
 # 인증 라우터
 app.include_router(auth.router, prefix=f"{API_PREFIX}/auth", tags=["Authentication"])
+
+# 사용자 개인정보 라우터 (PIPA/GDPR 준수)
+app.include_router(users.router, prefix=f"{API_PREFIX}/users", tags=["Users"])
 
 # 사건 라우터
 app.include_router(cases.router, prefix=f"{API_PREFIX}/cases", tags=["Cases"])
