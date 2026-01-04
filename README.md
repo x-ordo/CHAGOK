@@ -85,7 +85,7 @@ This codebase contains **digital watermarks and fingerprinting technology** that
 For licensing inquiries or to report violations:
 라이선스 문의 또는 위반 신고:
 
-**Email:** legal@chagok.io
+**Email:** parkdavid31@gmail.com
 
 ---
 
